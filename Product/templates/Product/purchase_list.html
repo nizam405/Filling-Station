@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Purchase List{% endblock title %}
+{% block main %}
+
+{% load extra_tags %}
+
+<h3>Purchase List</h3>
+<div class="text-right">
+    <a href="{% url 'create-purchase' %}" class="btn btn-success mb-2">Add Purchase</a>
+</div>
+<table class="table table-sm table-striped table-bordered text-center">
+    <tr>
+        <th>#</th>
+        <th>Date</th>
+        <th>Product</th>
+        <th>Quantity</th>
+        <!-- <th>Rate</th> -->
+        <th>Amount</th>
+        <th>Actions</th>
+    </tr>
+    {% if object_list %}
+    {% for object,sln in object_list|zip %}
+    <tr>
+        <td>{{ sln }}</td>
+        <td>{{object.date}}</td>
+        <td>{{object.product}}</td>
+        <td>{{object.quantity}} L</td>
+        <!-- <td>{{object.rate}} Tk/L</td> -->
+        <td>{{object.amount}} Tk</td>
+        <td>
+            <a href="{% url 'update-purchase' pk=object.pk %}" class="p-1"><i class="bi bi-pen text-primary"></i></a>
+            <a href="{% url 'delete-purchase' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+        </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr><td colspan="6" class="text-seocndary text-center">No results Found !</td><tr>
+    {% endif %}
+</table>
+
+{% endblock main %}

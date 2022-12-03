@@ -4,11 +4,99 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Home{% endblock title %} </title>
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
+    <title>{% block title %}{% endblock title %}</title>
 </head>
 <body>
-    {% block content %}
-    Sample Home Page Text
-    {% endblock content %}
+    <div class="container">
+        <div class="p-2 bg-info d-print-none">
+            <h2><a href="{% url 'home' %}" class="nav-link text-light">Filling Station</a></h2>
+        </div>
+        <div class="wrapper">
+            <nav id="sidebar" class="navbar navbar-light card mr-3 d-print-none">
+                <ul class="navbar-nav" id="navbar">
+                    <li class="nav-item bangla">
+                        <div class="btn-group">
+                            লেনদেন সমূহ
+                            <button class="btn btn-sm btn-info ml-4 hide-nav">
+                                <i class="bi bi-caret-up"></i>
+                            </button>
+                        </div>
+                        <ul class="nav pl-3 flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'sells' %}" class="nav-link">বিক্রয়</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'revenue-list' %}" class="nav-link">অন্যান্য আয়</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'duecollection-list' %}" class="nav-link">বকেয়া আদায়</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'purchases' %}" class="nav-link">ক্রয়</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'expenditure-list' %}" class="nav-link">অন্যান্য খরচ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'duesell-list' %}" class="nav-link">বকেয়া বিক্রয়</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item bangla">
+                        <a href="#" class="nav-link">মাসিক খতিয়ান</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'product-list' %}" class="nav-link">Products</a>
+                    </li>
+                    {% comment %} <li class="nav-item">
+                        <a href="{% url 'selling-rates' %}" class="nav-link">Selling Rates</a>
+                    </li> {% endcomment %}
+                    <li class="nav-item">
+                        <a href="{% url 'customer-list' %}" class="nav-link">Customers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'owner-list' %}" class="nav-link">Owners</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'expendituregroup-list' %}" class="nav-link">Expenditure Groups</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'expendituregroup-list' %}" class="nav-link">Revenue Groups</a>
+                    </li>
+                </ul>
+            </nav>
+            <div id="content" class="container-fluid p-0">
+                <nav class="navbar navbar-light bg-light px-0 d-print-none">
+                    <div class="mr-auto">
+                        <button type="button" id="sidebarCollapse" class="btn btn-info">
+                            <i class="bi bi-justify"></i>
+                        </button>
+                        <a href="{% url 'daily-transactions' %}" class="btn btn-primary">Daily Transactions</a>
+                        <a href="#" class="btn btn-info">Monthly Ledgers</a>
+                    </div>
+                </nav>
+                <div>
+                    {% block main %}
+                    {% endblock main %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function(){
+            $("#sidebarCollapse").click(function(){
+                $("#sidebar").toggle("fast");
+            });
+            $('.hide-nav').click(function(){
+                $('#sidebar').hide("fast")
+            });
+        });
+    </script>
 </body>
 </html>

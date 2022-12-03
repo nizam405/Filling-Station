@@ -1,5 +1,5 @@
 from django.shortcuts import render
+from django.views.generic.base import RedirectView
 
-def home(request):
-    template = 'base.html'
-    return render(request, template)
+class HomeView(RedirectView):
+    pattern_name = 'daily-transactions'

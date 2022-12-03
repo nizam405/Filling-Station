@@ -19,11 +19,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 import debug_toolbar
 
-from .views import home
+from .views import HomeView
+from Transaction.views import DailyTransactionView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home, name='home')
+    path('', HomeView.as_view(), name="home"), # Currently redirects to 'daily-transactions'
+    path('daily-transactions/', DailyTransactionView.as_view(), name='daily-transactions'),
+    path('customer/', include("Customer.urls")),
+    path('expenditure/', include("Expenditure.urls")),
+    path('owner/', include("Owner.urls")),
+    path('product/', include("Product.urls")),
+    path('revenue/', include("Revenue.urls")),
 ]
 
 if settings.DEBUG:

@@ -1,3 +1,8 @@
 from django.db import models
+from .choices import current_year
 
-# Create your models here.
+class Year(models.Model):
+    year = models.IntegerField(default=current_year)
+
+    def __str__(self):
+        return self.year

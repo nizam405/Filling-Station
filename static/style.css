@@ -1,0 +1,33 @@
+.wrapper {
+    display: flex;
+}
+
+#sidebar {
+    width: 250px;
+    display: none;
+}
+
+#navbar {
+    width: 150px;
+}
+
+.bangla {
+    font-family: "SolaimanLipi";
+}
+
+.hide-nav {display: none;}
+
+@media only screen and (max-width: 640px) {
+    .wrapper {
+        display: block;
+    }
+    #sidebar {
+        width: 100%;
+    }
+    #navbar {
+        width: 250px;
+    }
+    .hide-nav {
+        display: inline;
+    }
+}

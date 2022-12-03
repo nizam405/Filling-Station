@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Owner details{% endblock title %}
+{% block main %}
+
+{% load bootstrap4 %}
+<a href="{% url 'owner-list' %}" class="btn btn-info mb-3">
+    <i class="bi bi-chevron-left pr-2"></i>Back to list
+</a>
+
+{% if object %}
+<h3>{{object.name}} 
+    <a href="{% url 'update-owner' pk=object.pk %}" class="p-2">
+        <i class="bi bi-pen text-primary"></i>
+    </a>
+</h3>
+<table class="table">
+    <tr>
+        <td>Mobile Number</td>
+        <td>{{object.mobile}}</td>
+    </tr>
+    <tr>
+        <td>Email</td>
+        <td>{{object.email}}</td>
+    </tr>
+    <tr>
+        <td>Ownership</td>
+        <td>{{object.ownership}}</td>
+    </tr>
+    <tr>
+        <td>Address</td>
+        <td>{{object.address}}</td>
+    </tr>
+</table>
+{% else %}
+<h3>Sorry! No results Found.</h3>
+{% endif %}
+
+{% endblock main %}

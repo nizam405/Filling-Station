@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Revenue Groups{% endblock title %}
+{% block main %}
+
+{% load extra_tags %}
+
+<h3>Revenue Groups</h3>
+<div class="text-right">
+    <a href="{% url 'create-revenuegroup' %}" class="btn btn-success mb-2">Add Revenue</a>
+</div>
+<table class="table table-sm table-striped table-bordered text-center">
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Actions</th>
+    </tr>
+    {% if object_list %}
+    {% for object,sln in object_list|zip %}
+    <tr>
+        <td>{{ sln }}</td>
+        <td>{{object.name}}</td>
+        <td>
+            <a href="{% url 'update-revenuegroup' pk=object.pk %}" class="p-1"><i class="bi bi-pen text-primary"></i></a>
+            <a href="{% url 'delete-revenuegroup' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+        </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr><td colspan="3" class="text-seocndary text-center">No results Found !</td><tr>
+    {% endif %}
+</table>
+
+{% endblock main %}

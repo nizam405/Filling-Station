@@ -28,8 +28,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'django_project_boilerplate.urls'
-WSGI_APPLICATION = 'django_project_boilerplate.wsgi.application'
+ROOT_URLCONF = 'FillingStation.urls'
+WSGI_APPLICATION = 'FillingStation.wsgi.application'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

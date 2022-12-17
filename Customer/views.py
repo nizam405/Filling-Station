@@ -1,10 +1,26 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
-import datetime
+from datetime import date
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from .models import Customer, DueSell, DueCollection
+from .models import Customer, DueSell, DueCollection, GroupofCompany
 from .forms import DueCollectionForm, DueSellForm
+
+# Group of companies
+class GroupofCompanyListView(ListView):
+    model = GroupofCompany
+
+class GroupofCompanyCreateView(CreateView):
+    model = GroupofCompany
+    fields = '__all__'
+
+class GroupofCompanyUpdateView(UpdateView):
+    model = GroupofCompany
+    fields = '__all__'
+
+class GroupofCompanyDeleteView(DeleteView):
+    model = GroupofCompany
+    success_url = reverse_lazy('groupofcompany-list')
 
 # Customer
 class CustomerListView(ListView):
@@ -27,40 +43,48 @@ class CustomerDeleteView(DeleteView):
     
 # Due Collection
 class DueCollectionListView(ListView):
-    # template_name = 'Customer/duecollection_list.html'
     model = DueCollection
 
 class DueCollectionCreateView(CreateView):
-    # template_name = 'Customer/duecollection_form.html'
     model = DueCollection
     form_class = DueCollectionForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'date' in self.kwargs:
+            context['form'].initial = {'date':self.kwargs['date']}
+        return context
+
 class DueCollectionUpdateView(UpdateView):
-    # template_name = 'Customer/duecollection_form.html'
     model = DueCollection
     form_class = DueCollectionForm
 
 class DueCollectionDeleteView(DeleteView):
-    # template_name = 'Customer/duecollection_confirm_delete.html'
     model = DueCollection
-    success_url = reverse_lazy('duecollection-list')
+    
+    def get_success_url(self):
+        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})
 
 # Due Sell
 class DueSellListView(ListView):
-    # template_name = 'Customer/duesell_list.html'
     model = DueSell
 
 class DueSellCreateView(CreateView):
-    # template_name = 'Customer/duesell_form.html'
     model = DueSell
     form_class = DueSellForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'date' in self.kwargs:
+            context['form'].initial = {'date':self.kwargs['date']}
+        return context
+
 class DueSellUpdateView(UpdateView):
-    # template_name = 'Customer/duesell_form.html'
     model = DueSell
     form_class = DueSellForm
 
 class DueSellDeleteView(DeleteView):
-    # template_name = 'Customer/duesell_confirm_delete.html'
     model = DueSell
-    success_url = reverse_lazy('duesell-list')
+    
+    def get_success_url(self):
+        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})

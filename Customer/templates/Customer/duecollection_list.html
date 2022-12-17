@@ -11,20 +11,24 @@
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
-        <th>Customer</th>
         <th>Date</th>
+        <th>Customer</th>
         <th>Amount</th>
         <th>Actions</th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
-    <tr>
+    <tr title="{% if object.comment %}{{object.comment}}{% endif %}">
         <td>{{ sln }}</td>
-        <td>{{object.customer.name}}</td>
         <td>{{object.date}}</td>
-        <td>{{object.collection}}</td>
+        {% if object.customer.group %}
+        <td>{{object.customer.group.name}} ({{object.customer.name}})</td>
+        {% else %}
+        <td>{{object.customer.name}}</td>
+        {% endif %}
+        <td>{{object.amount}}</td>
         <td>
-            <a href="{% url 'update-duecollection' pk=object.pk %}" class="p-1"><i class="bi bi-pen text-primary"></i></a>
+            <a href="{% url 'update-duecollection' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-duecollection' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
         </td>
     </tr>

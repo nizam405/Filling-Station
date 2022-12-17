@@ -5,20 +5,26 @@ from django.urls import reverse
 class ExpenditureGroup(models.Model):
     name = models.CharField(max_length=255)
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name
     
     def get_absolute_url(self):
-        return reverse("expenditure-list")
+        return reverse("expendituregroup-list")
 
 class Expenditure(models.Model):
     date = models.DateField(default=timezone.now)
-    group = models.ForeignKey(to=ExpenditureGroup, on_delete=models.CASCADE)
-    detail = models.CharField(max_length=255)
+    group = models.ForeignKey(to=ExpenditureGroup, on_delete=models.SET_NULL, null=True)
+    detail = models.CharField(max_length=255, blank=True, null=True)
     amount = models.FloatField(default=0.0)
+
+    class Meta:
+        ordering = ['date']
 
     def __str__(self):
         return f"{self.group.name} - {self.detail} - {self.amount}"
     
     def get_absolute_url(self):
-        return reverse('daily-transactions')
+        return reverse('daily-transactions', kwargs={'date':self.date})

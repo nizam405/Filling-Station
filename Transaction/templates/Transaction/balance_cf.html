@@ -1,0 +1,32 @@
+<table class="table table-bordered table-striped">
+    <tr>
+        <th class="w-50">Balance C/F</th>
+        <th>
+            {% if saved_balance_cf %}
+                <!-- Has previous save balance? show it -->
+                {{saved_balance_cf}}
+            {% endif %}
+            {% if can_update %}
+                <!-- User has right to change -->
+                {% if need_update %}
+                -> {{balance_cf_abs}}
+                <!-- Previous balance is not matching with present calculated value? update it -->
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    {{balance_form}}
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-arrow-repeat"></i> Update</button>
+                </form>
+                {% endif %}
+            {% endif %}
+            {% if can_save %}
+                {{balance_cf_abs}}
+                <!-- Balance not yet saved? save it. -->
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    {{balance_form}}
+                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </form>
+            {% endif %}
+        </th>
+    </tr>
+</table>

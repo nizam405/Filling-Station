@@ -27,6 +27,9 @@ class SellingRate(models.Model):
     start_time = models.TimeField(verbose_name="From Time", default=datetime.now)
     rate = models.FloatField(verbose_name="Rate/Ltr (Tk)")
 
+    class Meta:
+        ordering = ['start_date','start_time']
+
     def __str__(self):
         return f"{self.product.name} - {self.rate}"
     
@@ -35,26 +38,34 @@ class SellingRate(models.Model):
 
 class Purchase(models.Model):
     date = models.DateField(default=timezone.now)
-    product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(to=Product, on_delete=models.SET_NULL, null=True)
     quantity = models.FloatField(verbose_name="Quantity (Ltr)")
     # rate = models.FloatField(default=0)
     amount = models.FloatField(verbose_name="Amount (TK)")
+    comment = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        ordering = ['date']
 
     def __str__(self):
         return f"{self.date} - {self.product.name} - {self.amount}"
     
     def get_absolute_url(self):
-        return reverse("daily-transactions")
+        return reverse("daily-transactions", kwargs={'date':self.date})
 
 class Sell(models.Model):
     date = models.DateField(default=timezone.now)
-    product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(to=Product, on_delete=models.SET_NULL, null=True)
     quantity = models.FloatField(verbose_name="Quantity (Ltr)")
     # rate = models.OneToOneField(to=SellingRate, on_delete=models.SET_NULL, default=0, null=True)
     amount = models.FloatField(verbose_name="Amount (TK)")
+    comment = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        ordering = ['date']
 
     def __str__(self):
-        return f"{self.product.name} - {self.amount} - {self.date}"
+        return f"{self.date} - {self.product.name} - {self.amount}"
     
     def get_absolute_url(self):
-        return reverse("daily-transactions")
+        return reverse("daily-transactions", kwargs={'date':self.date})

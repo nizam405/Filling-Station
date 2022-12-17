@@ -1,5 +1,4 @@
 customer_type = [
-    ("Individual Company", "Individual Company"),
+    ("Individual", "Individual"),
     ("Company under Group", "Company under Group"),
-    ("Group of Companies", "Group of Companies")
 ]

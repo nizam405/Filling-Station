@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from datetime import date
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from .models import Revenue, RevenueGroup
@@ -25,9 +26,20 @@ class RevenueGroupDeleteView(DeleteView):
 class RevenueListView(ListView):
     model = Revenue
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['date'] = date.today()
+        return context
+
 class RevenueCreateView(CreateView):
     model = Revenue
     form_class = RevenueForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'date' in self.kwargs:
+            context['form'].initial = {'date':self.kwargs['date']}
+        return context
 
 class RevenueUpdateView(UpdateView):
     model = Revenue
@@ -35,4 +47,6 @@ class RevenueUpdateView(UpdateView):
 
 class RevenueDeleteView(DeleteView):
     model = Revenue
-    success_url = reverse_lazy('revenue-list')
+    
+    def get_success_url(self):
+        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})

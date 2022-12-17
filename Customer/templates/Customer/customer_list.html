@@ -6,12 +6,12 @@
 
 <h3>Our Regular Customers</h3>
 <div class="text-right">
-    <a href="{% url 'create-customer' %}" class="btn btn-success mb-2">New Customers</a>
+    <a href="{% url 'create-customer' %}" class="btn btn-success mb-2">New Customer</a>
 </div>
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
-        <th>Customer Type</th>
+        <th>Group of Company</th>
         <th>Customer Name</th>
         <th>Mobile Number</th>
         <th>Actions</th>
@@ -20,12 +20,12 @@
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{ sln }}</td>
-        <td>{{object.cust_type}}</td>
+        <td>{{object.group}}</td>
         <td>{{object.name}}</td>
         <td>{{object.mobile}}</td>
         <td>
-            <a href="{% url 'customer-detail' pk=object.pk %}" class="p-1"><i class="bi bi-eye text-primary"></i></a>
-            <a href="{% url 'update-customer' pk=object.pk %}" class="p-1"><i class="bi bi-pen text-primary"></i></a>
+            <a href="{% url 'customer-detail' pk=object.pk %}" class="p-1"><i class="bi bi-eye text-info"></i></a>
+            <a href="{% url 'update-customer' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-customer' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
         </td>
     </tr>

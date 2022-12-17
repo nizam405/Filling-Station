@@ -1,0 +1,72 @@
+<nav id="sidebar" class="navbar navbar-light card mr-3 d-print-none">
+    <ul class="navbar-nav" id="navbar">
+        {% comment %} <li class="nav-item bangla">
+            <div class="btn-group">
+                <h5 class="card-title">Transactions</h5>
+                <button class="btn btn-sm btn-info ml-4 hide-nav">
+                    <i class="bi bi-caret-up"></i>
+                </button>
+            </div>
+            <ul class="nav pl-3 flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'purchases' %}" class="nav-link">Purchase</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'sells' %}" class="nav-link">Sell</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'expenditure-list' %}" class="nav-link">Expenditure</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'revenue-list' %}" class="nav-link">Revenue</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'duesell-list' %}" class="nav-link">Due Sell</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'duecollection-list' %}" class="nav-link">Due Collection</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'withdraw-list' %}" class="nav-link">Withdraw</a>
+                </li>
+            </ul>
+        </li> {% endcomment %}
+        {% comment %} <h5 class="card-title"><a href="#" class="nav-link">Monthly Ledger</a></h5> {% endcomment %}
+        <h5 class="card-title">Settings</h5>
+        
+        <li class="nav-item">
+            <a href="{% url 'cashbalance-list' %}" class="nav-link">Balance</a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'product-list' %}" class="nav-link">Products</a>
+        </li>
+        {% comment %} <li class="nav-item">
+            <a href="{% url 'selling-rates' %}" class="nav-link">Selling Rates</a>
+        </li> {% endcomment %}
+        <li class="nav-item">
+            <a href="{% url 'expendituregroup-list' %}" class="nav-link">Expenditure Groups</a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'revenuegroup-list' %}" class="nav-link">Revenue Groups</a>
+        </li>
+        <li class="nav-item">Customers
+            <ul class="nav pl-3 flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'groupofcompany-list' %}" class="nav-link">Group of Company</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'customer-list' %}" class="nav-link">Customers</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'owner-list' %}" class="nav-link">Owners</a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'investment-list' %}" class="nav-link">Investment</a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'investment-list' %}" class="nav-link">Investment</a>
+        </li>
+    </ul>
+</nav>

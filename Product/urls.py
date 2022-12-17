@@ -1,4 +1,7 @@
-from django.urls import path
+from django.urls import path, register_converter
+from Core.converters import DateConverter
+register_converter(DateConverter, 'date')
+
 from .views import (
     ProductListView, ProductCreateView, ProductUpdateView, ProductDeleteView,
     SellingRateListView, SellingRateCreateView, SellingRateUpdateView, SellingRateDeleteView,
@@ -21,15 +24,17 @@ urlpatterns = [
     path('selling-rate/<int:pk>/delete/', SellingRateDeleteView.as_view(), name='delete-selling-rate'),
     
     # Purchase
-    path('purchases/', PurchaseListView.as_view(), name='purchases'),
+    # path('purchases/', PurchaseListView.as_view(), name='purchases'),
     path('purchase/new/', PurchaseCreateView.as_view(), name="create-purchase"),
-    path('purchase<int:pk>/update/', PurchaseUpdateView.as_view(), name="update-purchase"),
-    path('purchase<int:pk>/delete/', PurchaseDeleteView.as_view(), name='delete-purchase'),
+    path('purchase/new/<date:date>/', PurchaseCreateView.as_view(), name="create-purchase"),
+    path('purchase/<int:pk>/update/', PurchaseUpdateView.as_view(), name="update-purchase"),
+    path('purchase/<int:pk>/delete/', PurchaseDeleteView.as_view(), name='delete-purchase'),
     
     # Sells
-    path('sells/', SellListView.as_view(), name='sells'),
+    # path('sells/', SellListView.as_view(), name='sells'),
     path('sell/new/', SellCreateView.as_view(), name="create-sell"),
-    path('sell<int:pk>/update/', SellUpdateView.as_view(), name="update-sell"),
-    path('sell<int:pk>/delete/', SellDeleteView.as_view(), name='delete-sell'),
+    path('sell/new/<date:date>/', SellCreateView.as_view(), name="create-sell"),
+    path('sell/<int:pk>/update/', SellUpdateView.as_view(), name="update-sell"),
+    path('sell/<int:pk>/delete/', SellDeleteView.as_view(), name='delete-sell'),
     
 ]

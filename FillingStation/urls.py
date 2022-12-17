@@ -25,7 +25,7 @@ from Transaction.views import DailyTransactionView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', HomeView.as_view(), name="home"), # Currently redirects to 'daily-transactions'
-    path('daily-transactions/', DailyTransactionView.as_view(), name='daily-transactions'),
+    path('transactions/', include("Transaction.urls")),
     path('customer/', include("Customer.urls")),
     path('expenditure/', include("Expenditure.urls")),
     path('owner/', include("Owner.urls")),

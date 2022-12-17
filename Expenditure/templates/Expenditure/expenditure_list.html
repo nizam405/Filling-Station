@@ -21,10 +21,12 @@
     <tr>
         <td>{{ sln }}</td>
         <td>{{object.date}}</td>
-        <td>{{object.name.name}}</td>
+        <td>{{object.group.name}}
+            {% if object.detail %}-{{object.detail}}{% endif %}
+        </td>
         <td>{{object.amount}}</td>
         <td>
-            <a href="{% url 'update-expenditure' pk=object.pk %}" class="p-1"><i class="bi bi-pen text-primary"></i></a>
+            <a href="{% url 'update-expenditure' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-expenditure' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
         </td>
     </tr>

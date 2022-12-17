@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Add/Edit Balance{% endblock title %}
+{% block main %}
+
+{% load bootstrap4 %}
+{% if date %}
+<a href="{% url 'daily-transactions' date %}" class="btn btn-info mb-3">
+    <i class="bi bi-chevron-left pr-2"></i>Back
+</a>
+{% else %}
+<a href="{% url 'cashbalance-list' %}" class="btn btn-info mb-3">
+    <i class="bi bi-chevron-left pr-2"></i>List
+</a>
+{% endif %}
+<h3>Add / Edit Balance</h3>
+<form action="" method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+</form>
+
+{% endblock main %}

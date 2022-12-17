@@ -11,4 +11,9 @@ class PurchaseForm(forms.ModelForm):
     class Meta:
         model = Purchase
         fields = '__all__'
-        widgets = {'date': forms.SelectDateWidget}
+        widgets = {'date': forms.SelectDateWidget}    
+
+    # def __init__(self, *args, **kwargs):
+    #     date = kwargs.pop('date')
+    #     super(PurchaseForm, self).__init__(*args, **kwargs)
+    #     self.fields['date'].initial = date

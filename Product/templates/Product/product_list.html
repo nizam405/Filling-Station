@@ -22,7 +22,7 @@
         <td>{{object.name}}</td>
         <td>{{object.brand}}</td>
         <td>
-            <a href="{% url 'update-product' pk=object.pk %}" class="p-1"><i class="bi bi-pen text-primary"></i></a>
+            <a href="{% url 'update-product' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-product' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
         </td>
     </tr>

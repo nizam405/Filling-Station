@@ -7,7 +7,7 @@
 
 <form method="post">
     {% csrf_token %}
-    <a href="{% url 'purchases' %}" class="btn btn-primary">No. Go back</a>
+    <a href="{% url 'daily-transactions' object.date %}" class="btn btn-primary">No. Go back</a>
     <input type="submit" value="Yes, Delete" class="btn btn-danger">
 </form>
 

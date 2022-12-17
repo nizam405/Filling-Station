@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django import forms
+from datetime import date
 
 from .models import Product, SellingRate, Purchase, Sell
 from .forms import SellForm, PurchaseForm
@@ -52,9 +53,20 @@ class SellListView(ListView):
 class PurchaseListView(ListView):
     model = Purchase
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['date'] = date.today()
+        return context
+
 class PurchaseCreateView(CreateView):
     model = Purchase
     form_class = PurchaseForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'date' in self.kwargs:
+            context['form'].initial = {'date':self.kwargs['date']}
+        return context
 
 class PurchaseUpdateView(UpdateView):
     model = Purchase
@@ -62,15 +74,28 @@ class PurchaseUpdateView(UpdateView):
 
 class PurchaseDeleteView(DeleteView):
     model = Purchase
-    success_url = reverse_lazy('purchases')
+    
+    def get_success_url(self):
+        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})
 
 # Sell
 class SellListView(ListView):
     model = Sell
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['date'] = date.today()
+        return context
+
 class SellCreateView(CreateView):
     model = Sell
     form_class = SellForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'date' in self.kwargs:
+            context['form'].initial = {'date':self.kwargs['date']}
+        return context
 
 class SellUpdateView(UpdateView):
     model = Sell
@@ -78,4 +103,6 @@ class SellUpdateView(UpdateView):
 
 class SellDeleteView(DeleteView):
     model = Sell
-    success_url = reverse_lazy('sells')
+    
+    def get_success_url(self):
+        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})

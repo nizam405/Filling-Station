@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Balance List{% endblock title %}
+{% block main %}
+
+<h3>Balance List</h3>
+{% if object_list %}
+<table class="table table-sm table-striped table-bordered text-center">
+    <tr>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Actions</th>
+    </tr>
+    {% for object in object_list %}
+    <tr>
+        <td>{{object.date}}</td>
+        <td>{{object.amount}}</td>
+        <td>
+            <a href="{% url 'update-cashbalance' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
+            <a href="{% url 'delete-cashbalance' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<div class="text-right">
+    <a href="{% url 'create-cashbalance' %}" class="btn btn-success mb-2">Add Balance</a>
+</div>
+<div class="text-seocndary text-center card p-5 my-5">No results Found !</div>
+{% endif %}
+
+{% endblock main %}

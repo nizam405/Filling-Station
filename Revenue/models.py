@@ -6,6 +6,9 @@ from django.urls import reverse
 class RevenueGroup(models.Model):
     name = models.CharField(max_length=255)
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name
     
@@ -14,12 +17,15 @@ class RevenueGroup(models.Model):
 
 class Revenue(models.Model):
     date = models.DateField(default=timezone.now)
-    group = models.ForeignKey(to=RevenueGroup, on_delete=models.CASCADE)
-    detail = models.CharField(max_length=255)
+    group = models.ForeignKey(to=RevenueGroup, on_delete=models.SET_NULL, null=True)
+    detail = models.CharField(max_length=255, blank=True, null=True)
     amount = models.FloatField(default=0.0)
+
+    class Meta:
+        ordering = ['date']
 
     def __str__(self):
         return f"{self.group.name} - {self.detail} - {self.amount}"
     
     def get_absolute_url(self):
-        return reverse('daily-transactions')
+        return reverse('daily-transactions', kwargs={'date':self.date})

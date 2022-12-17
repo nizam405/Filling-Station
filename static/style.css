@@ -4,7 +4,7 @@
 
 #sidebar {
     width: 250px;
-    display: none;
+    display: block;
 }
 
 #navbar {
@@ -17,12 +17,21 @@
 
 .hide-nav {display: none;}
 
+.action-btns {display: none;}
+
+@media only screen and (max-width: 991px) {
+    #sidebar {
+        display: none;
+    }
+}
+
 @media only screen and (max-width: 640px) {
     .wrapper {
         display: block;
     }
     #sidebar {
         width: 100%;
+        display: none;
     }
     #navbar {
         width: 250px;
@@ -30,4 +39,40 @@
     .hide-nav {
         display: inline;
     }
+}
+
+/* #dr-plus {
+    position: absolute;
+    top: 0;
+    left: 100px;
+    width: 150px;
+    background-color: white;
+} */
+
+#dr-add-btn {
+    display: none;
+    position: absolute;
+    top: 15px;
+    /* left: 100px; */
+    width: 200px;
+    background-color: white;
+    z-index: 999;
+}
+
+/* #cr-plus {
+    position: absolute;
+    top: 0;
+    right: 100px;
+    width: 150px;
+    background-color: white;
+} */
+
+#cr-add-btn {
+    display: none;
+    position: absolute;
+    top: 15px;
+    right: 0px;
+    width: 200px;
+    background-color: white;
+    z-index: 999;
 }

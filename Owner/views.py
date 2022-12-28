@@ -9,9 +9,6 @@ from .forms import WithdrawForm, InvestmentForm
 class OwnerListView(ListView):
     model = Owner
 
-class OwnerDetailView(DetailView):
-    model = Owner
-
 class OwnerCreateView(CreateView):
     model = Owner
     fields = '__all__'

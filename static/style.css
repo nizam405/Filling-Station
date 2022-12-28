@@ -7,12 +7,14 @@
     display: block;
 }
 
+#sidebarCollapse{display: none;}
+
 #navbar {
     width: 150px;
 }
 
 .bangla {
-    font-family: "SolaimanLipi";
+    font-family: "Kalpurush";
 }
 
 .hide-nav {display: none;}
@@ -23,6 +25,8 @@
     #sidebar {
         display: none;
     }
+
+    #sidebarCollapse{display: inline;}
 }
 
 @media only screen and (max-width: 640px) {

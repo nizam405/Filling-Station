@@ -22,6 +22,7 @@ class CashBalanceForm(forms.ModelForm):
         }
 
 class CashBalanceForm2(forms.ModelForm):
+    balance_form = forms.BooleanField(widget=forms.HiddenInput,initial=True)
 
     class Meta:
         model = CashBalance

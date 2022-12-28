@@ -5,7 +5,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django import forms
 from datetime import date
 
-from .models import Product, SellingRate, Purchase, Sell
+from .models import Product, Purchase, Sell
 from .forms import SellForm, PurchaseForm
 
 # Product
@@ -25,29 +25,26 @@ class ProductDeleteView(DeleteView):
     success_url = reverse_lazy('product-list')
 
 # Selling Rate
-class SellingRateListView(ListView):
-    model = SellingRate
+# class SellingRateListView(ListView):
+#     model = SellingRate
 
-class SellingRateCreateView(CreateView):
-    model = SellingRate
-    fields = ['product', 'start_date', 'start_time', 'rate']
+# class SellingRateCreateView(CreateView):
+#     model = SellingRate
+#     fields = ['product', 'start_date', 'start_time', 'rate']
 
-    def get_form(self, form_class=None):
-        form = super(SellingRateCreateView, self).get_form(form_class)
-        form.fields['start_date'].widget = forms.SelectDateWidget()
-        form.fields['start_time'].widget = forms.TimeInput(format='%H:%M:%S')
-        return form
+#     def get_form(self, form_class=None):
+#         form = super(SellingRateCreateView, self).get_form(form_class)
+#         form.fields['start_date'].widget = forms.SelectDateWidget()
+#         form.fields['start_time'].widget = forms.TimeInput(format='%H:%M:%S')
+#         return form
 
-class SellingRateUpdateView(UpdateView):
-    model = SellingRate
-    fields = '__all__'
+# class SellingRateUpdateView(UpdateView):
+#     model = SellingRate
+#     fields = '__all__'
 
-class SellingRateDeleteView(DeleteView):
-    model = SellingRate
-    success_url = reverse_lazy('selling-rates')
-
-class SellListView(ListView):
-    model = Sell
+# class SellingRateDeleteView(DeleteView):
+#     model = SellingRate
+#     success_url = reverse_lazy('selling-rates')
 
 # Purchase
 class PurchaseListView(ListView):

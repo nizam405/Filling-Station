@@ -17,80 +17,91 @@
         </div>
     </div>
 </form>
-<div class="text-center bangla">
-    <h3 class="d-none d-print-block">Pradhan Filling Station</h3>
-    <h3>Daily Transactions</h3>
-    <h5>Date: {{date_str}}</h5>
+<div class="text-center">
+    <h3 class="d-none d-print-block bangla">প্রধান ফিলিং স্টেশন</h3>
+    <h3 class="bangla">দৈনিক লেনদেন</h3>
+    <h5 class="d-none d-print-block"><span class="bangla">তারিখ:</span> {{date_str}}</h5>
 </div>
 
-<div class="row bangla">
+<div class="row">
     {% if active_accounts %}
-    <div class="col-sm-6">
-        <div>Debit
-            {% if can_update %}
+    <div class="col-md-6">
+        <div class="bangla">ডেবিট
+            {% if can_change %}
             <span id="dr-plus" class="d-print-none"><i class="bi bi-plus-circle text-info"></i>
                 <div id="dr-add-btn" class="card">
-                    <a class="d-block nav-link" href="{% url 'create-sell' date %}">Sell</a>
-                    <a class="d-block nav-link" href="{% url 'create-duecollection' date %}">Due Collection</a>
-                    <a class="d-block nav-link" href="{% url 'create-revenue' date %}">Revenue</a>
+                    <a class="d-block nav-link" href="{% url 'create-sell' date %}">মাল বিক্রয়</a>
+                    <a class="d-block nav-link" href="{% url 'create-duecollection' date %}">বকেয়া আদায়</a>
+                    <a class="d-block nav-link" href="{% url 'create-revenue' date %}">আয়</a>
                 </div>
             </span>
             {% endif %}
         </div>
         <table class="table table-sm table-bordered">
-            <tr class="text-center">
-                <th class="w-75">Details</th>
-                <th colspan="2">Amount</th>
+            <tr class="text-center bangla">
+                <th>বিবরন</th>
+                <th>পরিমান</th>
+                <th>টাকা</th>
+                <th>টাকা</th>
             </tr>
             {% if balance_bf_side == 'debit' %}
             <tr>
-                <td>Balance B/F ({{balance_bf_date}})</td>
-                <td></td>
+                <td colspan="3"><span class="bangla">ব্যাল্যান্স</span> B/F ({{balance_bf_date}})</td>
                 <td>{{balance_bf_abs}}</td>
             </tr>
             {% endif %}
 
             {% if sells %}
             <tr>
-                <th colspan="3">Sell
-                    {% if can_update %}
+                <th colspan="4" class="bangla">মাল বিক্রয়
+                    {% if can_change %}
                     <a href="{% url 'create-sell' date %}" class="d-print-none"><i class="bi bi-plus-circle text-info"></i></a>
                     {% endif %}
                 </th>
             </tr>
-            {% for sell in sells %}
-            <tr title="{% if sell.comment %}{{sell.comment}}{% endif %}" class="transaction-entry">
-                <td class="pl-4">{{sell.product.name}} - {{sell.quantity}} Ltr.</td>
-                <td>{{sell.amount}}</td>
-                <td>{% if can_update %}
-                    <div class="d-print-none action-btns">
-                        <a href="{% url 'update-sell' pk=sell.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
-                        <a href="{% url 'delete-sell' pk=sell.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+            {% for obj in sells %}
+            <tr title="{% if obj.comment %}{{obj.comment}}{% endif %}" class="transaction-entry">
+                {% if obj.product.type == "Loose" %}
+                <td class="bangla">
+                    ({{obj.product.get_type_display}}) {{obj.product.name}}
+                </td>
+                <td>{{obj.quantity}} <span class="bangla">লিটার</span></td>
+                {% else %}
+                <td>
+                    {{obj.product.brand}} <span class="bangla">({{obj.product.name}})</span>
+                </td>
+                <td>{{obj.product.capacity}} <span class="bangla">লিটার</span> &times; {{obj.quantity|floatformat:"-2"}} </td>
+                {% endif %}
+                <td>{{obj.amount}}</td>
+                <td>{% if can_change %}
+                    <div class="action-btns">
+                        <a href="{% url 'update-sell' pk=obj.pk %}"><i class="bi bi-pencil-square text-dark"></i></a>
+                        <a href="{% url 'delete-sell' pk=obj.pk %}"><i class="bi bi-trash text-danger"></i></a>
                     </div>
                     {% endif %}
                 </td>
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="2"></td>
+                <td colspan="3"></td>
                 <td>{{total_sell}}</td>
             </tr>
             {% endif %}
 
             {% if duecollections %}
             <tr>
-                <th colspan="3">Due Collection
-                    {% if can_update %}
+                <th colspan="4" class="bangla">বকেয়া আদায়
+                    {% if can_change %}
                     <a href="{% url 'create-duecollection' date %}" class="d-print-none"><i class="bi bi-plus-circle text-info"></i></a>
                     {% endif %}
                 </th>
             </tr>
             {% for duecollection in duecollections %}
             <tr title="{% if duecollection.comment %}{{duecollection.comment}}{% endif %}" class="transaction-entry">
-                <td class="pl-4">{{duecollection.customer.name}}</td>
+                <td colspan="2" class="bangla">{{duecollection.customer.name}}</td>
                 <td>{{duecollection.amount}}</td>
                 <td>
-                    {% if can_update %}
+                    {% if can_change %}
                     <div class="d-print-none action-btns">
                         <a href="{% url 'update-duecollection' pk=duecollection.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
                         <a href="{% url 'delete-duecollection' pk=duecollection.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
@@ -100,27 +111,27 @@
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="2"></td>
+                <td colspan="3"></td>
                 <td>{{total_duecollections}}</td>
             </tr>
             {% endif %}
 
             {% if revenues %}
             <tr>
-                <th colspan="3">Revenue
-                    {% if can_update %}
+                <th colspan="4" class="bangla">আয়
+                    {% if can_change %}
                     <a href="{% url 'create-revenue' date %}" class="d-print-none"><i class="bi bi-plus-circle text-info"></i></a>
                     {% endif %}
                 </th>
             </tr>
             {% for revenue in revenues %}
             <tr class="transaction-entry">
-                <td>{{revenue.group.name}}
+                <td colspan="2" class="bangla">{{revenue.group.name}}
                     {% if revenue.detail %}-{{revenue.detail}}{% endif %}
                 </td>
                 <td>{{revenue.amount}}</td>
                 <td>
-                    {% if can_update %}
+                    {% if can_change %}
                     <div class="d-print-none action-btns">
                         <a href="{% url 'update-revenue' pk=revenue.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
                         <a href="{% url 'delete-revenue' pk=revenue.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
@@ -130,88 +141,98 @@
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="2"></td>
+                <td colspan="3"></td>
                 <td>{{total_revenues}}</td>
             </tr>
             {% endif %}
             <tr>
-                <th colspan="2">Total:</th>
+                <th colspan="3" class="bangla">মোটঃ</th>
                 <th>{{total_debit}}</th>
             </tr>
         </table>
     </div>
 
-    <div class="col-sm-6">
-        <div class="text-right">Credit
-            {% if can_update %}
+    <div class="col-md-6">
+        <div class="text-right bangla">ক্রেডিট
+            {% if can_change %}
             <span id="cr-plus" class="d-print-none"><i class="bi bi-plus-circle text-info"></i>
                 <div id="cr-add-btn" class="card">
-                    <a class="d-block nav-link" href="{% url 'create-purchase' date %}">Purchase</a>
-                    <a class="d-block nav-link" href="{% url 'create-expenditure' date %}">Expenditure</a>
-                    <a class="d-block nav-link" href="{% url 'create-duesell' date %}">Due Sell</a>
-                    <a class="d-block nav-link" href="{% url 'create-withdraw' date %}">Withdraw</a>
+                    <a class="d-block nav-link" href="{% url 'create-purchase' date %}">মাল ক্রয়</a>
+                    <a class="d-block nav-link" href="{% url 'create-expenditure' date %}">ব্যয়</a>
+                    <a class="d-block nav-link" href="{% url 'create-duesell' date %}">বাকি বিক্রয়</a>
+                    <a class="d-block nav-link" href="{% url 'create-withdraw' date %}">উত্তোলন</a>
                 </div>
             </span>
             {% endif %}
         </div>
         <table class="table table-sm table-bordered">
-            <tr class="text-center">
-                <th class="w-75">Details</th>
-                <th colspan="2">Amount</th>
+            <tr class="text-center bangla">
+                <th>বিবরন</th>
+                <th>পরিমান</th>
+                <th>টাকা</th>
+                <th>টাকা</th>
             </tr>
             
             {% if balance_bf_side == 'credit' %}
             <tr>
-                <td>Balance B/F ({{balance_bf_date}})</td>
-                <td></td>
+                <td colspan="3"><span class="bangla">ব্যাল্যান্স</span> B/F ({{balance_bf_date}})</td>
                 <td>{{balance_bf_abs}}</td>
             </tr>
             {% endif %}
 
             {% if purchases %}
             <tr>
-                <th colspan="3">Purchase
-                    {% if can_update %}
+                <th colspan="4" class="bangla">মাল ক্রয়
+                    {% if can_change %}
                     <a href="{% url 'create-purchase' date %}" class="d-print-none"><i class="bi bi-plus-circle text-info"></i></a>
                     {% endif %}
                 </th>
             </tr>
-            {% for purchase in purchases %}
-            <tr title="{% if purchase.comment %}{{purchase.comment}}{% endif %}" class="transaction-entry">
-                <td class="pl-4">{{purchase.product.name}} - {{purchase.quantity}} Ltr.</td>
-                <td>{{purchase.amount}}</td>
+            {% for obj in purchases %}
+            <tr title="{% if obj.comment %}{{obj.comment}}{% endif %}" class="transaction-entry">
+                {% if obj.product.type == "Loose" %}
+                <td class="bangla">
+                    ({{obj.product.get_type_display}}) {{obj.product.name}}
+                </td>
+                <td>{{obj.quantity}} <span class="bangla">লিটার</span></td>
+                {% else %}
                 <td>
-                    {% if can_update %}
-                    <div class="d-print-none action-btns">
-                        <a href="{% url 'update-purchase' pk=purchase.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
-                        <a href="{% url 'delete-purchase' pk=purchase.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+                    {{obj.product.brand}} <span class="bangla">({{obj.product.name}})</span>
+                </td>
+                <td>{{obj.product.capacity}} <span class="bangla">লিটার</span> &times; {{obj.quantity|floatformat:"-2"}} </td>
+                {% endif %}
+                <td>{{obj.amount}}</td>
+                <td>{% if can_change %}
+                    <div class="action-btns">
+                        <a href="{% url 'update-purchase' pk=obj.pk %}"><i class="bi bi-pencil-square text-dark"></i></a>
+                        <a href="{% url 'delete-purchase' pk=obj.pk %}"><i class="bi bi-trash text-danger"></i></a>
                     </div>
                     {% endif %}
                 </td>
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="2"></td>
+                <td colspan="3"></td>
                 <td>{{total_purchase}}</td>
             </tr>
             {% endif %}
 
             {% if expenditures %}
             <tr>
-                <th colspan="3">Expenditure
-                    {% if can_update %}
+                <th colspan="4" class="bangla">ব্যয়
+                    {% if can_change %}
                     <a href="{% url 'create-expenditure' date %}" class="d-print-none"><i class="bi bi-plus-circle text-info"></i></a>
                     {% endif %}
                 </th>
             </tr>
             {% for expenditure in expenditures %}
             <tr class="transaction-entry">
-                <td>{{expenditure.group.name}}
-                    {% if expenditure.detail %}-{{expenditure.detail}}{% endif %}
+                <td colspan="2" class="bangla">{{expenditure.group.name}}
+                    {% if expenditure.detail %}- {{expenditure.detail}}{% endif %}
                 </td>
                 <td>{{expenditure.amount}}</td>
                 <td>
-                    {% if can_update %}
+                    {% if can_change %}
                     <div class="d-print-none action-btns">
                         <a href="{% url 'update-expenditure' pk=expenditure.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
                         <a href="{% url 'delete-expenditure' pk=expenditure.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
@@ -221,25 +242,35 @@
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="2"></td>
+                <td colspan="3"></td>
                 <td>{{total_expenditures}}</td>
             </tr>
             {% endif %}
             
             {% if duesells %}
             <tr>
-                <th colspan="3">Due Sell
-                    {% if can_update %}
+                <th colspan="4" class="bangla">বাকি বিক্রয়
+                    {% if can_change %}
                     <a href="{% url 'create-duesell' date %}" class="d-print-none"><i class="bi bi-plus-circle text-info"></i></a>
                     {% endif %}
                 </th>
             </tr>
-            {% for duesell in duesells %}
+            {% for obj in duesells %}
             <tr title="{% if duesell.comment %}{{duesell.comment}}{% endif %}" class="transaction-entry">
-                <td class="pl-4">{{duesell.customer.name}} - ({{duesell.product.name}}-{{duesell.quantity}} Ltr.)</td>
-                <td>{{duesell.amount}}</td>
+                {% if obj.product.type == "Loose" %}
+                <td class="bangla">
+                    {{obj.customer.name}} - ({{obj.product.get_type_display}}) {{obj.product.name}}
+                </td>
+                <td>{{obj.quantity}} <span class="bangla">লিটার</span></td>
+                {% else %}
                 <td>
-                    {% if can_update %}
+                    <span class="bangla">{{obj.customer.name}}</span> - {{obj.product.brand}} <span class="bangla">({{obj.product.name}})</span>
+                </td>
+                <td>{{obj.product.capacity}} <span class="bangla">লিটার</span> &times; {{obj.quantity|floatformat:"-2"}} </td>
+                {% endif %}
+                <td>{{obj.amount}}</td>
+                <td>
+                    {% if can_change %}
                     <div class="d-print-none action-btns">
                         <a href="{% url 'update-duesell' pk=duesell.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
                         <a href="{% url 'delete-duesell' pk=duesell.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
@@ -249,25 +280,26 @@
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="2"></td>
+                <td colspan="3"></td>
                 <td>{{total_duesells}}</td>
             </tr>
             {% endif %}
             
             {% if withdraws %}
             <tr>
-                <th colspan="3">Withdraw
-                    {% if can_update %}
+                <th colspan="4" class="bangla">উত্তোলন
+                    {% if can_change %}
                     <a href="{% url 'create-withdraw' date %}" class="d-print-none"><i class="bi bi-plus-circle text-info"></i></a>
                     {% endif %}
                 </th>
             </tr>
             {% for withdraw in withdraws %}
-            <tr title="{% if withdraw.comment %}{{withdraw.comment}}{% endif %}" class="transaction-entry">
-                <td class="pl-4">{{withdraw.owner.name}}</td>
+            <tr class="transaction-entry">
+                <td class="bangla">{{withdraw.owner.name}}</td>
+                <td class="bangla">{{withdraw.detail}}</td>
                 <td>{{withdraw.amount}}</td>
                 <td>
-                    {% if can_update %}
+                    {% if can_change %}
                     <div class="d-print-none action-btns">
                         <a href="{% url 'update-withdraw' pk=withdraw.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
                         <a href="{% url 'delete-withdraw' pk=withdraw.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
@@ -277,13 +309,13 @@
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="2"></td>
+                <td colspan="3"></td>
                 <td>{{total_withdraws}}</td>
             </tr>
             {% endif %}
 
             <tr>
-                <th colspan="2">Total:</th>
+                <th colspan="3" class="bangla">মোটঃ</th>
                 <th>{{total_credit}}</th>
             </tr>
         </table>
@@ -301,7 +333,7 @@
     {% else %}
     <div class="col-sm-12">
         <div class="text-center m-5 text-secondary">
-            <div class="display-3">Sorry! No balance in previous day.</div>
+            <div class="display-3 bangla">দুঃখিত! প্রাথমিক ব্যাল্যান্স নেই</div>
             <a href="{% url 'create-cashbalance' date %}" class="btn btn-primary m-3">Add balance</a>
         </div>
     </div>

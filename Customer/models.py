@@ -17,20 +17,19 @@ class GroupofCompany(models.Model):
         return reverse("groupofcompany-list")
 
 class Customer(models.Model):
-    cust_type = models.CharField(verbose_name="Customer Type", choices=customer_type, default=customer_type[0], max_length=20)
     name = models.CharField(max_length=255)
+    cust_type = models.CharField(verbose_name="Customer Type", choices=customer_type, default=customer_type[0], max_length=20)
     group = models.ForeignKey(to=GroupofCompany, on_delete=models.SET_NULL, null=True, blank=True)
-    default_product = models.ForeignKey(to=Product, on_delete=models.SET_NULL, null=True)
-    # default product for something happen in ledger
     mobile = models.CharField(max_length=11, null=True, blank=True)
-    email = models.EmailField(null=True, blank=True)
-    address = models.TextField(null=True, blank=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ['cust_type','group','name']
 
     def __str__(self):
-        return f"{self.name} ({self.cust_type})"
+        txt = self.name
+        if self.group:
+            txt += f" ({self.group})"
+        return txt
     
     def get_absolute_url(self):
         return reverse("customer-list")

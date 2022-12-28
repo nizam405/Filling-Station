@@ -7,10 +7,51 @@
     <i class="bi bi-chevron-left pr-2"></i>Back
 </a>
 <h3>Add / Edit Product</h3>
-<form action="" method="post">
+<form action="" method="post" class="bangla">
     {% csrf_token %}
     {% bootstrap_form form %}
     {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
 </form>
+
+<script>
+    let type = $("#id_type")
+    const brand = $("#id_brand").parent('.form-group')
+    const capacity = $("#id_capacity").parent('.form-group')
+    
+    function hide(){
+        brand.removeClass('d-block');
+        brand.addClass('d-none');
+
+        capacity.removeClass('d-block');
+        capacity.addClass('d-none');
+
+        $("#id_unit").val('Liter')
+    }
+    
+    function show(){
+        brand.removeClass('d-none');
+        brand.addClass('d-block');
+
+        capacity.removeClass('d-none');
+        capacity.addClass('d-block');
+
+        $("#id_unit").val('Piece')
+    }
+    
+    function toggle(){
+        const option = $(type).find(":selected").val()
+        if(option == 'Pack'){
+            show();
+        } else {
+            hide();
+        }
+    }
+    // Default: Hide brand & capacity
+    toggle()
+
+    $("#id_type").change(function(){
+        toggle();
+    });
+</script>
 
 {% endblock main %}

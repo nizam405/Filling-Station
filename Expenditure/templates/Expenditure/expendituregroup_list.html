@@ -1,24 +1,23 @@
 {% extends 'base.html' %}
-{% block title %}Expenditure Groups{% endblock title %}
+{% block title %}খরচের খাত{% endblock title %}
 {% block main %}
 
 {% load extra_tags %}
 
-<h3>Expenditure Groups</h3>
-<div class="text-right">
-    <a href="{% url 'create-expendituregroup' %}" class="btn btn-success mb-2">Add Expenditure</a>
-</div>
+<h3 class="bangla">খরচের খাত
+    <a href="{% url 'create-expendituregroup' %}"><i class="bi bi-plus-circle"></i></a>
+</h3>
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
-        <th>Name</th>
-        <th>Actions</th>
+        <th class="bangla">বিবরণ</th>
+        <th></th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{ sln }}</td>
-        <td>{{object.name}}</td>
+        <td class="bangla text-left">{{object.name}}</td>
         <td>
             <a href="{% url 'update-expendituregroup' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-expendituregroup' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
@@ -26,7 +25,7 @@
     </tr>
     {% endfor %}
     {% else %}
-    <tr><td colspan="3" class="text-seocndary text-center">No results Found !</td><tr>
+    <tr><td colspan="3" class="text-seocndary text-center bangla">কোনো খরচের খাত তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
 

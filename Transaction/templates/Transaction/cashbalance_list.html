@@ -15,7 +15,6 @@
         <td>{{object.date}}</td>
         <td>{{object.amount}}</td>
         <td>
-            <a href="{% url 'update-cashbalance' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-cashbalance' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
         </td>
     </tr>

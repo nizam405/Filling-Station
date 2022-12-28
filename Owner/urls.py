@@ -3,7 +3,7 @@ from Core.converters import DateConverter
 register_converter(DateConverter, 'date')
 
 from .views import (
-    OwnerListView, OwnerDetailView,
+    OwnerListView, 
     OwnerCreateView, OwnerUpdateView, OwnerDeleteView,
     WithdrawListView, WithdrawCreateView, WithdrawUpdateView, WithdrawDeleteView,
     InvestmentListView, InvestmentCreateView, InvestmentUpdateView, InvestmentDeleteView
@@ -12,7 +12,6 @@ from .views import (
 urlpatterns = [
     # Owner
     path('list/', OwnerListView.as_view(), name="owner-list"),
-    path('<int:pk>/detail/', OwnerDetailView.as_view(), name="owner-detail"),
     path('create/', OwnerCreateView.as_view(), name="create-owner"),
     path('<int:pk>/update/', OwnerUpdateView.as_view(), name="update-owner"),
     path('<int:pk>/delete/', OwnerDeleteView.as_view(), name="delete-owner"),

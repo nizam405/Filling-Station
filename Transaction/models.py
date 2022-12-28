@@ -6,7 +6,7 @@ from django.urls import reverse
 # Create your models here.
 class CashBalance(models.Model):
     date = models.DateField(default=timezone.now, unique=True)
-    amount = models.FloatField(default=0)
+    amount = models.IntegerField(default=0)
     
     class Meta:
         ordering = ['date']

@@ -5,17 +5,19 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load bootstrap4 %}
-    {% bootstrap_css %}
-    {% bootstrap_javascript jquery='full' %}
     {% load static %}
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-4.4.1-dist/css/bootstrap.min.css' %}">
+    <script src="{% static 'jquery-3.6.0.min.js' %}"></script>
     <title>{% block title %}{% endblock title %}</title>
 </head>
 <body>
-    <div class="container">
-        <div class="p-2 bg-info d-print-none">
-            <h2><a href="{% url 'home' %}" class="nav-link text-light">Filling Station</a></h2>
+    <div class="container-fluid">
+        <div class="bg-info d-print-none">
+            <h2><a href="{% url 'home' %}" class="nav-link text-light">
+                <i class="bi bi-fuel-pump"></i> Filling Station
+            </a></h2>
         </div>
         <div class="wrapper">
             {% include 'navigation.html' %}
@@ -36,6 +38,7 @@
             </div>
         </div>
     </div>
+    <script src="{% static 'bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
     <script>
         $(document).ready(function(){
             $("#sidebarCollapse").click(function(){

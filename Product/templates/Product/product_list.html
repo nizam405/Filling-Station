@@ -1,26 +1,37 @@
 {% extends 'base.html' %}
-{% block title %}Product List{% endblock title %}
+{% block title %}মালের তালিকা{% endblock title %}
 {% block main %}
 
 {% load extra_tags %}
 
-<h3>Product List</h3>
-<div class="text-right">
-    <a href="{% url 'create-product' %}" class="btn btn-success mb-2">Add Product</a>
-</div>
+<h3 class="bangla">মালের তালিকা
+    <a href="{% url 'create-product' %}"><i class="bi bi-plus-circle"></i></a>
+</h3>
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
-        <th>Name</th>
-        <th>Brand</th>
-        <th>Actions</th>
+        <th class="bangla">ধরন</th>
+        <th class="bangla">মালের নাম</th>
+        <th class="bangla">ব্র্যান্ড ও পরিমান</th>
+        <th class="bangla">ক্রয়মুল্য</th>
+        <th class="bangla">বিক্রয়মুল্য</th>
+        <th></th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{ sln }}</td>
-        <td>{{object.name}}</td>
-        <td>{{object.brand}}</td>
+        <td class="bangla">{{object.get_type_display}}</td>
+        <td class="bangla">{{object.name}}</td>
+        <td class="text-left">{% if object.brand %}
+                {{object.brand}}
+                {% if object.capacity %}
+                    - {{object.capacity}} <span class="bangla">লিটার</span>
+                {% endif %}
+            {% endif %}
+        </td>
+        <td>{{object.purchase_rate}}</td>
+        <td>{{object.selling_rate}}</td>
         <td>
             <a href="{% url 'update-product' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-product' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
@@ -28,7 +39,7 @@
     </tr>
     {% endfor %}
     {% else %}
-    <tr><td colspan="3" class="text-seocndary text-center">No results Found !</td><tr>
+    <tr><td colspan="7" class="text-seocndary text-center bangla">কোনো মাল তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
 

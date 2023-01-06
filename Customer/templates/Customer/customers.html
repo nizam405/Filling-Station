@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}পার্টি{% endblock title %}
+{% block style %}
+<style>
+    .hidden {
+        display: none;
+    }
+    #add-form {
+        font-size: 2rem;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load extra_tags %}
+{% load bootstrap4 %}
+
+<h3 class="bangla">পার্টি
+    <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
+</h3>
+<div id="form-container" class="{{container_class}}">
+    <form method="post" class="row mb-3">
+        {% csrf_token %}
+        <div class="col-md-6 bangla">{% bootstrap_field form.name  layout='horizontal' %}</div>
+        <div class="col-md-6 bangla">{% bootstrap_field form.cust_type  layout='horizontal' %} </div>
+        <div class="col-md-6 bangla">{% bootstrap_field form.group  layout='horizontal' %}</div>
+        <div class="col-md-6 bangla">{% bootstrap_field form.mobile  layout='horizontal' %}</div>
+        <div class="col">
+            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
+            <a href="{% url 'customers' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<table class="table table-sm table-striped table-bordered text-center">
+    <tr>
+        <th>#</th>
+        <th class="bangla">নাম</th>
+        <th class="bangla">মোবাইল</th>
+        <th></th>
+    </tr>
+    {% if object_list %}
+    {% for object,sln in object_list|zip %}
+    <tr>
+        <td>{{ sln }}</td>
+        <td class="bangla text-left">{{object}}</td>
+        <td>{% if object.mobile %}{{object.mobile}}{% else %}-{% endif %}</td>
+        <td>
+            <a href="{% url 'update-customer' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
+            <a href="{% url 'delete-customer' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+        </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr><td colspan="4" class="text-seocndary text-center bangla">কোনো পার্টি তালিকাভুক্ত করা হয়নি!</td><tr>
+    {% endif %}
+</table>
+
+{% load static %}
+<script src="{% static 'form_list.js' %}"></script>
+
+<script>
+    function toggleGroup(){
+        if ($('#id_cust_type').val() == 'Group'){
+            $('#id_group').prop("disabled",false)
+        } else {
+            $('#id_group').prop("disabled",true)
+        }
+    }
+
+    $('#id_cust_type').on('change', toggleGroup)
+    toggleGroup()
+</script>
+
+{% endblock main %}

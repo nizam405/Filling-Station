@@ -5,7 +5,7 @@ from Product.models import Product
 from .choices import customer_type
 
 class GroupofCompany(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name="নাম")
 
     class Meta:
         ordering = ['name']
@@ -14,13 +14,13 @@ class GroupofCompany(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse("groupofcompany-list")
+        return reverse("groupofcompanies")
 
 class Customer(models.Model):
-    name = models.CharField(max_length=255)
-    cust_type = models.CharField(verbose_name="Customer Type", choices=customer_type, default=customer_type[0], max_length=20)
-    group = models.ForeignKey(to=GroupofCompany, on_delete=models.SET_NULL, null=True, blank=True)
-    mobile = models.CharField(max_length=11, null=True, blank=True)
+    name = models.CharField(max_length=255, verbose_name="নাম")
+    cust_type = models.CharField(verbose_name="ধরণ", choices=customer_type, default=customer_type[0], max_length=20)
+    group = models.ForeignKey(to=GroupofCompany, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="গ্রুপ")
+    mobile = models.CharField(max_length=11, null=True, blank=True, verbose_name="মোবাইল")
 
     class Meta:
         ordering = ['cust_type','group','name']
@@ -32,16 +32,16 @@ class Customer(models.Model):
         return txt
     
     def get_absolute_url(self):
-        return reverse("customer-list")
+        return reverse("customers")
         # return reverse("customer-detail", kwargs={"pk": self.pk})
 
 class DueSell(models.Model):
     date = models.DateField(default=timezone.now)
-    customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True)
-    product = models.ForeignKey(to=Product, on_delete=models.SET_NULL, null=True)
-    quantity = models.FloatField(default=0)
-    amount = models.IntegerField(default=0)
-    comment = models.CharField(max_length=255, null=True, blank=True)
+    customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
+    product = models.ForeignKey(to=Product, on_delete=models.SET_NULL, null=True, verbose_name="মাল")
+    quantity = models.FloatField(default=0.0, verbose_name="পরিমাণ")
+    rate = models.FloatField(default=0.0, verbose_name="দর")
+    amount = models.IntegerField(default=0, verbose_name="মোট")
 
     class Meta:
         ordering = ['date']
@@ -54,9 +54,8 @@ class DueSell(models.Model):
     
 class DueCollection(models.Model):
     date = models.DateField(default=timezone.now)
-    customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True)
-    amount = models.IntegerField(default=0)
-    comment = models.CharField(max_length=255, null=True, blank=True)
+    customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
+    amount = models.IntegerField(default=0, verbose_name="টাকা")
 
     class Meta:
         ordering = ['date']

@@ -5,4 +5,5 @@ class ExpenditureForm(forms.ModelForm):
     class Meta:
         model = Expenditure
         fields = '__all__'
-        widgets = {'date': forms.SelectDateWidget}
+        widgets = {'date': forms.HiddenInput}
+        # widgets = {'date': forms.SelectDateWidget}

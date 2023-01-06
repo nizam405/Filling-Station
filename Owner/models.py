@@ -3,8 +3,8 @@ from django.utils import timezone
 from django.urls import reverse
 
 class Owner(models.Model):
-    name = models.CharField(max_length=255)
-    mobile = models.CharField(max_length=11, null=True, blank=True)
+    name = models.CharField(max_length=255, verbose_name="নাম")
+    mobile = models.CharField(max_length=11, null=True, blank=True, verbose_name="মোবাইল")
 
     class Meta:
         ordering = ['name']
@@ -13,7 +13,7 @@ class Owner(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse("owner-list")
+        return reverse("owners")
 
 class Withdraw(models.Model):
     date = models.DateField(default=timezone.now)

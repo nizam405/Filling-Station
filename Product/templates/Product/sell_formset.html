@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}মাল বিক্রয়{% endblock title %}
+{% block style %}
+<style>
+    .form-control, .input-group-text {
+        border-radius: 0;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load bootstrap4 %}
+
+<h3 class="bangla">মাল বিক্রয়</h3>
+<form action="" method="post">
+    {% csrf_token %}
+    <div id="form-container">
+        <div class="row bangla text-center">
+            <div class="col-sm-3">মাল</div>
+            <div class="col-sm-2">পরিমাণ</div>
+            <div class="col-sm-3">দর</div>
+            <div class="col-sm-3">মোট</div>
+            <div class="col-sm-1"></div>
+        </div>
+        {{formset.management_form}}
+        {% for form in formset %}
+        <div class="row forms text-center">
+            {{form.date}}
+            {% comment %} <div class="col-sm-3 pr-0 bangla">{% bootstrap_field form.product show_label=False %}</div> {% endcomment %}
+            <div class="col-sm-3 pr-0 bangla">
+                <select name="form-0-product" id="id_form-0-product" class="form-control">
+                    <option value selected>---------</option>
+                    {% for product in products %}
+                    <option value="{{product.id}}" purchase-rate="{{product.purchase_rate}}" selling-rate="{{product.selling_rate}}">{{product}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm-2 p-0">{% bootstrap_field form.quantity show_label=False %}</div>
+            <div class="col-sm-3 p-0">{% bootstrap_field form.rate show_label=False addon_before="&times;" addon_after="<span class='bangla'>টাকা</span>" %} </div>
+            <div class="col-sm-3 p-0">{% bootstrap_field form.amount show_label=False addon_before="=" addon_after="<span class='bangla'>টাকা</span>" %}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <div id="empty-form" class="d-none">
+        {{empty_form.date}}
+        <div class="col-sm-3 pr-0 bangla">
+            <select name="form-__prefix__-product" id="id_form-__prefix__-product" class="form-control">
+                <option value selected>---------</option>
+                {% for product in products %}
+                <option value="{{product.id}}" purchase-rate="{{product.purchase_rate}}" selling-rate="{{product.selling_rate}}">{{product}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-2 p-0">{% bootstrap_field empty_form.quantity show_label=False %}</div>
+        <div class="col-sm-3 p-0">{% bootstrap_field empty_form.rate show_label=False addon_before="&times;" addon_after="<span class='bangla'>টাকা</span>" %} </div>
+        <div class="col-sm-3 p-0">{% bootstrap_field empty_form.amount show_label=False addon_before="=" addon_after="<span class='bangla'>টাকা</span>" %}</div>
+        <div class="col-sm-1 p-0"><i class="bi bi-x-circle-fill btn btn-sm btn-light text-danger delete-form" ></i></div>
+    </div>
+    {% include 'forms_buttons.html' %}
+</form>
+{% comment %} 
+{% load static %}
+<script src="{% static 'calculate.js' %}"></script> 
+{% endcomment %}
+<script>
+
+    function addForm(e){
+        e.preventDefault()
+        const forms = $(".forms")
+        const container = $("#form-container")
+        const totalForms = $("#id_form-TOTAL_FORMS")
+        const formNum = forms.length
+
+        const emptyForm = $("#empty-form").clone(true)
+        emptyForm.removeClass("d-none")
+        emptyForm.addClass("row forms text-center")
+        emptyForm.removeAttr("id")
+        emptyForm.attr('id',`form-${formNum}`)
+        const regex = RegExp('__prefix__','g')
+        emptyForm.html(emptyForm.html().replace(regex,formNum))
+        container.append(emptyForm)
+        
+        totalForms.attr('value',formNum+1)
+
+        $(".delete-form").click(deleteForm)
+        $("select[id$='-product']").on('change', getSellingRate)
+        $("input[id$='-quantity'], input[id$='-rate']").on('keyup', getAmount)
+    }
+
+    function deleteForm(e){
+        $(this).closest(".forms").remove()
+        $("#id_form-TOTAL_FORMS").attr('value',$(".forms").length)
+    }
+
+    function getSellingRate(){
+        let product = $(this).find(":selected")
+        let parent = $(this).parent().parent()
+        let rate = product.attr("selling-rate")
+        parent.find("input[id$='-rate']").val(rate)
+    }
+
+    function getAmount(){
+        let form = $(this).closest('.forms')
+        console.log(form)
+        let qnt = form.find("input[id$='-quantity']").val()
+        let rate = form.find("input[id$='-rate']").val()
+        form.find("input[id$='-amount']").val(Math.round(qnt*rate))
+    }
+    
+    $("select[id$='-product']").on('change', getSellingRate)
+    $("input[id$='-quantity'], input[id$='-rate']").on('keyup', getAmount)
+    $("#add-form").click(addForm)
+    $(".delete-form").click(deleteForm)
+</script>
+
+{% endblock main %}

@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.urls import reverse
 
 class ExpenditureGroup(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name="নাম")
 
     class Meta:
         ordering = ['name']
@@ -12,13 +12,13 @@ class ExpenditureGroup(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse("expendituregroup-list")
+        return reverse("expenditure-group")
 
 class Expenditure(models.Model):
     date = models.DateField(default=timezone.now)
     group = models.ForeignKey(to=ExpenditureGroup, on_delete=models.SET_NULL, null=True)
     detail = models.CharField(max_length=255, blank=True, null=True)
-    amount = models.FloatField(default=0.0)
+    amount = models.IntegerField(default=0)
 
     class Meta:
         ordering = ['date']

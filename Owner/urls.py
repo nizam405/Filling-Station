@@ -3,23 +3,23 @@ from Core.converters import DateConverter
 register_converter(DateConverter, 'date')
 
 from .views import (
-    OwnerListView, 
-    OwnerCreateView, OwnerUpdateView, OwnerDeleteView,
-    WithdrawListView, WithdrawCreateView, WithdrawUpdateView, WithdrawDeleteView,
+    OwnerView, OwnerUpdateView, OwnerDeleteView,
+    WithdrawUpdateView, WithdrawDeleteView, MultiWithdrawCreateView,
     InvestmentListView, InvestmentCreateView, InvestmentUpdateView, InvestmentDeleteView
 )
 
 urlpatterns = [
     # Owner
-    path('list/', OwnerListView.as_view(), name="owner-list"),
-    path('create/', OwnerCreateView.as_view(), name="create-owner"),
+    # path('list/', OwnerListView.as_view(), name="owner-list"),
+    path('', OwnerView.as_view(), name="owners"),
     path('<int:pk>/update/', OwnerUpdateView.as_view(), name="update-owner"),
     path('<int:pk>/delete/', OwnerDeleteView.as_view(), name="delete-owner"),
 
     # Withdraw
     # path('withdraw/list/', WithdrawListView.as_view(), name="withdraw-list"),
-    path('withdraw/create/', WithdrawCreateView.as_view(), name="create-withdraw"),
-    path('withdraw/create/<date:date>/', WithdrawCreateView.as_view(), name="create-withdraw"),
+    # path('withdraw/create/', WithdrawCreateView.as_view(), name="create-withdraw"),
+    # path('withdraw/create/<date:date>/', WithdrawCreateView.as_view(), name="create-withdraw"),
+    path('withdraw/create/multi/<date:date>/', MultiWithdrawCreateView, name="create-withdraw-multi"),
     path('withdraw/<int:pk>/update/', WithdrawUpdateView.as_view(), name="update-withdraw"),
     path('withdraw/<int:pk>/delete/', WithdrawDeleteView.as_view(), name="delete-withdraw"),
 

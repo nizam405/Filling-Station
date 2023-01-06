@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{% static 'bootstrap-4.4.1-dist/css/bootstrap.min.css' %}">
     <script src="{% static 'jquery-3.6.0.min.js' %}"></script>
     <title>{% block title %}{% endblock title %}</title>
+    {% block style %}{% endblock style %}
 </head>
 <body>
     <div class="container-fluid">
@@ -24,11 +25,11 @@
             <div id="content" class="container-fluid p-0">
                 <nav class="navbar navbar-light bg-light px-0 d-print-none">
                     <div class="mr-auto">
-                        <button type="button" id="sidebarCollapse" class="btn btn-info">
+                        <button type="button" id="sidebarCollapse" class="btn btn-info rounded-0">
                             <i class="bi bi-justify"></i>
                         </button>
-                        <a href="{% url 'daily-transactions' %}" class="btn btn-primary">Daily Transactions</a>
-                        <a href="#" class="btn btn-info">Monthly Ledgers</a>
+                        <a href="{% url 'daily-transactions' %}" class="btn btn-primary rounded-0">Daily Transactions</a>
+                        <a href="{% url 'ledger-list' %}" class="btn btn-info rounded-0">Monthly Ledgers</a>
                     </div>
                 </nav>
                 <div>
@@ -39,6 +40,7 @@
         </div>
     </div>
     <script src="{% static 'bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'htmx.min.js' %}"></script>
     <script>
         $(document).ready(function(){
             $("#sidebarCollapse").click(function(){

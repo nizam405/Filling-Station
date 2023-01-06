@@ -1,4 +1,4 @@
 customer_type = [
-    ("Individual", "Individual"),
-    ("Company under Group", "Company under Group"),
+    ("Individual", "একক প্রতিষ্ঠান"),
+    ("Group", "গ্রুপ"),
 ]

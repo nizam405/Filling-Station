@@ -4,7 +4,7 @@ from django.urls import reverse
 
 # Create your models here.
 class RevenueGroup(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name="নাম")
 
     class Meta:
         ordering = ['name']
@@ -13,13 +13,13 @@ class RevenueGroup(models.Model):
         return self.name
     
     def get_absolute_url(self):
-        return reverse("revenuegroup-list")
+        return reverse("revenue-group")
 
 class Revenue(models.Model):
     date = models.DateField(default=timezone.now)
     group = models.ForeignKey(to=RevenueGroup, on_delete=models.SET_NULL, null=True)
     detail = models.CharField(max_length=255, blank=True, null=True)
-    amount = models.FloatField(default=0.0)
+    amount = models.IntegerField(default=0)
 
     class Meta:
         ordering = ['date']

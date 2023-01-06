@@ -1,45 +1,55 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.forms import formset_factory
 from django.urls import reverse_lazy
-from datetime import date
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from .models import Customer, DueSell, DueCollection, GroupofCompany
-from .forms import DueCollectionForm, DueSellForm
+from .forms import DueCollectionForm, DueSellForm, CustomerForm
+from Product.models import Product
 
 # Group of companies
-class GroupofCompanyListView(ListView):
-    model = GroupofCompany
-
-class GroupofCompanyCreateView(CreateView):
+class GroupofCompaniesView(CreateView, ListView):
     model = GroupofCompany
     fields = '__all__'
+    template_name = 'Customer/groupofcompanies.html'
+    success_url = '.'
 
-class GroupofCompanyUpdateView(UpdateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['container_class'] = 'hidden'
+        return context
+
+class GroupofCompanyUpdateView(UpdateView, ListView):
     model = GroupofCompany
     fields = '__all__'
+    template_name = 'Customer/groupofcompanies.html'
+    success_url = reverse_lazy('groupofcompanies')
 
 class GroupofCompanyDeleteView(DeleteView):
     model = GroupofCompany
-    success_url = reverse_lazy('groupofcompany-list')
+    success_url = reverse_lazy('groupofcompanies')
 
 # Customer
-class CustomerListView(ListView):
-    model = Customer
-
-class CustomerDetailView(DetailView):
-    model = Customer
-
-class CustomerCreateView(CreateView):
+class CustomerView(CreateView, ListView):
     model = Customer
     fields = '__all__'
+    template_name = 'Customer/customers.html'
+    success_url = '.'
 
-class CustomerUpdateView(UpdateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['container_class'] = 'hidden'
+        return context
+
+class CustomerUpdateView(UpdateView, ListView):
     model = Customer
     fields = '__all__'
+    template_name = 'Customer/customers.html'
+    success_url = reverse_lazy('customers')
 
 class CustomerDeleteView(DeleteView):
     model = Customer
-    success_url = reverse_lazy('customer-list')
+    success_url = reverse_lazy('customers')
     
 # Due Collection
 class DueCollectionListView(ListView):
@@ -54,6 +64,27 @@ class DueCollectionCreateView(CreateView):
         if 'date' in self.kwargs:
             context['form'].initial = {'date':self.kwargs['date']}
         return context
+
+def MultiDueCollectionCreateView(request, date):
+    DueCollectionFormSet = formset_factory(DueCollectionForm, extra=0)
+    formset = DueCollectionFormSet(request.POST or None, initial=[{'date':date}])
+    empty_form = formset.empty_form
+    empty_form.initial = {'date':date}
+    template = "Customer/duecollection_formset.html"
+    context = {
+        'formset': formset, 
+        'empty_form': empty_form,
+        'date': date,
+        }
+
+    if request.method == 'POST':
+        if formset.errors:
+            print(formset.errors)
+        if formset.is_valid():
+            for form in formset:
+                form.save()
+            return redirect('daily-transactions', date)
+    return render(request,template,context)
 
 class DueCollectionUpdateView(UpdateView):
     model = DueCollection
@@ -78,6 +109,28 @@ class DueSellCreateView(CreateView):
         if 'date' in self.kwargs:
             context['form'].initial = {'date':self.kwargs['date']}
         return context
+
+def MultiDueSellCreateView(request, date):
+    DueSellFormSet = formset_factory(DueSellForm, extra=0)
+    formset = DueSellFormSet(request.POST or None, initial=[{'date':date}])
+    empty_form = formset.empty_form
+    empty_form.initial = {'date':date}
+    template = "Customer/duesell_formset.html"
+    context = {
+        'formset': formset, 
+        'empty_form': empty_form,
+        'date': date,
+        'products': Product.objects.all()
+        }
+
+    if request.method == 'POST':
+        if formset.errors:
+            print(formset.errors)
+        if formset.is_valid():
+            for form in formset:
+                form.save()
+            return redirect('daily-transactions', date)
+    return render(request,template,context)
 
 class DueSellUpdateView(UpdateView):
     model = DueSell

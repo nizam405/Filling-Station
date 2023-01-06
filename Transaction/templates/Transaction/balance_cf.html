@@ -1,18 +1,19 @@
+{% load extra_tags %}
 <table class="table table-bordered table-striped">
     <tr>
         <th><span class="bangla">ব্যাল্যান্স</span> C/F</th>
         <th>
             {% if saved_balance_cf %}
                 <!-- Has previous save balance? show it -->
-                {{saved_balance_cf}}
+                {{saved_balance_cf|ezynumber}}
             {% else %}
                 <!-- User has right to change -->
-                {{balance_cf_abs}}
+                {{balance_cf_abs|ezynumber}}
                 <!-- Balance not yet saved? save it. -->
                 <form method="post" class="d-inline">
                     {% csrf_token %}
                     {{balance_form}}
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="submit" class="btn btn-primary btn-sm d-print-none">Save</button>
                 </form>
             {% endif %}
         </th>

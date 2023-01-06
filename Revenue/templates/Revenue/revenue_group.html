@@ -1,12 +1,34 @@
 {% extends 'base.html' %}
 {% block title %}আয়ের খাত{% endblock title %}
+{% block style %}
+<style>
+    .hidden {
+        display: none;
+    }
+    #add-form {
+        font-size: 2rem;
+    }
+</style>
+{% endblock style %}
 {% block main %}
 
 {% load extra_tags %}
+{% load bootstrap4 %}
 
 <h3 class="bangla">আয়ের খাত
-    <a href="{% url 'create-revenuegroup' %}"><i class="bi bi-plus-circle"></i></a>
+    <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
 </h3>
+<div id="form-container" class="{{container_class}}">
+    <form method="post" class="row mb-3">
+        {% csrf_token %}
+        <div class="col-sm-8 bangla">{% bootstrap_field form.name  layout='horizontal' %}</div>
+        <div class="col-sm-4">
+            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
+            <a href="{% url 'revenue-group' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
@@ -28,5 +50,8 @@
     <tr><td colspan="3" class="text-seocndary text-center bangla">কোনো আয়ের খাত তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
+
+{% load static %}
+<script src="{% static 'form_list.js' %}"></script>
 
 {% endblock main %}

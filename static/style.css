@@ -13,13 +13,25 @@
     width: 150px;
 }
 
+@font-face {
+    font-family: "kalpurush_static";
+    src: url("kalpurush.ttf") format("truetype");
+}
+
 .bangla {
-    font-family: "Kalpurush";
+    font-family: "kalpurush_static";
 }
 
 .hide-nav {display: none;}
 
 .action-btns {display: none;}
+.group-label .bi {font-size: 1.3rem;}
+
+#cr-plus, #dr-plus {
+    font-size: 1.5rem;
+}
+
+.nowrap {white-space: nowrap;}
 
 @media only screen and (max-width: 991px) {
     #sidebar {
@@ -45,14 +57,6 @@
     }
 }
 
-/* #dr-plus {
-    position: absolute;
-    top: 0;
-    left: 100px;
-    width: 150px;
-    background-color: white;
-} */
-
 #dr-add-btn {
     display: none;
     position: absolute;
@@ -62,14 +66,6 @@
     background-color: white;
     z-index: 999;
 }
-
-/* #cr-plus {
-    position: absolute;
-    top: 0;
-    right: 100px;
-    width: 150px;
-    background-color: white;
-} */
 
 #cr-add-btn {
     display: none;

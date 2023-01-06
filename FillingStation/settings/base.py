@@ -16,6 +16,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'bootstrap4',
+    'django_htmx',
+    
     'Core',
     'Customer',
     'Expenditure',
@@ -23,6 +25,7 @@ INSTALLED_APPS = [
     'Product',
     'Revenue',
     'Transaction',
+    'Ledger',
 ]
 
 MIDDLEWARE = [
@@ -33,6 +36,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
 ]
 
 ROOT_URLCONF = 'FillingStation.urls'
@@ -49,6 +53,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'extra_tags': 'FillingStation.templatetags.extra_tags',
+            }
         },
     },
 ]

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.forms import formset_factory
+from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -52,22 +52,11 @@ class CustomerDeleteView(DeleteView):
     success_url = reverse_lazy('customers')
     
 # Due Collection
-class DueCollectionListView(ListView):
-    model = DueCollection
-
-class DueCollectionCreateView(CreateView):
-    model = DueCollection
-    form_class = DueCollectionForm
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if 'date' in self.kwargs:
-            context['form'].initial = {'date':self.kwargs['date']}
-        return context
-
-def MultiDueCollectionCreateView(request, date):
-    DueCollectionFormSet = formset_factory(DueCollectionForm, extra=0)
-    formset = DueCollectionFormSet(request.POST or None, initial=[{'date':date}])
+def DueCollectionFormsetView(request, date):
+    qs = DueCollection.objects.filter(date=date)
+    extra = 0 if qs.count() > 0 else 1
+    DueCollectionFormSet = modelformset_factory(DueCollection, DueCollectionForm, extra=extra, can_delete=True)
+    formset = DueCollectionFormSet(request.POST or None, queryset=qs)
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Customer/duecollection_formset.html"
@@ -81,38 +70,16 @@ def MultiDueCollectionCreateView(request, date):
         if formset.errors:
             print(formset.errors)
         if formset.is_valid():
-            for form in formset:
-                form.save()
+            formset.save()
             return redirect('daily-transactions', date)
     return render(request,template,context)
 
-class DueCollectionUpdateView(UpdateView):
-    model = DueCollection
-    form_class = DueCollectionForm
-
-class DueCollectionDeleteView(DeleteView):
-    model = DueCollection
-    
-    def get_success_url(self):
-        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})
-
 # Due Sell
-class DueSellListView(ListView):
-    model = DueSell
-
-class DueSellCreateView(CreateView):
-    model = DueSell
-    form_class = DueSellForm
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if 'date' in self.kwargs:
-            context['form'].initial = {'date':self.kwargs['date']}
-        return context
-
-def MultiDueSellCreateView(request, date):
-    DueSellFormSet = formset_factory(DueSellForm, extra=0)
-    formset = DueSellFormSet(request.POST or None, initial=[{'date':date}])
+def DueSellFormsetView(request, date):
+    qs = DueSell.objects.filter(date=date)
+    extra = 0 if qs.count() > 0 else 1
+    DueSellFormSet = modelformset_factory(DueSell, DueSellForm, extra=extra, can_delete=True)
+    formset = DueSellFormSet(request.POST or None, queryset=qs)
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Customer/duesell_formset.html"
@@ -120,24 +87,12 @@ def MultiDueSellCreateView(request, date):
         'formset': formset, 
         'empty_form': empty_form,
         'date': date,
-        'products': Product.objects.all()
         }
 
     if request.method == 'POST':
         if formset.errors:
             print(formset.errors)
         if formset.is_valid():
-            for form in formset:
-                form.save()
+            formset.save()
             return redirect('daily-transactions', date)
     return render(request,template,context)
-
-class DueSellUpdateView(UpdateView):
-    model = DueSell
-    form_class = DueSellForm
-
-class DueSellDeleteView(DeleteView):
-    model = DueSell
-    
-    def get_success_url(self):
-        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})

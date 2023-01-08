@@ -6,4 +6,3 @@ class ExpenditureForm(forms.ModelForm):
         model = Expenditure
         fields = '__all__'
         widgets = {'date': forms.HiddenInput}
-        # widgets = {'date': forms.SelectDateWidget}

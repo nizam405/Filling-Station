@@ -21,8 +21,8 @@
 <div id="form-container" class="{{container_class}}">
     <form method="post" class="row mb-3">
         {% csrf_token %}
+        <div class="col-md-6 bangla">{% bootstrap_field form.item           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6 bangla">{% bootstrap_field form.type           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6 bangla">{% bootstrap_field form.name           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6 bangla">{% bootstrap_field form.brand          layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6 bangla">{% bootstrap_field form.capacity       layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="লিটার" %}</div>
         <div class="col-md-6 bangla">{% bootstrap_field form.purchase_rate  layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="টাকা" %}</div>
@@ -37,8 +37,8 @@
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
+        <th class="bangla">আইটেম</th>
         <th class="bangla">ধরন</th>
-        <th class="bangla">মালের নাম</th>
         <th class="bangla">ব্র্যান্ড ও পরিমান</th>
         <th class="bangla">ক্রয়মুল্য</th>
         <th class="bangla">বিক্রয়মুল্য</th>
@@ -48,8 +48,8 @@
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{ sln }}</td>
+        <td class="bangla">{{object.item}}</td>
         <td class="bangla">{{object.get_type_display}}</td>
-        <td class="bangla">{{object.name}}</td>
         <td class="text-left">{% if object.brand %}
                 {{object.brand}}
                 {% if object.capacity %}
@@ -61,7 +61,7 @@
         <td>{{object.selling_rate}}</td>
         <td>
             <a href="{% url 'update-product' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
-            <a href="{% url 'delete-product' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+            {% comment %} <a href="{% url 'delete-product' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a> {% endcomment %}
         </td>
     </tr>
     {% endfor %}

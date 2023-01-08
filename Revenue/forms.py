@@ -6,4 +6,3 @@ class RevenueForm(forms.ModelForm):
         model = Revenue
         fields = '__all__'
         widgets = {'date': forms.HiddenInput}
-        # widgets = {'date': forms.SelectDateWidget}

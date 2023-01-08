@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect
-from django.forms import formset_factory
+from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from datetime import date
 
 from .models import Product, Purchase, Sell
 from .forms import SellForm, PurchaseForm
@@ -31,27 +30,11 @@ class ProductDeleteView(DeleteView):
     success_url = reverse_lazy('products')
 
 # Purchase
-class PurchaseListView(ListView):
-    model = Purchase
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['date'] = date.today()
-        return context
-
-# class PurchaseCreateView(CreateView):
-#     model = Purchase
-#     form_class = PurchaseForm
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         if 'date' in self.kwargs:
-#             context['form'].initial = {'date':self.kwargs['date']}
-#         return context
-
-def MultiPurchaseCreateView(request, date):
-    PurchaseFormSet = formset_factory(PurchaseForm, extra=0)
-    formset = PurchaseFormSet(request.POST or None, initial=[{'date':date}])
+def PurchaseFormsetView(request, date):
+    qs = Purchase.objects.filter(date=date)
+    extra = 0 if qs.count() > 0 else 1
+    PurchaseFormSet = modelformset_factory(Purchase, form=PurchaseForm, extra=extra, can_delete=True)
+    formset = PurchaseFormSet(request.POST or None, queryset=qs)
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Product/purchase_formset.html"
@@ -59,50 +42,22 @@ def MultiPurchaseCreateView(request, date):
         'formset': formset, 
         'empty_form': empty_form,
         'date': date,
-        'products': Product.objects.all()
         }
 
     if request.method == 'POST':
         if formset.errors:
             print(formset.errors)
         if formset.is_valid():
-            for form in formset:
-                form.save()
+            formset.save()
             return redirect('daily-transactions', date)
     return render(request,template,context)
 
-class PurchaseUpdateView(UpdateView):
-    model = Purchase
-    form_class = PurchaseForm
-
-class PurchaseDeleteView(DeleteView):
-    model = Purchase
-    
-    def get_success_url(self):
-        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})
-
 # Sell
-class SellListView(ListView):
-    model = Sell
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['date'] = date.today()
-        return context
-
-class SellCreateView(CreateView):
-    model = Sell
-    form_class = SellForm
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if 'date' in self.kwargs:
-            context['form'].initial = {'date':self.kwargs['date']}
-        return context
-
-def MultiSellCreateView(request, date):
-    SellFormSet = formset_factory(SellForm, extra=0)
-    formset = SellFormSet(request.POST or None, initial=[{'date':date}])
+def SellFormsetView(request, date):
+    qs = Sell.objects.filter(date=date)
+    extra = 0 if qs.count() > 0 else 1
+    SellFormSet = modelformset_factory(Sell, SellForm, extra=extra, can_delete=True)
+    formset = SellFormSet(request.POST or None, queryset=qs)
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Product/sell_formset.html"
@@ -110,24 +65,12 @@ def MultiSellCreateView(request, date):
         'formset': formset, 
         'empty_form': empty_form,
         'date': date,
-        'products': Product.objects.all()
         }
 
     if request.method == 'POST':
         if formset.errors:
             print(formset.errors)
         if formset.is_valid():
-            for form in formset:
-                form.save()
+            formset.save()
             return redirect('daily-transactions', date)
     return render(request,template,context)
-
-class SellUpdateView(UpdateView):
-    model = Sell
-    form_class = SellForm
-
-class SellDeleteView(DeleteView):
-    model = Sell
-    
-    def get_success_url(self):
-        return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})

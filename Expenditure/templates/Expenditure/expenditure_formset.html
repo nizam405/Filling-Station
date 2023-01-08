@@ -11,23 +11,25 @@
 
 {% load bootstrap4 %}
 
-<h3 class="bangla">ব্যয়সমূহ</h3>
+<h3><span class="bangla">ব্যয়সমূহ - তারিখঃ</span> {{date}}</h3>
 <form action="" method="post">
     {% csrf_token %}
     <div id="form-container">
         <div class="row bangla text-center">
             <div class="col-sm-3">খাত</div>
-            <div class="col-sm-2">বিবরণ</div>
-            <div class="col-sm-3">টাকা</div>
-            <div class="col-sm-1"></div>
+            <div class="col-sm-6">বিবরণ</div>
+            <div class="col-sm-2">টাকা</div>
+            <div class="col-sm-1">বাতিল</div>
         </div>
         {{formset.management_form}}
         {% for form in formset %}
         <div class="row forms text-center">
             {{form.date}}
+            {{form.id}}
             <div class="col-sm-3 bangla">{% bootstrap_field form.group show_label=False %}</div>
             <div class="col-sm-6">{% bootstrap_field form.detail show_label=False %}</div>
             <div class="col-sm-2">{% bootstrap_field form.amount show_label=False %}</div>
+            <div class="col-sm-1">{{form.DELETE}}</div>
         </div>
         {% endfor %}
     </div>
@@ -36,41 +38,14 @@
         <div class="col-sm-3 bangla">{% bootstrap_field empty_form.group show_label=False %}</div>
         <div class="col-sm-6">{% bootstrap_field empty_form.detail show_label=False %}</div>
         <div class="col-sm-2">{% bootstrap_field empty_form.amount show_label=False %}</div>
-        <div class="col-sm-1"><i class="bi bi-x-circle-fill btn btn-sm btn-light text-danger delete-form" ></i></div>
+        <div class="col-sm-1">{{empty_form.DELETE}}</div>
     </div>
     {% include 'forms_buttons.html' %}
 </form>
-{% comment %} 
+
 {% load static %}
-<script src="{% static 'calculate.js' %}"></script> 
-{% endcomment %}
+<script src="{% static 'formset.js' %}"></script> 
 <script>
-
-    function addForm(e){
-        e.preventDefault()
-        const forms = $(".forms")
-        const container = $("#form-container")
-        const totalForms = $("#id_form-TOTAL_FORMS")
-        const formNum = forms.length
-
-        const emptyForm = $("#empty-form").clone(true)
-        emptyForm.removeClass("d-none")
-        emptyForm.addClass("row forms text-center")
-        emptyForm.removeAttr("id")
-        emptyForm.attr('id',`form-${formNum}`)
-        const regex = RegExp('__prefix__','g')
-        emptyForm.html(emptyForm.html().replace(regex,formNum))
-        container.append(emptyForm)
-        
-        totalForms.attr('value',formNum+1)
-        $(".delete-form").click(deleteForm)
-    }
-
-    function deleteForm(e){
-        $(this).closest(".forms").remove()
-        $("#id_form-TOTAL_FORMS").attr('value',$(".forms").length)
-    }
-    
     $("#add-form").click(addForm)
     $(".delete-form").click(deleteForm)
 </script>

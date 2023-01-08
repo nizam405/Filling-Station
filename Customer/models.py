@@ -33,7 +33,6 @@ class Customer(models.Model):
     
     def get_absolute_url(self):
         return reverse("customers")
-        # return reverse("customer-detail", kwargs={"pk": self.pk})
 
 class DueSell(models.Model):
     date = models.DateField(default=timezone.now)

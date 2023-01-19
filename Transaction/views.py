@@ -19,14 +19,6 @@ class DailyTransactionView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        
-        # if context['need_update']:
-        #     balances = CashBalance.objects.filter(date__gte=context['date'])
-        #     diff = context['balance_cf'] - context['saved_balance_cf']
-        #     for balance in balances:
-        #         balance.amount = balance.amount + diff
-        #         balance.save()
-        #         return redirect('.', args={'date':context['date']})
         if 'balance_form' in request.POST:
             if context['balance_form'].is_valid():
                 context['balance_form'].save()
@@ -35,8 +27,6 @@ class DailyTransactionView(TemplateView):
     
     def get(self,request, *args, **kwargs):
         balances = CashBalance.objects.all()
-
-        # Else Show all stuff
         last_balance = balances.last()
         first_balance = balances.first()
         current_day = last_balance.date + datetime.timedelta(days=1)
@@ -123,7 +113,7 @@ class DailyTransactionView(TemplateView):
         balance_bf_last = balances_lt_date.last()
         context['balance_bf'] = balance_bf_last.amount
         context['balance_bf_abs'] = abs(balance_bf_last.amount)
-        context['balance_bf_date'] = balance_bf_last.date.strftime("%d/%m/%Y")
+        context['balance_bf_date'] = balance_bf_last.date
         if context['balance_bf'] < 0:
             context['balance_bf_side'] = 'credit'
         else: context['balance_bf_side'] = 'debit'
@@ -166,90 +156,15 @@ class DailyTransactionView(TemplateView):
                 context['need_update'] = True
 
         # Limit Editing features
-        # context['can_save'] = False
-        # context['can_update'] = False
         context['can_change'] = False
         # same day / today
         if date == balances.last().date + datetime.timedelta(days=1):
-            # context['can_save'] = True
-            # context['can_update'] = True
             context['can_change'] = True
-        # prev day
-        # elif date == balances.last().date:
-        #     context['can_save'] = False
-        #     context['can_update'] = Falseself.
 
         context['balance_form'] = CashBalanceForm2(
             self.request.POST or None, 
             initial={'date':date,'amount':context['balance_cf']})
         return context
-    
-    # def get_balance(self):
-    #     context = dict()
-        
-    #     # Get previous balances only
-    #     balances_lt_date = balances.filter(date__lt=date)
-    #     balance_bf_last = balances_lt_date.last()
-
-    #     # Queries
-    #     sells = Sell.objects.filter(date=date)
-    #     duecollections = DueCollection.objects.filter(date=date)
-    #     revenues = Revenue.objects.filter(date=date)
-
-    #     purchases = Purchase.objects.filter(date=date)
-    #     duesells = DueSell.objects.filter(date=date)
-    #     expenditures = Expenditure.objects.filter(date=date)
-    #     withdraws = Withdraw.objects.filter(date=date)
-
-    #     context['sells'] = sells
-    #     context['total_sell'] = sells.aggregate(Sum('amount'))['amount__sum']
-    #     context['duecollections'] = duecollections
-    #     context['total_duecollections'] = duecollections.aggregate(Sum('amount'))['amount__sum']
-    #     context['revenues'] = revenues
-    #     context['total_revenues'] = revenues.aggregate(Sum('amount'))['amount__sum']
-
-    #     context['purchases'] = purchases
-    #     context['total_purchase'] = purchases.aggregate(Sum('amount'))['amount__sum']
-    #     context['duesells'] = duesells
-    #     context['total_duesells'] = duesells.aggregate(Sum('amount'))['amount__sum']
-    #     context['expenditures'] = expenditures
-    #     context['total_expenditures'] = expenditures.aggregate(Sum('amount'))['amount__sum']
-    #     context['withdraws'] = withdraws
-    #     context['total_withdraws'] = withdraws.aggregate(Sum('amount'))['amount__sum']
-        
-    #     # Balance B/F
-    #     context['balance_bf'] = balance_bf_last.amount
-    #     context['balance_bf_abs'] = abs(balance_bf_last.amount)
-    #     context['balance_bf_date'] = balance_bf_last.date.strftime("%d/%m/%Y")
-    #     if context['balance_bf'] < 0:
-    #         context['balance_bf_side'] = 'credit'
-    #     else: context['balance_bf_side'] = 'debit'
-        
-    #     # Balance C/F
-    #     total_debit = 0.0
-    #     total_credit = 0.0
-    #     if context['balance_bf'] > 0:
-    #         total_debit += context['balance_bf']
-    #     else: total_credit += context['balance_bf']
-        
-    #     if context['total_sell']:
-    #         total_debit += context['total_sell']
-    #     if context['total_duecollections']:
-    #         total_debit += context['total_duecollections']
-    #     if context['total_revenues']:
-    #         total_debit += context['total_revenues']
-    #     context['total_debit'] = total_debit
-
-    #     if context['total_purchase']:
-    #         total_credit += context['total_purchase']
-    #     if context['total_duesells']:
-    #         total_credit += context['total_duesells']
-    #     if context['total_expenditures']:
-    #         total_credit += context['total_expenditures']
-    #     if context['total_withdraws']:
-    #         total_credit += context['total_withdraws']
-    #     context['total_credit'] = total_credit
-    #     return context
 
 class CashBalanceListView(ListView):
     model = CashBalance

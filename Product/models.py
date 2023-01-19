@@ -13,9 +13,10 @@ class Product(models.Model):
     # name =  models.CharField(max_length=100, verbose_name="মালের নাম")
     TYPE_CHOICES = [
         ('Loose', 'লুস'),
+        ('Extra', 'এক্স'),
         ('Pack', 'প্যাক')
     ]
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CHOICES[1], verbose_name="ধরন")
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CHOICES[-1], verbose_name="ধরন")
     brand = models.CharField(max_length=100, blank=True, null=True, verbose_name="ব্র্যান্ড")
     capacity = models.PositiveSmallIntegerField(default=None, null=True, blank=True, verbose_name="পরিমান")
     purchase_rate = models.FloatField(default=None, verbose_name="একক প্রতি ক্রয়মুল্য")
@@ -25,7 +26,7 @@ class Product(models.Model):
         ordering = ['item__name']
 
     def __str__(self):
-        output = self.item.name
+        output = f"{self.item.name} ({self.get_type_display()})"
         if self.brand: output = f"{self.brand} {self.capacity} লিটার"
         return output
     

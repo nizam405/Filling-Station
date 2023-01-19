@@ -1,14 +1,14 @@
 {% load extra_tags %}
 <table class="table table-bordered table-striped">
     <tr>
-        <th><span class="bangla">ব্যাল্যান্স</span> C/F</th>
+        <th>ব্যাল্যান্স সি/এফ</th>
         <th>
             {% if saved_balance_cf %}
                 <!-- Has previous save balance? show it -->
-                {{saved_balance_cf|ezynumber}}
+                {{saved_balance_cf|e2b_digit|ezynumber}}
             {% else %}
                 <!-- User has right to change -->
-                {{balance_cf_abs|ezynumber}}
+                {{balance_cf_abs|e2b_digit|ezynumber}}
                 <!-- Balance not yet saved? save it. -->
                 <form method="post" class="d-inline">
                     {% csrf_token %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}{{customer.name}} - খতিয়ান{% endblock title %}
+{% block style %}
+<style>
+    .full-details {display: none;}
+    #filter select, #buttons button, #buttons a {
+        border-radius:0rem;
+    }
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap4 %}
+{% block main %}
+
+<div class="d-print-none bangla d-flex">
+    {% if filter_form %}
+    <form method="get" class="row" id="filter">
+        <div class="col-md-4 pr-0">{% bootstrap_field filter_form.customer layout='horizontal' %}</div>
+        <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-md-3 p-0" id="buttons">
+            {% bootstrap_button 'Go' button_type='submit' button_class='btn btn-success' %}
+            <a href="{% url 'customer-ledger' pk=customer.pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
+            <a href="{% url 'customer-ledger' pk=customer.pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
+        </div>
+    </form>
+    <div>
+        <div class="d-flex ml-2">
+            <i id="print" class="bi bi-printer btn py-0" style="font-size: 1.5rem" onclick="window.print()"></i>
+            
+            <div class="form-check p-2">
+                <input type="checkbox" id="full-details-check">
+                <label for="full-details-check" class="form-check-label">পূর্ণ বিবরণী</label>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="bangla">
+    <div class="text-center">
+        <h3>{{customer.name}} (দেনাদার) হিসাব</h3>
+        <h4>{% if month %}{{month}} {{year}} এর {% endif %}খতিয়ান</h4>
+    </div>
+
+    {% if has_balance %}
+    <table class="table table-stripped table-bordered table-sm">
+        <tr class="text-center">
+            <th>তারিখ</th>
+            <th>ডিজেল - মোট ডিজেল</th>
+            <th>অন্যান্য</th>
+            <th>মোট বিক্রয়</th>
+            <th>আদায়</th>
+            <th>অবশিষ্ট পাওনা</th>
+        </tr>
+        <tr>
+            <td class="text-center">{{balance_bf_date|e2b_date}}</td>
+            <td colspan="4">ব্যাল্যান্স বি/এফ</td>
+            <td class="text-right">{{balance_bf|e2b_digit|ezynumber}}</td>
+        </tr>
+        {% for obj in qs %}
+        <tr>
+            <td class="text-center">{{obj.date|e2b_date}}</td>
+            <td>
+                {% if 'diesel' in obj %}
+                {{obj.diesel|floatformat:-2|e2b_digit|ezynumber}} লিঃ - {{obj.total_diesel|floatformat:-2|e2b_digit|ezynumber}} লিঃ
+                {% endif %}
+            </td>
+            <td>
+                <span class="full-details">
+                    {% if obj.sells.count > 0 %}
+                    <ul class="no-bullet">
+                        {% for sell in obj.sells %}
+                        <li>
+                        {% if sell.product.type == 'Pack' %}
+                            <span class="eng">{{sell.product.brand}}</span> 
+                            {{sell.product.capacity|floatformat:-2|e2b_digit|ezynumber}} লিঃ : 
+                            {{sell.quantity|floatformat:-2|e2b_digit|ezynumber}} &times; 
+                            {{sell.rate|floatformat:-2|e2b_digit|ezynumber}} = 
+                            {{sell.amount|floatformat:-2|e2b_digit|ezynumber}}
+                        {% else %}
+                            {{sell.product}}: {{sell.quantity|floatformat:-2|e2b_digit|ezynumber}} &times; 
+                            {{sell.rate|floatformat:-2|e2b_digit|ezynumber}} = 
+                            {{sell.amount|floatformat:-2|e2b_digit|ezynumber}}
+                        {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    মোটঃ
+                </span>
+                <span>
+                    {% if 'others' in obj %}
+                    {{obj.others|floatformat:-2|e2b_digit|ezynumber}} টাকা
+                    {% endif %}
+                </span>
+            </td>
+            <td class="text-right">{{obj.amount|e2b_digit|ezynumber}}</td>
+            <td class="text-right">{% if obj.collection %}{{obj.collection|e2b_digit|ezynumber}}{% endif %}</td>
+            <td class="text-right {% if forloop.last %}font-weight-bold{% endif %}">
+                {{obj.balance|e2b_digit|ezynumber}}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h5><u>সার-সংক্ষেপঃ</u>
+        <input type="checkbox" id="summary-check" class="d-print-none" checked>
+    </h5>
+    <div id="summary">
+        <div class="row">
+            <div class="col-sm-6">
+                {% for product in summary %}
+                {% if product.product.type == 'Pack' %}
+                    <span class="eng">{{product.product.brand}}</span> - 
+                    {{product.product.capacity|floatformat:-2|e2b_digit}} লিঃ &times; 
+                    {{product.quantity|floatformat:-2|e2b_digit}}
+                {% else %}
+                    {{product.product}} - 
+                    {{product.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ
+                {% endif %}
+                = {{product.amount|e2b_digit|ezynumber}} টাকা<br>
+                {% endfor %}
+            </div>
+            <div class="col-sm-6">
+                <div>মোট বিক্রয়ঃ {{total_sell|e2b_digit|ezynumber}} টাকা</div>
+                <div>মোট আদায়ঃ {{total_collection|e2b_digit|ezynumber}} টাকা</div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <div class="card">
+        <div class="text-center m-5 text-secondary">
+            <div class="display-3">দুঃখিত! প্রাথমিক ব্যাল্যান্স নেই</div>
+            <a href="{% url 'customer-balance' customer.pk %}" class="btn btn-primary m-3">ব্যাল্যান্স যুক্ত করুন</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    $("#summary-check").on('click', function(){
+        if($(this).is(":checked")){
+            $("#summary").removeClass("d-none")
+            $(this).parent().removeClass("d-print-none")
+        } else {
+            $("#summary").addClass("d-none")
+            $(this).parent().addClass("d-print-none")
+        }
+    })
+    $("#full-details-check").on('click',function(){
+        $(".full-details").toggle()
+    })
+</script>
+
+{% endblock main %}

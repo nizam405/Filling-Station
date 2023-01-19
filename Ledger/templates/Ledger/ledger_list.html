@@ -8,38 +8,59 @@
     <h3 class="bangla">মাসিক খতিয়ান</h3>
 </div>
 
-<div class="row bangla">
-    <div class="col-md-6">
-        <div class="card">
-            <h4 class="card-header">পার্টি হিসাব</h4>
-            <div class="card-body">
-                <a href="#" class="card-link">টপ সীট</a>
-                <ul>
-                    {% for group in group_cumtomer %}
-                    <li><a href="#" class="card-link">{{group.name}}</a>
-                        <ul>
-                            {% for company in group.companies %}
-                            <li><a href="#" class="card-link">{{company.name}}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                    {% endfor %}
-                    {% for cust in individual_customer %}
-                    <li><a href="#" class="card-link">{{cust}}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
+<div class="card-columns bangla">
+    <div class="card">
+        <h4 class="card-header">পার্টি হিসাব</h4>
+        <div class="card-body">
+            <ul>
+                <li><a href="{% url 'customer-balance' %}" class="card-link">ব্যাল্যান্স</a></li>
+            </ul>
+            <a href="#" class="card-link">টপ সীট</a>
+            <ul>
+                {% for group in group_cumtomer %}
+                <li><a href="#" class="card-link">{{group.name}}</a></li>
+                {% endfor %}
+                <hr>
+                {% for cust in individual_customer %}
+                <li><a href="{% url 'customer-ledger' cust.pk %}" class="card-link">{{cust}}</a></li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <h4 class="card-header">মাল</h4>
-            <div class="card-body">
-                <ul>
-                    <li><a href="#" class="card-link">টপ সীট</a></li>
-                    <hr>
-                </ul>
-            </div>
+
+    <div class="card">
+        <h4 class="card-header">মাল</h4>
+        <div class="card-body">
+            <a href="#" class="card-link">টপ সীট</a>
+            <ul>
+                {% for pg in product_group %}
+                <li><a href="#">{{pg.name}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h4 class="card-header">আয়</h4>
+        <div class="card-body">
+            <a href="#" class="card-link">টপ সীট</a>
+            <ul>
+                {% for revenue in revenue_group %}
+                <li><a href="#">{{revenue.name}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h4 class="card-header">ব্যয়</h4>
+        <div class="card-body">
+            <a href="#" class="card-link">টপ সীট</a>
+            <ul>
+                {% for expenditure in expenditure_group %}
+                <li><a href="#">{{expenditure.name}}</a></li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </div>

@@ -22,6 +22,10 @@
     font-family: "kalpurush_static";
 }
 
+.eng {
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+}
+
 .hide-nav {display: none;}
 
 .action-btns {display: none;}
@@ -32,6 +36,12 @@
 }
 
 .nowrap {white-space: nowrap;}
+
+.no-bullet {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
 @media only screen and (max-width: 991px) {
     #sidebar {

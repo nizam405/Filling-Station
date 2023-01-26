@@ -28,7 +28,7 @@ def price_separate(price):
             if length > 7:
                 new_str += price_str[6] + "," + price_str[7:]
     else:
-        return price
+        return sign + price
     rev = sign + new_str[::-1]
     return rev
 
@@ -53,8 +53,11 @@ def month_in_bangla(number):
     return month[1]
 
 @register.filter(name="e2b_date")
-def convert_date_ban(date):
+def convert_date_ban(date,short=False):
     d = pybengali.convert_e2b_digit(date.day)
     m = MONTHS[date.month-1][1]
+    ms = pybengali.convert_e2b_digit(MONTHS[date.month-1][0])
     y = pybengali.convert_e2b_digit(date.year)
+    if short:
+        return f"{d}/{ms}/{y[2:]}"
     return f"{m} - {d}, {y}"

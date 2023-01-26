@@ -10,10 +10,9 @@ class ProductGroup(models.Model):
 
 class Product(models.Model):
     item = models.ForeignKey(ProductGroup, on_delete=models.CASCADE, default=3, verbose_name="আইটেম")
-    # name =  models.CharField(max_length=100, verbose_name="মালের নাম")
+    short_name =  models.CharField(max_length=10, verbose_name="মালের সংক্ষিপ্ত নাম")
     TYPE_CHOICES = [
         ('Loose', 'লুস'),
-        ('Extra', 'এক্স'),
         ('Pack', 'প্যাক')
     ]
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CHOICES[-1], verbose_name="ধরন")
@@ -26,7 +25,7 @@ class Product(models.Model):
         ordering = ['item__name']
 
     def __str__(self):
-        output = f"{self.item.name} ({self.get_type_display()})"
+        output = f"{self.item.name}"
         if self.brand: output = f"{self.brand} {self.capacity} লিটার"
         return output
     
@@ -41,7 +40,7 @@ class Purchase(models.Model):
     amount = models.IntegerField(default=0, verbose_name="মোট")
 
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return f"Date: {self.date}, Name: {self.product.item.name}, Amount: {self.amount}"
@@ -57,10 +56,25 @@ class Sell(models.Model):
     amount = models.IntegerField(default=0, verbose_name="মোট")
 
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return f"Date: {self.date}, Name: {self.product.item.name}, Amount: {self.amount}"
+    
+    def get_absolute_url(self):
+        return reverse("daily-transactions", kwargs={'date':self.date})
+
+class StorageReading(models.Model):
+    date = models.DateField(default=timezone.now, verbose_name="তারিখ")
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, limit_choices_to={'type':'Loose'}, verbose_name="মাল")
+    tank_deep = models.FloatField(default=0, verbose_name="ট্যাংক ডিপ")
+    lorry_load = models.FloatField(default=0, verbose_name="লোড")
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.date}: {self.product} - {self.tank_deep}+{self.lorry_load}"
     
     def get_absolute_url(self):
         return reverse("daily-transactions", kwargs={'date':self.date})

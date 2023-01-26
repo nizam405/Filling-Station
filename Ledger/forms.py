@@ -13,3 +13,12 @@ class CustomerLedgerFilterForm(forms.ModelForm):
     class Meta:
         model = CustomerBalance
         fields = ['customer','month','year']
+
+class GroupofCompanyLedgerFilterForm(forms.ModelForm):
+    class Meta:
+        model = GroupofCompanyBalance
+        fields = ['customer','month','year']
+
+class DateFilterForm(forms.Form):
+    month = forms.ChoiceField(choices=MONTHS, label="মাস")
+    year = forms.ChoiceField(choices=YEAR, label="বছর")

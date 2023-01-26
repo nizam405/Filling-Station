@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}ব্যাল্যান্স সমূহ{% endblock title %}
+{% load extra_tags %}
 {% block main %}
 
 <h3 class="bangla">ব্যাল্যান্স সমূহ</h3>
@@ -12,11 +13,14 @@
     </tr>
     {% for object in object_list %}
     <tr>
-        <td>{{object.date}}</td>
-        <td>{{object.amount}}</td>
+        <td>{{object.date|e2b_date}}</td>
+        <td>{{object.amount|e2b_digit|ezynumber}}</td>
         <td>
             {% if object == object_list.last %}
-            <a href="{% url 'delete-cashbalance' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+            <form method='POST' action="{% url 'delete-cashbalance' pk=object.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn"><i class="bi bi-trash text-danger"></i></button>
+            </form>
             {% endif %}
         </td>
     </tr>

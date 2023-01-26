@@ -22,7 +22,7 @@ class Withdraw(models.Model):
     amount = models.IntegerField(default=0)
 
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return f"{self.date} - {self.owner} - {self.amount}"
@@ -37,7 +37,7 @@ class Investment(models.Model):
     amount = models.IntegerField(default=0)
 
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return f"{self.date} - {self.owner} - {self.amount}"

@@ -15,19 +15,20 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
-<h3 class="bangla">মালের তালিকা
+<h3>মালের তালিকা
     <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
 </h3>
 <div id="form-container" class="{{container_class}}">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-md-6 bangla">{% bootstrap_field form.item           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6 bangla">{% bootstrap_field form.type           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6 bangla">{% bootstrap_field form.brand          layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6 bangla">{% bootstrap_field form.capacity       layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="লিটার" %}</div>
-        <div class="col-md-6 bangla">{% bootstrap_field form.purchase_rate  layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="টাকা" %}</div>
-        <div class="col-md-6 bangla">{% bootstrap_field form.selling_rate   layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="টাকা" %}</div>
-        <div class="col-12 nowrap text-center">
+        <div class="col-md-6">{% bootstrap_field form.item           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.short_name     layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.type           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.brand          layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.capacity       layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="লিটার" %}</div>
+        <div class="col-md-6">{% bootstrap_field form.purchase_rate  layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="টাকা" %}</div>
+        <div class="col-md-6">{% bootstrap_field form.selling_rate   layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="টাকা" %}</div>
+        <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
         </div>
@@ -37,28 +38,31 @@
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
-        <th class="bangla">আইটেম</th>
-        <th class="bangla">ধরন</th>
-        <th class="bangla">ব্র্যান্ড ও পরিমান</th>
-        <th class="bangla">ক্রয়মুল্য</th>
-        <th class="bangla">বিক্রয়মুল্য</th>
+        <th>আইটেম</th>
+        <th>ধরন</th>
+        <th>সংক্ষিপ্ত নাম</th>
+        <th>ব্র্যান্ড ও পরিমান</th>
+        <th>ক্রয়মুল্য</th>
+        <th>বিক্রয়মুল্য</th>
         <th></th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
     <tr>
-        <td>{{ sln }}</td>
-        <td class="bangla">{{object.item}}</td>
-        <td class="bangla">{{object.get_type_display}}</td>
-        <td class="text-left">{% if object.brand %}
-                {{object.brand}}
-                {% if object.capacity %}
-                    - {{object.capacity}} <span class="bangla">লিটার</span>
+        <td>{{ sln|e2b_digit }}</td>
+        <td>{{object.item}}</td>
+        <td>{{object.get_type_display}}</td>
+        <td {% if object.brand %}class="eng"{% endif %}>{{object.short_name}}</td>
+        <td class="text-left">
+            {% if object.brand %}
+                <span class="eng">{{object.brand}}</span>
+                {% if object.capacity|floatformat:-2|e2b_digit %}
+                    - {{object.capacity|floatformat:-2|e2b_digit}} লিটার
                 {% endif %}
             {% endif %}
         </td>
-        <td>{{object.purchase_rate}}</td>
-        <td>{{object.selling_rate}}</td>
+        <td>{{object.purchase_rate|floatformat:-2|e2b_digit}}</td>
+        <td>{{object.selling_rate|floatformat:-2|e2b_digit}}</td>
         <td>
             <a href="{% url 'update-product' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             {% comment %} <a href="{% url 'delete-product' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a> {% endcomment %}
@@ -66,7 +70,7 @@
     </tr>
     {% endfor %}
     {% else %}
-    <tr><td colspan="7" class="text-seocndary text-center bangla">কোনো মাল তালিকাভুক্ত করা হয়নি!</td><tr>
+    <tr><td colspan="7" class="text-seocndary text-center">কোনো মাল তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
 

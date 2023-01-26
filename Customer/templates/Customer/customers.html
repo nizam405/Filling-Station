@@ -22,9 +22,11 @@
     <form method="post" class="row mb-3">
         {% csrf_token %}
         <div class="col-md-6 bangla">{% bootstrap_field form.name  layout='horizontal' %}</div>
+        <div class="col-md-6 bangla">{% bootstrap_field form.short_name  layout='horizontal' %}</div>
         <div class="col-md-6 bangla">{% bootstrap_field form.cust_type  layout='horizontal' %} </div>
         <div class="col-md-6 bangla">{% bootstrap_field form.group  layout='horizontal' %}</div>
         <div class="col-md-6 bangla">{% bootstrap_field form.mobile  layout='horizontal' %}</div>
+        <div class="col-md-6 bangla">{% bootstrap_field form.serial  layout='horizontal' %}</div>
         <div class="col-12 nowrap text-center">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'customers' %}" class="btn btn-secondary">Cancel</a>
@@ -36,7 +38,9 @@
     <tr>
         <th>#</th>
         <th class="bangla">নাম</th>
+        <th class="bangla">সংক্ষিপ্ত নাম</th>
         <th class="bangla">মোবাইল</th>
+        <th class="bangla">ক্রম</th>
         <th></th>
     </tr>
     {% if object_list %}
@@ -45,6 +49,7 @@
         <td>{{ sln }}</td>
         <td class="bangla text-left">{{object}}</td>
         <td>{% if object.mobile %}{{object.mobile}}{% else %}-{% endif %}</td>
+        <td>{{object.serial}}</td>
         <td>
             <a href="{% url 'update-customer' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-customer' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>

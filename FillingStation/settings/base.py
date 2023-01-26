@@ -17,7 +17,7 @@ INSTALLED_APPS = [
     # 'django.forms',
 
     'bootstrap4',
-    'django_htmx',
+    # 'django_htmx',
     
     'Core',
     'Customer',
@@ -37,7 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_htmx.middleware.HtmxMiddleware',
+    # 'django_htmx.middleware.HtmxMiddleware',
 ]
 
 ROOT_URLCONF = 'FillingStation.urls'

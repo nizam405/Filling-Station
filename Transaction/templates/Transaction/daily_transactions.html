@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}Daily Transactions{% endblock title %}
-
+ 
 {% block style %}
 <style>
     #date-filter .bootstrap4-multi-input div.col-4 {
@@ -22,7 +22,7 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
  
-<div class="row container-fluid px-0 d-print-none">
+<div class="row container-fluid px-0 d-print-none eng">
     <div class="col-md-9">
         <form method="get" class="row">
             <div class="col-sm-8 col-lg-8" id="date-filter">
@@ -36,26 +36,29 @@
         </form>
     </div>
     <div class="col-md-3">
-        <div class="row">
-            <div class="col-md-9">
-                <div class="form-check p-2">
-                    <input type="checkbox" class="form-check-input" id="show-subtotal" checked=True >
-                    <label for="show-subtotal" class="form-check-label">Show Subtotal</label>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <i id="print" class="bi bi-printer btn p-0" style="font-size: 1.5rem" onclick="window.print()"></i>
-            </div>
+        <div class="form-check p-2 ml-2">
+            <input type="checkbox" class="form-check-input" id="show-subtotal" checked=True >
+            <label for="show-subtotal" class="form-check-label">Show Subtotal</label>
         </div>
     </div>
 </div>
-<div class="text-center bangla">
+<div class="d-print-none">
+    <i class="text-info">মজুদ মালের পরিমানঃ</i>
+    {% if storages.count == 0 %}<span class="text-danger">তালিকাভুক্ত হয়নি</span>{% endif %}
+    {% for store in storages %}
+    {{store.product}}: {{store.tank_deep|floatformat:-2|e2b_digit|ezynumber}} + 
+    {{store.lorry_load|floatformat:-2|e2b_digit|ezynumber}} লিঃ
+    {% if not forloop.last %}, {% endif %}
+    {% endfor %}
+    <a href="{% url 'daily-product-storage' date %}"><i class="bi bi-pencil-square text-info"></i></a>
+</div>
+<div class="text-center">
     <h3 class="d-none d-print-block">প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
     <h3>দৈনিক লেনদেন</h3>
     <h5 class="d-none d-print-block">তারিখ: {{date|e2b_date}}</h5>
 </div>
 
-<div class="row bangla" id="transaction-table">
+<div class="row" id="transaction-table">
     {% if active_accounts %}
     <div class="col-md-6 pr-1">
         <div>ডেবিট</div>

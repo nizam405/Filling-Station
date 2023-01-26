@@ -1,12 +1,12 @@
-from django.db import models
-from django.contrib.auth.models import User
-from .choices import current_year
+# from django.db import models
+# from django.contrib.auth.models import User
+# from .choices import current_year
 
-class Year(models.Model):
-    year = models.IntegerField(default=current_year)
+# class Year(models.Model):
+#     year = models.IntegerField(default=current_year)
 
-    def __str__(self):
-        return self.year
+#     def __str__(self):
+#         return self.year
 
 # class Settings(User):
 #     business_name = models.CharField(max_length=255)

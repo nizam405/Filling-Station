@@ -15,13 +15,13 @@
 <div class="d-print-none bangla d-flex">
     {% if filter_form %}
     <form method="get" class="row" id="filter">
-        <div class="col-md-4 pr-0">{% bootstrap_field filter_form.customer layout='horizontal' %}</div>
-        <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
-        <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
-        <div class="col-md-3 p-0" id="buttons">
+        <div class="col-sm-4 pr-0">{% bootstrap_field filter_form.customer layout='horizontal' %}</div>
+        <div class="col-sm-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-sm-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-sm-3 p-0" id="buttons">
             {% bootstrap_button 'Go' button_type='submit' button_class='btn btn-success' %}
-            <a href="{% url 'customer-ledger' pk=customer.pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
-            <a href="{% url 'customer-ledger' pk=customer.pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
+            <a href="{% url 'groupofcompany-ledger' pk=customer.pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
+            <a href="{% url 'groupofcompany-ledger' pk=customer.pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
         </div>
     </form>
     <div class="ml-3">
@@ -43,53 +43,39 @@
     <table class="table table-stripped table-bordered table-sm">
         <tr class="text-center">
             <th>তারিখ</th>
-            <th class="full-details">বিবরণ</th>
-            <th class="short-details">ডিজেল - মোট ডিজেল</th>
-            <th class="short-details">অন্যান্য</th>
+            {% for sub_company in sub_companies %}
+            <th>{{sub_company.short_name}}</th>
+            {% endfor %}
             <th>মোট বিক্রয়</th>
             <th>আদায়</th>
             <th>পাওনা</th>
         </tr>
         <tr>
-            <td class="text-center">{{balance_bf_date|e2b_date}}</td>
-            <td colspan="4" id="balance-bf">ব্যাল্যান্স বি/এফ</td>
+            <td class="text-center">{{balance_bf_date|e2b_date:True}}</td>
+            <td colspan="{{sub_companies.count|add:2}}">ব্যাল্যান্স বি/এফ</td>
             <td class="text-right">{{balance_bf|e2b_digit|ezynumber}}</td>
         </tr>
         {% for obj in qs %}
         <tr>
-            <td class="text-center">{{obj.date|e2b_date}}</td>
-            <td class="short-details">
-                {% if 'diesel' in obj %}
-                {{obj.diesel|floatformat:-2|e2b_digit|ezynumber}} লিঃ - {{obj.total_diesel|floatformat:-2|e2b_digit|ezynumber}} লিঃ
-                {% endif %}
-            </td>
-            <td class="full-details">
-                {% if obj.sells.count > 0 %}
-                <ul class="no-bullet">
-                    {% for sell in obj.sells %}
-                    <li>
-                    {% if sell.product.type == 'Pack' %}
-                        <span class="eng">{{sell.product.brand}}</span> 
-                        {{sell.product.capacity|floatformat:-2|e2b_digit|ezynumber}} লিঃ : 
-                        {{sell.quantity|floatformat:-2|e2b_digit|ezynumber}} &times; 
-                        {{sell.rate|floatformat:-2|e2b_digit|ezynumber}} = 
-                        {{sell.amount|floatformat:-2|e2b_digit|ezynumber}}
-                    {% else %}
-                        {{sell.product}}: {{sell.quantity|floatformat:-2|e2b_digit|ezynumber}} &times; 
-                        {{sell.rate|floatformat:-2|e2b_digit|ezynumber}} = 
-                        {{sell.amount|floatformat:-2|e2b_digit|ezynumber}}
-                    {% endif %}
-                    </li>
+            <td class="text-center">{{obj.date|e2b_date:True}}</td>
+            {% for sub_company in obj.sub_company_data %}
+            <td>
+                <span class="full-details">
+                    {% if sub_company.amount %}
+                    {% for sell in sub_company.sells %}
+                    <div>{{sell.product.short_name}}
+                    {{sell.quantity|floatformat:-2|e2b_digit|ezynumber}}লিঃ =
+                    {{sell.amount|floatformat:-2|e2b_digit|ezynumber}}</div>
                     {% endfor %}
-                </ul>
+                    মোটঃ 
+                    {% endif %}
+                </span>
+                {% if sub_company.amount %}
+                {{sub_company.amount|floatformat:-2|e2b_digit|ezynumber}}
                 {% endif %}
             </td>
-            <td class="short-details">
-                {% if 'others' in obj %}
-                {{obj.others|floatformat:-2|e2b_digit|ezynumber}} টাকা
-                {% endif %}
-            </td>
-            <td class="text-right">{{obj.amount|e2b_digit|ezynumber}}</td>
+            {% endfor %}
+            <td class="text-right">{% if obj.amount %}{{obj.amount|e2b_digit|ezynumber}}{% endif %}</td>
             <td class="text-right">{% if obj.collection %}{{obj.collection|e2b_digit|ezynumber}}{% endif %}</td>
             <td class="text-right {% if forloop.last %}font-weight-bold{% endif %}">
                 {{obj.balance|e2b_digit|ezynumber}}
@@ -127,7 +113,7 @@
     <div class="card">
         <div class="text-center m-5 text-secondary">
             <div class="display-3">দুঃখিত! প্রাথমিক ব্যাল্যান্স নেই</div>
-            <a href="{% url 'customer-balance' customer.pk %}" class="btn btn-primary m-3">ব্যাল্যান্স যুক্ত করুন</a>
+            <a href="{% url 'groupofcompany-balance' customer.pk %}" class="btn btn-primary m-3">ব্যাল্যান্স যুক্ত করুন</a>
         </div>
     </div>
     {% endif %}
@@ -144,15 +130,7 @@
         }
     })
     $("#full-details-check").on('click',function(){
-        if($(this).is(":checked")){
-            $(".full-details").show()
-            $(".short-details").hide()
-            $("#balance-bf").attr("colspan",3)
-        } else {
-            $(".full-details").hide()
-            $(".short-details").show()
-            $("#balance-bf").attr("colspan",4)
-        }
+        $(".full-details").toggle()
     })
 </script>
 

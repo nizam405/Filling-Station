@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}গ্রুপ অফ কোম্পানি ব্যাল্যান্স{% endblock title %}
+{% block title %}মজুদ মাল{% endblock title %}
 {% block style %}
 <style>
     .hidden {
@@ -15,19 +15,19 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
-<h3>গ্রুপ অফ কোম্পানি ব্যাল্যান্স
+<h3>মজুদ মাল
     <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
 </h3>
 <div id="form-container" class="{{container_class}}">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-sm-6">{% bootstrap_field form.month layout='horizontal' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.year layout='horizontal' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.customer layout='horizontal' %} </div>
-        <div class="col-sm-6">{% bootstrap_field form.amount layout='horizontal' addon_after="টাকা"%}</div>
+        <div class="col-sm-6">{% bootstrap_field form.month  layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.year  layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.product  layout='horizontal' %} </div>
+        <div class="col-sm-6">{% bootstrap_field form.amount  layout='horizontal' addon_after="লিটার"%}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
-            <a href="{% url 'customer-balance' %}" class="btn btn-secondary">Cancel</a>
+            <a href="{% url 'product-storage' %}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
@@ -36,24 +36,20 @@
     <tr>
         <th>#</th>
         <th>মাস ও বছর</th>
-        <th>গ্রুপ অফ কোম্পানি</th>
+        <th>মাল</th>
         <th>পরিমাণ</th>
-        <th></th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{sln|e2b_digit}}</td>
         <td class="text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
-        <td>{{object.customer}}</td>
+        <td>{{object.product}}</td>
         <td>{{object.amount|e2b_digit|ezynumber}}</td>
-        <td>
-            <a href="{% url 'delete-groupofcompany-balance' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
-        </td>
     </tr>
     {% endfor %}
     {% else %}
-    <tr><td colspan="5" class="text-seocndary text-center bangla">কোনো পার্টির ব্যাল্যান্স তালিকাভুক্ত করা হয়নি!</td><tr>
+    <tr><td colspan="5" class="text-seocndary text-center">কোনো মজুদ মাল তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
 

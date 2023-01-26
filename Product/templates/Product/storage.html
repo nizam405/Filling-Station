@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}মজুদ মাল{% endblock title %}
+{% block style %}
+<style>
+    .hidden {
+        display: none;
+    }
+    #add-form {
+        font-size: 2rem;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load extra_tags %}
+{% load bootstrap4 %}
+
+<h3>দৈনিক মজুদ মালের হিসাব</h3>
+<div id="form-container">
+    <form method="post" class="row mb-3">
+        {% csrf_token %}
+        <div class="col-sm-6">{% bootstrap_field form.date  layout='horizontal' label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.product  layout='horizontal'  label_class='col-sm-4' field_class='col-sm-8' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.tank_deep  layout='horizontal' label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.lorry_load  layout='horizontal' addon_after="লিটার" label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
+        <div class="col-12 nowrap text-center eng">
+            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
+            {% if date %}
+            <a href="{% url 'daily-product-storage' date %}" class="btn btn-secondary">Cancel</a>
+            {% else %}
+            <a href="{% url 'daily-product-storage' %}" class="btn btn-secondary">Cancel</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<table class="table table-sm table-striped table-bordered text-center">
+    <tr>
+        <th>তারিখ</th>
+        <th>মাল</th>
+        <th>ট্যাংক ডিপ</th>
+        <th>লোড</th>
+        <th>মোট মজুদ</th>
+        <th></th>
+    </tr>
+    {% if object_list %}
+    {% for object in object_list %}
+    <tr>
+        <td>{{object.date|e2b_date}}</td>
+        <td>{{object.product}}</td>
+        <td>{{object.tank_deep|floatformat:-2|e2b_digit|ezynumber}} লিটার</td>
+        <td>{{object.lorry_load|floatformat:-2|e2b_digit|ezynumber}} লিটার</td>
+        <td>{{object.tank_deep|add:object.lorry_load|e2b_digit|ezynumber}} লিটার</td>
+        <td>
+            {% if object.date == object_list.last.date %}
+            <form method="POST" action="{% url 'delete-daily-product-storage' pk=object.pk %}">
+                {% csrf_token %}
+                {% if date %}
+                <a href="{% url 'update-daily-product-storage' pk=object.pk date=date %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
+                {% else %}
+                <a href="{% url 'update-daily-product-storage' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
+                {% endif %}
+                <button type="submit" class="btn"><i class="bi bi-trash text-danger"></i></button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr><td colspan="5" class="text-seocndary text-center">কোনো মজুদ মাল তালিকাভুক্ত করা হয়নি!</td><tr>
+    {% endif %}
+</table>
+
+{% comment %} {% load static %}
+<script src="{% static 'form_list.js' %}"></script> {% endcomment %}
+
+{% endblock main %}

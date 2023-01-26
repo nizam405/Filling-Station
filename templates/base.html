@@ -24,15 +24,20 @@
             {% include 'navigation.html' %}
             <div id="content" class="container-fluid p-0">
                 <nav class="navbar navbar-light bg-light px-0 d-print-none">
-                    <div class="mr-auto">
+                    <div>
                         <button type="button" id="sidebarCollapse" class="btn btn-info rounded-0">
                             <i class="bi bi-justify"></i>
                         </button>
                         <a href="{% url 'daily-transactions' %}" class="btn btn-primary rounded-0">Daily Transactions</a>
+                        {% if month and year %}
+                        <a href="{% url 'ledger-list' month year %}" class="btn btn-info rounded-0">Monthly Ledgers</a>
+                        {% else %}
                         <a href="{% url 'ledger-list' %}" class="btn btn-info rounded-0">Monthly Ledgers</a>
+                        {% endif %}
+                        <i class="bi bi-printer btn py-0" style="font-size: 1.5rem" onclick="window.print()"></i>
                     </div>
                 </nav>
-                <div class="mb-5">
+                <div class="mb-5 bangla" id="main">
                     {% block main %}
                     {% endblock main %}
                 </div>

@@ -1,16 +1,23 @@
-from django.urls import path, register_converter
+from django.urls import path, register_converter, include
 from Core.converters import DateConverter
 register_converter(DateConverter, 'date')
 
 from .views import (
-    ProductView, ProductUpdateView, ProductDeleteView, 
+    ProductView, ProductUpdateView, 
+    StorageReadingView, StorageReadingtUpdateView, StorageReadingDeleteView,
     SellFormsetView, PurchaseFormsetView,
     )
 
 urlpatterns = [
     path('', ProductView.as_view(), name='products'),
-    path('product/<int:pk>/update/', ProductUpdateView.as_view(), name="update-product"),
-    path('product/<int:pk>/delete/', ProductDeleteView.as_view(), name='delete-product'),
-    path('product/purchase/<date:date>/', PurchaseFormsetView, name="purchase"),
-    path('product/sell/<date:date>/', SellFormsetView, name="sell"),
+    path('<int:pk>/update/', ProductUpdateView.as_view(), name="update-product"),
+    path('purchase/<date:date>/', PurchaseFormsetView, name="purchase"),
+    path('sell/<date:date>/', SellFormsetView, name="sell"),
+    path('storage/', include([
+        path('', StorageReadingView.as_view(), name='daily-product-storage'),
+        path('<date:date>/', StorageReadingView.as_view(), name='daily-product-storage'),
+        path('<int:pk>/update/', StorageReadingtUpdateView.as_view(), name='update-daily-product-storage'),
+        path('<date:date>/<int:pk>/update/', StorageReadingtUpdateView.as_view(), name='update-daily-product-storage'),
+        path('<int:pk>/delete/', StorageReadingDeleteView.as_view(), name='delete-daily-product-storage'),
+    ])),
 ]

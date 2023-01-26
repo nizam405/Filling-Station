@@ -6,7 +6,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
 from django.db.models import Sum
 
-from Product.models import Sell, Purchase
+from Product.models import Sell, Purchase, StorageReading
 from Customer.models import DueSell, DueCollection
 from Expenditure.models import Expenditure
 from Revenue.models import Revenue
@@ -55,7 +55,6 @@ class DailyTransactionView(TemplateView):
 
         return super().get(request, *args, **kwargs)
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)        
         today = datetime.date.today()
@@ -91,6 +90,7 @@ class DailyTransactionView(TemplateView):
         duesells = DueSell.objects.filter(date=date)
         expenditures = Expenditure.objects.filter(date=date)
         withdraws = Withdraw.objects.filter(date=date)
+        storages = StorageReading.objects.filter(date=date)
 
         context['sells'] = sells
         context['total_sell'] = sells.aggregate(Sum('amount'))['amount__sum']
@@ -107,6 +107,7 @@ class DailyTransactionView(TemplateView):
         context['total_expenditures'] = expenditures.aggregate(Sum('amount'))['amount__sum']
         context['withdraws'] = withdraws
         context['total_withdraws'] = withdraws.aggregate(Sum('amount'))['amount__sum']
+        context['storages'] = storages
         
         # Balance B/F
         balances_lt_date = balances.filter(date__lt=date)
@@ -158,7 +159,8 @@ class DailyTransactionView(TemplateView):
         # Limit Editing features
         context['can_change'] = False
         # same day / today
-        if date == balances.last().date + datetime.timedelta(days=1):
+        next_date = balances.last().date + datetime.timedelta(days=1)
+        if date == next_date:
             context['can_change'] = True
 
         context['balance_form'] = CashBalanceForm2(

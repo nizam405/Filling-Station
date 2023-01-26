@@ -4,8 +4,8 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .models import Product, Purchase, Sell
-from .forms import SellForm, PurchaseForm
+from .models import Product, Purchase, Sell, StorageReading
+from .forms import SellForm, PurchaseForm, StorageReadingForm
 
 # Product
 class ProductView(CreateView, ListView):
@@ -28,6 +28,56 @@ class ProductUpdateView(UpdateView, ListView):
 class ProductDeleteView(DeleteView):
     model = Product
     success_url = reverse_lazy('products')
+
+# Storage Reading
+class StorageReadingView(CreateView, ListView):
+    model = StorageReading
+    template_name = 'Product/storage.html'
+    success_url = '.'
+    fields = '__all__'
+    
+    def get_queryset(self):
+        if 'date' in self.kwargs:
+            date = self.kwargs['date']
+            queryset = self.model.objects.filter(date=date)
+            return queryset
+        return super().get_queryset()
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if 'date' in self.kwargs:
+            initial.update({'date':self.kwargs['date']})
+        return initial
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'date' in self.kwargs:
+            context["date"] = self.kwargs['date']
+        return context
+    
+
+class StorageReadingtUpdateView(UpdateView, ListView):
+    model = StorageReading
+    template_name = 'Product/storage.html'
+    success_url = reverse_lazy('daily-product-storage')
+    fields = '__all__'
+    
+    def get_queryset(self):
+        if 'date' in self.kwargs:
+            date = self.kwargs['date']
+            queryset = self.model.objects.filter(date=date)
+            return queryset
+        return super().get_queryset()
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'date' in self.kwargs:
+            context["date"] = self.kwargs['date']
+        return context
+
+class StorageReadingDeleteView(DeleteView):
+    model = StorageReading
+    success_url = reverse_lazy('daily-product-storage')
 
 # Purchase
 def PurchaseFormsetView(request, date):

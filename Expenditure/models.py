@@ -21,7 +21,7 @@ class Expenditure(models.Model):
     amount = models.IntegerField(default=0)
 
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
 
     def __str__(self):
         return f"{self.group.name} - {self.detail} - {self.amount}"

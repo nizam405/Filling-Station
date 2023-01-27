@@ -5,7 +5,7 @@ register_converter(DateConverter, 'date')
 from .views import (
     ProductView, ProductUpdateView, 
     StorageReadingView, StorageReadingtUpdateView, StorageReadingDeleteView,
-    SellFormsetView, PurchaseFormsetView,
+    SellFormsetView, PurchaseFormsetView
     )
 
 urlpatterns = [

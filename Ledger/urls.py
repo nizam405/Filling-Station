@@ -2,17 +2,18 @@ from django.urls import path, register_converter, include
 from Core.converters import DateConverter
 register_converter(DateConverter, 'date')
 
-from .views.main import LedgerList
+from .views.main import LedgerList, saveLedger
 from .views.customer_views import (
     CustomerLedger, GroupofCompanyLedger,
     CustomerBalanceView, deleteCustomerBalance,
     GroupofCompanyBalanceView, deleteGroupofCompanyBalance,
 )
-from .views.product_views import StorageView
+from .views.product_views import StorageView, ProductLedger
 
 urlpatterns = [
     path('', LedgerList.as_view(), name='ledger-list'),
     path('<int:month>-<int:year>/', LedgerList.as_view(), name='ledger-list'),
+    path('<date:date>/save/', saveLedger, name='save-ledger'),
     path('customer/', include([
         path('<int:pk>/', CustomerLedger.as_view(), name='customer-ledger'),
         path('<int:pk>/<int:month>-<int:year>/', CustomerLedger.as_view(), name='customer-ledger'),
@@ -31,8 +32,13 @@ urlpatterns = [
             path('<int:pk>/delete/', deleteGroupofCompanyBalance, name='delete-groupofcompany-balance'),
         ])),
     ])),
-    path('product', include([
+    path('product/', include([
         path('storage/', StorageView.as_view(), name='product-storage'),
-        path('storage/<int:product_id>', StorageView.as_view(), name='product-storage'),
+        path('storage/<int:product_id>/', StorageView.as_view(), name='product-storage'),
+        path('storage/<int:product_id>/<int:month>-<int:year>/', StorageView.as_view(), name='product-storage'),
+        path('ledger/',include([
+            path('<int:pk>', ProductLedger.as_view(), name='product-ledger'),
+            path('<int:pk>/<int:month>-<int:year>/', ProductLedger.as_view(), name='product-ledger'),
+        ])),
     ])),
 ]

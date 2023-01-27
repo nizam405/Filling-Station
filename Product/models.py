@@ -2,31 +2,25 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 
-class ProductGroup(models.Model):
-    name = models.CharField(max_length=100, verbose_name="মালের নাম")
-
-    def __str__(self):
-        return self.name
-
 class Product(models.Model):
-    item = models.ForeignKey(ProductGroup, on_delete=models.CASCADE, default=3, verbose_name="আইটেম")
+    name = models.CharField(max_length=100, blank=True, null=True, verbose_name="মালের নাম")
     short_name =  models.CharField(max_length=10, verbose_name="মালের সংক্ষিপ্ত নাম")
     TYPE_CHOICES = [
         ('Loose', 'লুস'),
         ('Pack', 'প্যাক')
     ]
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CHOICES[-1], verbose_name="ধরন")
-    brand = models.CharField(max_length=100, blank=True, null=True, verbose_name="ব্র্যান্ড")
+    need_rescale = models.BooleanField(default=False, verbose_name="মজুদ মাপতে হয়")
     capacity = models.PositiveSmallIntegerField(default=None, null=True, blank=True, verbose_name="পরিমান")
     purchase_rate = models.FloatField(default=None, verbose_name="একক প্রতি ক্রয়মুল্য")
     selling_rate = models.FloatField(default=None, verbose_name="একক প্রতি বিক্রয়মুল্য")
 
     class Meta:
-        ordering = ['item__name']
+        ordering = ['type','name']
 
     def __str__(self):
-        output = f"{self.item.name}"
-        if self.brand: output = f"{self.brand} {self.capacity} লিটার"
+        output = f"{self.name}"
+        if self.type == 'Pack': output += f" {self.capacity} লিঃ"
         return output
     
     def get_absolute_url(self):
@@ -43,7 +37,7 @@ class Purchase(models.Model):
         ordering = ['-date']
 
     def __str__(self):
-        return f"Date: {self.date}, Name: {self.product.item.name}, Amount: {self.amount}"
+        return f"Date: {self.date}, Name: {self.product.name}, Amount: {self.amount}"
     
     def get_absolute_url(self):
         return reverse("daily-transactions", kwargs={'date':self.date})
@@ -59,19 +53,20 @@ class Sell(models.Model):
         ordering = ['-date']
 
     def __str__(self):
-        return f"Date: {self.date}, Name: {self.product.item.name}, Amount: {self.amount}"
+        return f"Date: {self.date}, Name: {self.product.name}, Amount: {self.amount}"
     
     def get_absolute_url(self):
         return reverse("daily-transactions", kwargs={'date':self.date})
 
 class StorageReading(models.Model):
     date = models.DateField(default=timezone.now, verbose_name="তারিখ")
-    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, limit_choices_to={'type':'Loose'}, verbose_name="মাল")
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, limit_choices_to={'need_rescale':True}, verbose_name="মাল")
     tank_deep = models.FloatField(default=0, verbose_name="ট্যাংক ডিপ")
     lorry_load = models.FloatField(default=0, verbose_name="লোড")
 
     class Meta:
         ordering = ['-date']
+        constraints = [models.UniqueConstraint(fields=['date','product'],name='unique_storage_reading')]
 
     def __str__(self):
         return f"{self.date}: {self.product} - {self.tank_deep}+{self.lorry_load}"

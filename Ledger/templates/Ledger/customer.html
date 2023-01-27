@@ -40,7 +40,7 @@
     </div>
 
     {% if has_balance %}
-    <table class="table table-stripped table-bordered table-sm">
+    <table class="table table-striped table-bordered table-sm">
         <tr class="text-center">
             <th>তারিখ</th>
             <th class="full-details">বিবরণ</th>
@@ -69,7 +69,7 @@
                     {% for sell in obj.sells %}
                     <li>
                     {% if sell.product.type == 'Pack' %}
-                        <span class="eng">{{sell.product.brand}}</span> 
+                        <span class="eng">{{sell.product.name}}</span> 
                         {{sell.product.capacity|floatformat:-2|e2b_digit|ezynumber}} লিঃ : 
                         {{sell.quantity|floatformat:-2|e2b_digit|ezynumber}} &times; 
                         {{sell.rate|floatformat:-2|e2b_digit|ezynumber}} = 
@@ -106,7 +106,7 @@
             <div class="col-sm-6">
                 {% for product in summary %}
                 {% if product.product.type == 'Pack' %}
-                    <span class="eng">{{product.product.brand}}</span> - 
+                    <span class="eng">{{product.product.name}}</span> - 
                     {{product.product.capacity|floatformat:-2|e2b_digit}} লিঃ &times; 
                     {{product.quantity|floatformat:-2|e2b_digit}}
                 {% else %}

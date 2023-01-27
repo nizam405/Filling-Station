@@ -98,18 +98,16 @@
             </tr>
             {% for row in products %}
             <tr class="text-right">
-                <td class="text-left">
+                <td class="text-left"><a href="{% url 'product-ledger' pk=row.product.pk month=month year=year %}" class="text-dark">
                     {% if row.product.type == 'Pack' %}
-                    <span class="eng">{{row.product.brand}}</span> {{row.product.capacity|e2b_digit}} লিঃ
-                    {% else %}
-                    {{row.product}}
-                    {% endif %}
-                </td>
+                    <span class="eng">{{row.product.name}}</span> {{row.product.capacity|e2b_digit}} লিঃ
+                    {% else %}{{row.product}}{% endif %}
+                </a></td>
                 <td>{{row.pre_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
                 <td>{{row.purchase|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
                 <td>{{row.sell|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
                 
-                {% if row.product.type == "Loose" and row.real_storage != 0 %}
+                {% if row.product.need_rescale %}
                 <td>{{row.current_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
                 <td>{{row.real_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
                 <td>{{row.price|floatformat:-2|e2b_digit|ezynumber}}</td>

@@ -60,4 +60,4 @@ def convert_date_ban(date,short=False):
     y = pybengali.convert_e2b_digit(date.year)
     if short:
         return f"{d}/{ms}/{y[2:]}"
-    return f"{m} - {d}, {y}"
+    return f"{m}-{d}, {y}"

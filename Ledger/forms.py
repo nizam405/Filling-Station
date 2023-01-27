@@ -1,6 +1,6 @@
 from django import forms
 from .choices import MONTHS, YEAR
-from .models import CustomerBalance, GroupofCompanyBalance
+from .models import CustomerBalance, GroupofCompanyBalance, Storage
 # from Customer.models import Customer
 
 # class FilterForm(forms.Form):
@@ -22,3 +22,8 @@ class GroupofCompanyLedgerFilterForm(forms.ModelForm):
 class DateFilterForm(forms.Form):
     month = forms.ChoiceField(choices=MONTHS, label="মাস")
     year = forms.ChoiceField(choices=YEAR, label="বছর")
+
+class StorageFilterForm(forms.ModelForm):
+    class Meta:
+        model = Storage
+        fields = ['product','month','year']

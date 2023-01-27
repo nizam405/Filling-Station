@@ -92,7 +92,7 @@
             <div class="col-sm-6">
                 {% for product in summary %}
                 {% if product.product.type == 'Pack' %}
-                    <span class="eng">{{product.product.brand}}</span> - 
+                    <span class="eng">{{product.product.name}}</span> - 
                     {{product.product.capacity|floatformat:-2|e2b_digit}} লিঃ &times; 
                     {{product.quantity|floatformat:-2|e2b_digit}}
                 {% else %}

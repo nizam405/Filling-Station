@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from Customer.models import Customer, GroupofCompany
-from Product.models import ProductGroup, Product
+from Product.models import Product
 from Customer.choices import customer_type
 from .choices import MONTHS, YEAR, currentMonth, currentYear
 
@@ -47,6 +47,7 @@ class Storage(models.Model):
     
     class Meta:
         ordering = ['-year','-month','product']
+        constraints = [models.UniqueConstraint(fields=['year','month','product'], name='unique_storage')]
 
     def __str__(self):
         return f"{self.month}, {self.year} - {self.product} - {self.amount}"

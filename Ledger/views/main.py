@@ -33,7 +33,7 @@ class LedgerList(TemplateView):
         prev_month_date = target_date - datetime.timedelta(days=1)
         self.kwargs['prev_month'] = prev_month_date.month
         self.kwargs['prev_month_year'] = prev_month_date.year
-        num_days = calendar.monthrange(self.kwargs['prev_month_year'],self.kwargs['prev_month'])[1]
+        num_days = calendar.monthrange(current_year,current_month)[1]
         self.kwargs['next_date'] = target_date + datetime.timedelta(days=num_days)
 
         return super().get(request, *args, **kwargs)
@@ -69,15 +69,14 @@ class LedgerList(TemplateView):
         total_duesell = 0
         total_collection = 0
         total_bal = 0
-        # Group of Companies
-        group_of_companies = GroupofCompany.objects.all()
         month = self.kwargs['month']
         year = self.kwargs['year']
         prev_month = self.kwargs['prev_month']
         prev_month_year = self.kwargs['prev_month_year']
+        # Group of Companies
+        group_of_companies = GroupofCompany.objects.all()
         for goc in group_of_companies:
             goc_balances = GroupofCompanyBalance.objects.filter(customer=goc.pk,month=prev_month,year=prev_month_year)
-            print(goc_balances)
             data = {
                 'name': "** " + goc.name,
                 'ledger_link': 'groupofcompany-ledger',
@@ -160,9 +159,13 @@ class LedgerList(TemplateView):
         total_price = 0
         total_diff_qnt = 0
         total_diff_amount = 0
+        month = int(self.kwargs['month'])
+        year = int(self.kwargs['year'])
+        prev_month = self.kwargs['prev_month']
+        prev_month_year = self.kwargs['prev_month_year']
         products = Product.objects.all()
         for product in products:
-            pre_storages = Storage.objects.filter(product=product)
+            pre_storages = Storage.objects.filter(month=prev_month, year=prev_month_year, product=product)
             data = {
                 'product': product,
                 'unit': "লিঃ" if product.type == "Loose" else "",
@@ -177,23 +180,11 @@ class LedgerList(TemplateView):
             }
             if pre_storages:
                 pre_storage = pre_storages.last()
-                amount = pre_storage.amount
-                month = int(pre_storage.month)
-                year = int(pre_storage.year)
-                data.update({
-                    'pre_storage': amount,
-                    'pre_storage_month': month,
-                    'pre_storage_year': year,
-                    })
-                last_day_month = calendar.monthrange(year,month)[1]
-                last_day = datetime.date(day=last_day_month,month=month,year=year)
-                purchases = Purchase.objects.filter(date__gt=last_day, product=product)
-                duesells = DueSell.objects.filter(date__gt=last_day, product=product)
-                sells = Sell.objects.filter(date__gt=last_day, product=product)
-            else:
-                purchases = Purchase.objects.filter(product=product)
-                duesells = DueSell.objects.filter(product=product)
-                sells = Sell.objects.filter(product=product)
+                data.update({'pre_storage': pre_storage.amount})
+
+            purchases = Purchase.objects.filter(date__month=month, date__year=year, product=product)
+            duesells = DueSell.objects.filter(date__month=month, date__year=year, product=product)
+            sells = Sell.objects.filter(date__month=month, date__year=year, product=product)
             if purchases:
                 purchase_amount = purchases.aggregate(Sum('quantity'))['quantity__sum']
                 data.update({'purchase': purchase_amount})
@@ -206,13 +197,17 @@ class LedgerList(TemplateView):
             data['current_storage'] = data['pre_storage'] + data['purchase'] - data['sell']
             data['price'] = int(data['current_storage']*product.purchase_rate)
             total_price += data['price']
-            storage_readings = StorageReading.objects.filter(product=product)
+            
+            # last_day_month = calendar.monthrange(year,month)[1]
+            # last_day = datetime.date(year=year,month=month,day=last_day_month)
+            # storage_readings = StorageReading.objects.filter(date=last_day,product=product)
+            storage_readings = StorageReading.objects.filter(date__month=month, date__year=year,product=product)
             if storage_readings:
                 storage_last = storage_readings.first()
                 data['real_storage'] = storage_last.tank_deep + storage_last.lorry_load
                 data['diff_qnt'] = data['real_storage'] - data['current_storage']
                 total_diff_qnt += data['diff_qnt']
-                data['diff_amount'] = data['diff_qnt'] * product.purchase_rate
+                data['diff_amount'] = int(data['diff_qnt'] * product.purchase_rate)
                 total_diff_amount += data['diff_amount']
                 
             product_data.append(data)
@@ -227,14 +222,15 @@ class LedgerList(TemplateView):
 def saveLedger(request,date):
     month = date.month
     year = date.year
-    last_day = calendar.monthrange(year,month)
-    target_date = datetime.date(year,month,last_day)
-    if target_date[1] != date.day:
-        return redirect('daily-transactions')
-    # chek if last date else redirect to daily transactions
-    prev_date_1 = date - datetime.timedelta(month=1)
-    prev_month = prev_date_1.month
-    prev_month_year = prev_date_1.year
+    num_days = calendar.monthrange(year,month)[1]
+    target_date = datetime.date(year,month,num_days)
+    # chek if date is last date of current month else redirect to daily transactions
+    if target_date != date.day:
+        return redirect('daily-transactions',date)
+    first_date = datetime.date(year,month,1)
+    prev_date = first_date - datetime.timedelta(days=1)
+    prev_month = prev_date.month
+    prev_month_year = prev_date.year
 
     # Products
     products = Product.objects.all()
@@ -243,23 +239,18 @@ def saveLedger(request,date):
         # Diesel and Octen has storage reading
         # they can differ from on paper calculation
         storage_readings = StorageReading.objects.filter(product=product,date=date)
-        if storage_readings:
+        if product.need_rescale:
             storage = storage_readings.first()
             quantity = storage.tank_deep + storage.lorry_load
         else:
             # Mobil and other pack items need to calculate
-            storages = Storage.objects.filter(product=product)
+            storages = Storage.objects.filter(product=product,month=prev_month,year=prev_month_year)
             # Check if there has previous month storage data
             # Add these to current storage
             # else do not count last storage
             if storages:
                 last_storage = storages.last()
-                last_storage_month = int(last_storage.month)
-                last_storage_month_year = int(last_storage.year)
-                if prev_month == last_storage_month and prev_month_year == last_storage_month_year:
-                    quantity += last_storage.amount
-                # elif last_storage_month < prev_month or last_storage_month_year < prev_month_year:
-                #     return redirect('save-ledgers',kwargs={'date':prev_date_1})
+                quantity += last_storage.amount
             
             sells = Sell.objects.filter(product=product,date__month=month,date__year=year)
             if sells:
@@ -273,8 +264,9 @@ def saveLedger(request,date):
             if purchases:
                 qnt = purchases.aggregate(Sum('quantity'))['quantity__sum']
                 quantity += qnt
-        storage_obj = Storage(month=month,year=year,product=product,amount=quantity)
-        storage_obj.save()
+        Storage.objects.update_or_create(
+            month=month,year=year,product=product,defaults={'amount': quantity})
+
     # Customers
     # Group
     group_of_companies = GroupofCompany.objects.all()
@@ -291,8 +283,8 @@ def saveLedger(request,date):
         if duecollections:
             amount = duecollections.aggregate(Sum('amount'))['amount__sum']
             total_amount -= amount
-        goc_bal = GroupofCompanyBalance(month=month,year=year,customer=goc,amount=total_amount)
-        goc_bal.save()
+        GroupofCompanyBalance.objects.update_or_create(
+            month=month,year=year,customer=goc,defaults={'amount':total_amount})
     # Individual Customer
     total_amount = 0
     customers = Customer.objects.all()
@@ -308,6 +300,7 @@ def saveLedger(request,date):
         if duecollections:
             amount = duecollections.aggregate(Sum('amount'))['amount__sum']
             total_amount -= amount
-        cust_bal = CustomerBalance(month=month,year=year,customer=customer,amount=total_amount)
-        cust_bal.save()
+        CustomerBalance.objects.update_or_create(
+            month=month,year=year,customer=customer,defaults={'amount':total_amount})
+    return redirect('ledger-list',month=month,year=year)
         

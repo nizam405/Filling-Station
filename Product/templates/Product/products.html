@@ -21,10 +21,10 @@
 <div id="form-container" class="{{container_class}}">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-md-6">{% bootstrap_field form.item           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.name           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6">{% bootstrap_field form.short_name     layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6">{% bootstrap_field form.type           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.brand          layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.need_rescale   layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6">{% bootstrap_field form.capacity       layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="লিটার" %}</div>
         <div class="col-md-6">{% bootstrap_field form.purchase_rate  layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="টাকা" %}</div>
         <div class="col-md-6">{% bootstrap_field form.selling_rate   layout='horizontal' label_class='col-md-4' field_class='col-md-8' addon_after="টাকা" %}</div>
@@ -38,10 +38,9 @@
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
-        <th>আইটেম</th>
+        <th>নাম</th>
         <th>ধরন</th>
         <th>সংক্ষিপ্ত নাম</th>
-        <th>ব্র্যান্ড ও পরিমান</th>
         <th>ক্রয়মুল্য</th>
         <th>বিক্রয়মুল্য</th>
         <th></th>
@@ -50,19 +49,13 @@
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{ sln|e2b_digit }}</td>
-        <td>{{object.item}}</td>
+        <td {% if object.type == 'Pack' %}class="eng"{% endif %}>{{object.name}}</td>
         <td>{{object.get_type_display}}</td>
-        <td {% if object.brand %}class="eng"{% endif %}>{{object.short_name}}</td>
-        <td class="text-left">
-            {% if object.brand %}
-                <span class="eng">{{object.brand}}</span>
-                {% if object.capacity|floatformat:-2|e2b_digit %}
-                    - {{object.capacity|floatformat:-2|e2b_digit}} লিটার
-                {% endif %}
-            {% endif %}
-        </td>
+        <td {% if object.type == 'Pack' %}class="eng"{% endif %}>{{object.short_name}}</td>
         <td>{{object.purchase_rate|floatformat:-2|e2b_digit}}</td>
-        <td>{{object.selling_rate|floatformat:-2|e2b_digit}}</td>
+        <td {% if object.purchase_rate >= object.selling_rate %}class="text-danger"{% endif %}>
+            {{object.selling_rate|floatformat:-2|e2b_digit}}
+        </td>
         <td>
             <a href="{% url 'update-product' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             {% comment %} <a href="{% url 'delete-product' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a> {% endcomment %}
@@ -79,26 +72,26 @@
 
 <script>
     let type = $("#id_type")
-    let brand = $("#id_brand").closest('.form-group').parent()
+    let need_rescale = $("#id_need_rescale").closest('.form-group').parent()
     let capacity = $("#id_capacity").closest('.form-group').parent()
     
     function toggleFields(){
         const option = $(type).find(":selected").val()
         if(option == 'Pack'){
-            brand.show('fast')
-            brand.find('input').prop('required',true)
+            need_rescale.hide('fast');
+            need_rescale.find('input').prop('required',false)
 
             capacity.show('fast')
             capacity.find('input').prop('required',true)
         } else {
-            brand.hide('fast');
-            brand.find('input').prop('required',false)
+            need_rescale.show('fast')
+            need_rescale.find('input').prop('required',true)
 
             capacity.hide('fast');
             capacity.find('input').prop('required',false)
         }
     }
-    // Default: Hide brand & capacity
+    // Default: Hide capacity and show need_rescale
     toggleFields()
 
     $("#id_type").on('change', toggleFields)

@@ -89,14 +89,10 @@
             {% for obj in sells %}
             <tr class="transaction-entry">
                 {% if obj.product.type == "Loose" %}
-                <td>
-                    ({{obj.product.get_type_display}}) {{obj.product.item}}
-                </td>
+                <td>{{obj.product}}</td>
                 <td class="text-right">{{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</td>
                 {% else %}
-                <td>
-                    <span class="eng">{{obj.product.brand}}</span> ({{obj.product.item}})
-                </td>
+                <td class="eng">{{obj.product.name}}</td>
                 <td class="text-right">{{obj.product.capacity|floatformat:-2|e2b_digit|ezynumber}} লিঃ &times; {{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} </td>
                 {% endif %}
                 <td class="text-right">{{obj.amount|floatformat:-2|e2b_digit|ezynumber}}</td>
@@ -188,14 +184,10 @@
             {% for obj in purchases %}
             <tr class="transaction-entry">
                 {% if obj.product.type == "Pack" %}
-                <td>
-                    <span class="eng">{{obj.product.brand}}</span> ({{obj.product.item}})
-                </td>
+                <td class="eng">{{obj.product.name}}</td>
                 <td class="text-right">{{obj.product.capacity|e2b_digit}} লিঃ &times; {{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} </td>
                 {% else %}
-                <td>
-                    ({{obj.product.get_type_display}}) {{obj.product.item}}
-                </td>
+                <td>{{obj.product.name}}</td>
                 <td class="text-right">{{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</td>
                 {% endif %}
                 <td class="text-right">{{obj.amount|e2b_digit|ezynumber}}</td>
@@ -241,17 +233,15 @@
             {% if duesells %}
             {% for obj in duesells %}
             <tr class="transaction-entry">
-                {% if obj.product.type == "Loose" %}
+                
                 <td>
-                    {{obj.customer}} - {{obj.product.item}}
+                    {{obj.customer}} - 
+                    {% if obj.product.type == "Loose" %} {{obj.product.name}}
+                    {% else %} <span class="eng">{{obj.product.brand}}</span>{% endif %}
                 </td>
                 <td class="text-right">{{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</td>
-                {% else %}
-                <td>
-                    {{obj.customer}} - <span class="eng">{{obj.product.brand}}</span> ({{obj.product.item}})
-                </td>
                 <td class="text-right">{{obj.product.capacity|e2b_digit}} লিঃ &times; {{obj.quantity|floatformat:-2|e2b_digit|ezynumber}}</td>
-                {% endif %}
+                
                 <td class="text-right">{{obj.amount|e2b_digit|ezynumber}}</td>
                 <td class="subtotal"></td>
             </tr>

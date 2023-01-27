@@ -51,7 +51,7 @@ class CustomerLedger(TemplateView):
         first_bal_date = datetime.date(int(first_balance.year), int(first_balance.month),1)
         last_bal_date = datetime.date(int(last_balance.year), int(last_balance.month),1)
 
-        if target_date > last_bal_date:
+        if target_date > last_bal_date + datetime.timedelta(days=31):
             return redirect('customer-ledger', 
                 pk = self.kwargs['pk'], 
                 month = last_bal_date.month, 
@@ -138,13 +138,13 @@ class CustomerLedger(TemplateView):
                 'amount': sells.aggregate(Sum("amount"))["amount__sum"] if sells.count() > 0 else False,
                 'collection': collection.aggregate(Sum("amount"))["amount__sum"] if collection.count() > 0 else False
             }
-            diesel = sells.filter(product__item__name="ডিজেল")
+            diesel = sells.filter(product__name="ডিজেল")
             # print(diesel)
             if diesel.count() > 0:
                 d_qnt = diesel.aggregate(Sum('quantity'))['quantity__sum']
                 total_diesel += d_qnt
                 data_today.update({'diesel': d_qnt, 'total_diesel': total_diesel})
-            others = sells.exclude(product__item__name="ডিজেল")
+            others = sells.exclude(product__name="ডিজেল")
             # print(others)
             if others.count() > 0:
                 o_amount = others.aggregate(Sum('amount'))['amount__sum']
@@ -235,13 +235,13 @@ class GroupofCompanyLedger(TemplateView):
         first_bal_date = datetime.date(int(first_balance.year), int(first_balance.month),1)
         last_bal_date = datetime.date(int(last_balance.year), int(last_balance.month),1)
 
-        if target_date > last_bal_date:
-            return redirect('customer-ledger', 
+        if target_date > last_bal_date + datetime.timedelta(days=31):
+            return redirect('groupofcompany-ledger', 
                 pk = self.kwargs['pk'], 
                 month = last_bal_date.month, 
                 year = last_bal_date.year)
         elif target_date < first_bal_date:
-            return redirect('customer-ledger', 
+            return redirect('groupofcompany-ledger', 
                 pk = self.kwargs['pk'], 
                 month = first_bal_date.month, 
                 year = first_bal_date.year)

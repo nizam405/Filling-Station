@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-import datetime
+import datetime, calendar
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
@@ -19,10 +19,16 @@ class DailyTransactionView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
+        date = context['date']
         if 'balance_form' in request.POST:
             if context['balance_form'].is_valid():
                 context['balance_form'].save()
-            return redirect('.', args={'date':context['date']})
+                num_days = calendar.monthrange(date.year,date.month)[1]
+                last_date = datetime.date(date.year,date.month,num_days)
+                if date == last_date:
+                    return redirect('save-ledger',date)
+
+            return redirect('.', date)
         return super(TemplateView, self).render_to_response(context)
     
     def get(self,request, *args, **kwargs):

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}{{customer.name}} - খতিয়ান{% endblock title %}
+{% block style %}
+<style>
+    .full-details {display: none;}
+    #filter select, #buttons button, #buttons a {
+        border-radius:0rem;
+    }
+    .price{display: none;}
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap4 %}
+{% block main %}
+
+<div class="d-print-none bangla d-flex">
+    {% if filter_form %}
+    <form method="get" class="row" id="filter">
+        <div class="col-md-4 pr-0">{% bootstrap_field filter_form.product layout='horizontal' %}</div>
+        <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-md-3 p-0" id="buttons">
+            {% bootstrap_button 'Go' button_type='submit' button_class='btn btn-success' %}
+            <a href="{% url 'product-ledger' pk=product.pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
+            <a href="{% url 'product-ledger' pk=product.pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
+        </div>
+    </form>
+    <div class="ml-3">
+        <div class="form-check p-2">
+            <input type="checkbox" id="show-price">
+            <label for="show-price" class="form-check-label">মূল্য দেখাবে</label>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="bangla">
+    <div class="text-center">
+        <h3>{{product}} হিসাব</h3>
+        <h4>{% if month %}{{month|e2b_month}} {{year|e2b_digit}} এর {% endif %}খতিয়ান</h4>
+    </div>
+
+    <table class="table table-striped table-bordered table-sm">
+        <tr class="text-center">
+            <th>তারিখ</th>
+            <th>প্রাঃ মজুদ</th>
+            <th>ক্রয়</th>
+            <th>বিক্রয়</th>
+            <th>অবশিষ্ট মজুদ</th>
+            {% if product.need_rescale %}
+            <th>ট্যাংক ডিপ</th>
+            <th>লোড</th>
+            <th>ব্যবধান</th>
+            <th>মোট মজুদ</th>
+            {% endif %}
+        </tr>
+        {% for obj in qs %}
+        <tr>
+            <td>{{obj.date|e2b_date}}</td>
+            <td class="text-right">
+                {% if obj.pre_storage_qnt > 0 %}
+                <div>{{obj.pre_storage_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div class="price">{{obj.pre_storage_price|e2b_digit|ezynumber}}/=</div>
+                {% else %}
+                <div class="text-center">
+                    <i class="text-warning bi bi-exclamation-triangle"></i>
+                </div>
+                {% endif %}
+            </td>
+            <td class="text-right">
+                {% if obj.purchase_qnt > 0 %}
+                <div>{{obj.purchase_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div class="price">{{obj.purchase_amount|e2b_digit|ezynumber}}/=</div>
+                {% endif %}
+            </td>
+            <td class="text-right">
+                {% if obj.sell_qnt > 0 %}
+                <div>{{obj.sell_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div class="price">{{obj.sell_amount|e2b_digit|ezynumber}}/=</div>
+                {% endif %}
+            </td>
+            <td class="text-right">
+                {% if obj.remaining_storage_qnt > 0 %}
+                <div>{{obj.remaining_storage_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div class="price">{{obj.remaining_storage_amount|e2b_digit|ezynumber}}/=</div>
+                {% endif %}
+            </td>
+            {% if obj.storage_qnt > 0 %}
+            <td class="text-right">
+                {% if obj.tank_deep > 0 %}
+                {{obj.tank_deep|floatformat:-2|e2b_digit|ezynumber}} লিঃ
+                {% endif %}
+            </td>
+            <td class="text-right">
+                {% if obj.lorry_load > 0 %}
+                {{obj.lorry_load|floatformat:-2|e2b_digit|ezynumber}} লিঃ
+                {% endif %}
+            </td>
+            <td class="text-right">
+                {% if obj.diff_qnt != 0 %}
+                <i class="float-left bi 
+                    {% if obj.diff_qnt < 0 %} bi-caret-down-fill text-danger
+                    {% elif obj.diff_qnt > 0 %} bi-caret-up-fill text-success
+                    {% endif %}">
+                </i>
+                <div>{{obj.diff_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div class="price">{{obj.diff_amount|e2b_digit|ezynumber}}/=</div>
+                {% endif %}
+            </td>
+            <td class="text-right">
+                <div>{{obj.storage_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div class="price">{{obj.storage_amount|e2b_digit|ezynumber}}/=</div>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        <tr class="text-right">
+            <td colspan="2">মোটঃ</td>
+            <td>
+                <div>{{total.total_purchase_quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div class="price">{{total.total_purchase_amount|e2b_digit|ezynumber}}/=</div>
+            </td>
+            <td>
+                <div>{{total.total_sell_quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div class="price">{{total.total_sell_amount|e2b_digit|ezynumber}}/=</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+
+$("#show-price").on('click',function(){
+    if($(this).is(":checked")){
+        $(".price").show()
+    } else {
+        $(".price").hide()
+    }
+})
+</script>
+
+{% endblock main %}

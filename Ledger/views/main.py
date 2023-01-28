@@ -1,14 +1,18 @@
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from django.db.models import Sum
+from django.db.models import Value
+from django.db.models.functions import Concat
 import datetime
 import calendar
 from Customer.models import Customer, GroupofCompany, DueSell, DueCollection
 from Product.models import Product, Purchase, Sell, StorageReading
-from Expenditure.models import ExpenditureGroup
-from Revenue.models import RevenueGroup
+from Expenditure.models import ExpenditureGroup, Expenditure
+from Revenue.models import RevenueGroup, Revenue
+from Owner.models import Withdraw, Owner
 from Ledger.models import CustomerBalance, GroupofCompanyBalance, Storage
 from Ledger.forms import DateFilterForm
+from Core.choices import all_dates_in_month
 
 class LedgerList(TemplateView):
     template_name = 'Ledger/ledger_list.html'
@@ -56,9 +60,12 @@ class LedgerList(TemplateView):
         context.update(self.get_customer_data())
         # Product
         context.update(self.get_product_data())
-        # Others
-        context['expenditure_group'] = ExpenditureGroup.objects.all()
-        context['revenue_group'] = RevenueGroup.objects.all()
+        # Revenue
+        context.update(self.get_revenue_data())
+        # Expenditure
+        context.update(self.get_expenditure_data())
+        # Withdraw
+        context.update(self.get_withdraw_data())
         
         return context
     
@@ -219,6 +226,268 @@ class LedgerList(TemplateView):
         }
         return context
 
+    def get_revenue_data(self):
+        context = {}
+        month = int(self.kwargs['month'])
+        year = int(self.kwargs['year'])
+        revenues = Revenue.objects.filter(date__month=month,date__year=year)
+        if revenues:
+            group_revenues = revenues.values('group__name').annotate(total_amount=Sum('amount'))
+            context['revenues'] = group_revenues
+            total = group_revenues.aggregate(Sum('amount'))['amount__sum']
+            context['revenue_total'] = total
+        return context
+    
+    def get_expenditure_data(self):
+        context = {}
+        month = int(self.kwargs['month'])
+        year = int(self.kwargs['year'])
+        expenditures = Expenditure.objects.filter(date__month=month,date__year=year)
+        if expenditures:
+            group_expenditures = expenditures.values('group__name').annotate(total_amount=Sum('amount'))
+            context['expenditures'] = group_expenditures
+            total = group_expenditures.aggregate(Sum('amount'))['amount__sum']
+            context['expenditure_total'] = total
+        return context
+
+    def get_withdraw_data(self):
+        context = {}
+        month = int(self.kwargs['month'])
+        year = int(self.kwargs['year'])
+        withdraws = Withdraw.objects.filter(date__month=month,date__year=year)
+        print(withdraws)
+        if withdraws:
+            owner_withdraw = withdraws.values('owner__name').annotate(total_amount=Sum('amount'))
+            context['withdraws'] = owner_withdraw
+            total = owner_withdraw.aggregate(Sum('amount'))['amount__sum']
+            context['withdraw_total'] = total
+        return context
+
+class RevenueLedger(TemplateView):
+    template_name = 'Ledger/revenue.html'
+
+    def get(self, request, *args, **kwargs):
+        today = datetime.date.today()
+        current_month = today.month
+        current_year = today.year
+
+        if 'month' in self.request.GET and 'year' in self.request.GET:
+            self.kwargs['month'] = int(self.request.GET['month'])
+            self.kwargs['year'] = int(self.request.GET['year'])
+        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
+            self.kwargs['month'] = today.month
+            self.kwargs['year'] = today.year
+        
+        target_date = datetime.date(self.kwargs['year'],self.kwargs['month'],1)
+        # Dont let go future
+        if target_date > today:
+            return redirect('ledger-list', month=current_month, year=current_year)
+
+        prev_month_date = target_date - datetime.timedelta(days=1)
+        self.kwargs['prev_month'] = prev_month_date.month
+        self.kwargs['prev_month_year'] = prev_month_date.year
+        num_days = calendar.monthrange(current_year,current_month)[1]
+        self.kwargs['next_date'] = target_date + datetime.timedelta(days=num_days)
+
+        return super().get(request, *args, **kwargs)
+    
+    def get_context_data(self,*args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = DateFilterForm(self.request.GET or self.kwargs or None)
+        context['filter_form'] = form
+        context['month'] = self.kwargs['month']
+        context['year'] = self.kwargs['year']
+        context['prev'] = {
+            'month': self.kwargs['prev_month'],
+            'year': self.kwargs['prev_month_year']
+        }
+        context['next'] = {
+            'month': self.kwargs['next_date'].month,
+            'year': self.kwargs['next_date'].year
+        }
+        year = int(self.kwargs['year'])
+        month = int(self.kwargs['month'])
+        
+        data = []
+        dates = all_dates_in_month(year,month)
+        revenue_groups = RevenueGroup.objects.all()
+        context['revenue_groups'] = revenue_groups
+        for day in dates:
+            day_data = {'date':day}
+            group_data = []
+            day_total = 0
+            for rg in revenue_groups:
+                revenues = Revenue.objects.filter(date=day,group=rg)
+                if revenues:
+                    amount = revenues.aggregate(Sum('amount'))['amount__sum']
+                else: amount = 0
+                group_data.append(amount)
+                day_total += amount
+            day_data['groups'] = group_data
+            day_data['total'] = day_total
+            # skip empty
+            if day_total > 0:
+                data.append(day_data)
+        context['data'] = data
+        revenues = Revenue.objects.filter(date__month=month,date__year=year)
+        group_revenues = revenues.values('group__name').annotate(total_amount=Sum('amount'))
+        context['totals'] = group_revenues
+        context['total'] = group_revenues.aggregate(Sum('total_amount'))['total_amount__sum']
+            
+        return context
+        
+class ExpenditureLedger(TemplateView):
+    template_name = 'Ledger/expenditure.html'
+
+    def get(self, request, *args, **kwargs):
+        today = datetime.date.today()
+        current_month = today.month
+        current_year = today.year
+
+        if 'month' in self.request.GET and 'year' in self.request.GET:
+            self.kwargs['month'] = int(self.request.GET['month'])
+            self.kwargs['year'] = int(self.request.GET['year'])
+        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
+            self.kwargs['month'] = today.month
+            self.kwargs['year'] = today.year
+        
+        target_date = datetime.date(self.kwargs['year'],self.kwargs['month'],1)
+        # Dont let go future
+        if target_date > today:
+            return redirect('ledger-list', month=current_month, year=current_year)
+
+        prev_month_date = target_date - datetime.timedelta(days=1)
+        self.kwargs['prev_month'] = prev_month_date.month
+        self.kwargs['prev_month_year'] = prev_month_date.year
+        num_days = calendar.monthrange(current_year,current_month)[1]
+        self.kwargs['next_date'] = target_date + datetime.timedelta(days=num_days)
+
+        return super().get(request, *args, **kwargs)
+    
+    def get_context_data(self,*args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = DateFilterForm(self.request.GET or self.kwargs or None)
+        context['filter_form'] = form
+        context['month'] = self.kwargs['month']
+        context['year'] = self.kwargs['year']
+        context['prev'] = {
+            'month': self.kwargs['prev_month'],
+            'year': self.kwargs['prev_month_year']
+        }
+        context['next'] = {
+            'month': self.kwargs['next_date'].month,
+            'year': self.kwargs['next_date'].year
+        }
+        year = int(self.kwargs['year'])
+        month = int(self.kwargs['month'])
+        
+        data = []
+        dates = all_dates_in_month(year,month)
+        expenditure_groups = ExpenditureGroup.objects.all()
+        context['expenditure_groups'] = expenditure_groups
+        for day in dates:
+            day_data = {'date':day}
+            group_data = []
+            day_total = 0
+            for rg in expenditure_groups:
+                expenditures = Expenditure.objects.filter(date=day,group=rg)
+                if expenditures:
+                    amount = expenditures.aggregate(Sum('amount'))['amount__sum']
+                else: amount = 0
+                group_data.append(amount)
+                day_total += amount
+            day_data['groups'] = group_data
+            day_data['total'] = day_total
+            # skip empty
+            if day_total > 0:
+                data.append(day_data)
+        context['data'] = data
+        expenditures = Expenditure.objects.filter(date__month=month,date__year=year)
+        group_expenditures = expenditures.values('group__name').annotate(total_amount=Sum('amount'))
+        context['totals'] = group_expenditures
+        context['total'] = group_expenditures.aggregate(Sum('total_amount'))['total_amount__sum']
+            
+        return context
+  
+class WithdrawLedger(TemplateView):
+    template_name = 'Ledger/withdraw.html'
+
+    def get(self, request, *args, **kwargs):
+        today = datetime.date.today()
+        current_month = today.month
+        current_year = today.year
+
+        if 'month' in self.request.GET and 'year' in self.request.GET:
+            self.kwargs['month'] = int(self.request.GET['month'])
+            self.kwargs['year'] = int(self.request.GET['year'])
+        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
+            self.kwargs['month'] = today.month
+            self.kwargs['year'] = today.year
+        
+        target_date = datetime.date(self.kwargs['year'],self.kwargs['month'],1)
+        # Dont let go future
+        if target_date > today:
+            return redirect('ledger-list', month=current_month, year=current_year)
+
+        prev_month_date = target_date - datetime.timedelta(days=1)
+        self.kwargs['prev_month'] = prev_month_date.month
+        self.kwargs['prev_month_year'] = prev_month_date.year
+        num_days = calendar.monthrange(current_year,current_month)[1]
+        self.kwargs['next_date'] = target_date + datetime.timedelta(days=num_days)
+
+        return super().get(request, *args, **kwargs)
+    
+    def get_context_data(self,*args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = DateFilterForm(self.request.GET or self.kwargs or None)
+        context['filter_form'] = form
+        context['month'] = self.kwargs['month']
+        context['year'] = self.kwargs['year']
+        context['prev'] = {
+            'month': self.kwargs['prev_month'],
+            'year': self.kwargs['prev_month_year']
+        }
+        context['next'] = {
+            'month': self.kwargs['next_date'].month,
+            'year': self.kwargs['next_date'].year
+        }
+        year = int(self.kwargs['year'])
+        month = int(self.kwargs['month'])
+        
+        # data contains row of every day
+        data = []
+        dates = all_dates_in_month(year,month)
+        owners = Owner.objects.all()
+        totals = {owner.name:0 for owner in owners}
+        context['owners'] = owners
+        for day in dates:
+            day_data = {'date':day}
+            # owner_data contains per owner data on particular day
+            owner_data = []
+            day_total = 0
+            for owner in owners:
+                per_owner_data = []
+                withdraws = Withdraw.objects.filter(date=day,owner=owner)
+                if withdraws:
+                    # an owner can withdraw multiple times in a single day
+                    for wd in withdraws:
+                        per_owner_data.append({'detail':wd.detail,'amount':wd.amount})
+                    amount = withdraws.aggregate(Sum('amount'))['amount__sum']
+                else: amount = 0
+                owner_data.append(per_owner_data)
+                totals[owner.name] += amount
+                day_total += amount
+            day_data['owners'] = owner_data
+            day_data['total'] = day_total
+            # skip empty
+            if day_total > 0:
+                data.append(day_data)
+        context['data'] = data
+        context['totals'] = totals
+        context['grand_total'] = sum(totals.values())
+            
+        return context
+
 def saveLedger(request,date):
     month = date.month
     year = date.year
@@ -303,4 +572,4 @@ def saveLedger(request,date):
         CustomerBalance.objects.update_or_create(
             month=month,year=year,customer=customer,defaults={'amount':total_amount})
     return redirect('ledger-list',month=month,year=year)
-        
+

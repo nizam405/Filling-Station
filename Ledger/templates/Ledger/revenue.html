@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}আয়সমূহ{% endblock title %}
+{% block style %}
+<style>
+    .full-details {display: none;}
+    #filter select, #buttons button, #buttons a {
+        border-radius:0rem;
+    }
+    .price{display: none;}
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap4 %}
+{% block main %}
+
+<div class="d-print-none">
+    {% if filter_form %}
+    <form method="get" class="row" id="filter">
+        <div class="p-2 ml-2">হিসাবের মাস</div>
+        <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-md-3 p-0" id="buttons">
+            {% bootstrap_button 'Go' button_type='submit' button_class='btn btn-success' %}
+            <a href="{% url 'revenue-ledger' month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
+            <a href="{% url 'revenue-ledger' month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<div class="bangla">
+    <div class="text-center">
+        <h3>আয়সমূহ</h3>
+        <h4>{% if month %}{{month|e2b_month}} {{year|e2b_digit}} এর {% endif %}খতিয়ান</h4>
+    </div>
+
+    <table class="table table-striped table-bordered table-sm">
+        <tr class="text-center">
+            <th>তারিখ</th>
+            {% for rg in revenue_groups %}
+            <th>{{rg.name}}</th>
+            {% endfor %}
+            <th>মোট</th>
+        </tr>
+        {% for revenue in data %}
+        <tr>
+            <td>{{revenue.date|e2b_date}}</td>
+            {% for rg in revenue.groups %}
+            <td class="text-right">{% if rg > 0 %}{{rg|e2b_digit|ezynumber}}/={% endif %}</td>
+            {% endfor %}
+            <td class="text-right">{{revenue.total|e2b_digit|ezynumber}}/=</td>
+        </tr>
+        {% endfor %}
+        <tr class="text-right">
+            <td>মোটঃ</td>
+            {% for rg in totals %}
+            <td>{{rg.total_amount|e2b_digit|ezynumber}}/=</td>
+            {% endfor %}
+            <td>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</td>
+        </tr>
+    </table>
+</div>
+
+{% endblock main %}

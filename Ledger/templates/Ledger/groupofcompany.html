@@ -56,7 +56,7 @@
             <td class="text-right">{{balance_bf|e2b_digit|ezynumber}}</td>
         </tr>
         {% for obj in qs %}
-        <tr>
+        <tr class="text-right">
             <td class="text-center">{{obj.date|e2b_date:True}}</td>
             {% for sub_company in obj.sub_company_data %}
             <td>
@@ -82,6 +82,14 @@
             </td>
         </tr>
         {% endfor %}
+        <tr class="text-right">
+            <th>মোটঃ</th>
+            {% for amount in totals.values %}
+            <th>{% if amount > 0 %}{{amount|e2b_digit|ezynumber}}{% endif %}</th>
+            {% endfor %}
+            <th>{{total_sell|e2b_digit|ezynumber}}</th>
+            <th>{{total_collection|e2b_digit|ezynumber}}</th>
+        </tr>
     </table>
 
     <h5><u>সার-সংক্ষেপঃ</u>

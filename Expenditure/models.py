@@ -15,10 +15,10 @@ class ExpenditureGroup(models.Model):
         return reverse("expenditure-group")
 
 class Expenditure(models.Model):
-    date = models.DateField(default=timezone.now)
-    group = models.ForeignKey(to=ExpenditureGroup, on_delete=models.SET_NULL, null=True)
-    detail = models.CharField(max_length=255, blank=True, null=True)
-    amount = models.IntegerField(default=0)
+    date = models.DateField(default=timezone.now, verbose_name="তারিখ")
+    group = models.ForeignKey(to=ExpenditureGroup, on_delete=models.SET_NULL, null=True, verbose_name="ব্যায়ের খাত")
+    detail = models.CharField(max_length=255, blank=True, null=True, verbose_name="বিবরণ")
+    amount = models.IntegerField(default=0, verbose_name="টাকা")
 
     class Meta:
         ordering = ['-date']

@@ -19,7 +19,7 @@
 
 <div class="d-print-none">
     <form method="get" class="d-flex" id="date-filter">
-        <div class="p-2">হিসাবের মাস</div>
+        <div class="py-2 mr-2">হিসাবের মাস</div>
         <div>{% bootstrap_field date_form.month layout='horizontal' show_label=False field_class="col-12" %}</div>
         <div>{% bootstrap_field date_form.year layout='horizontal' show_label=False field_class="col-12" %}</div>
         <div>
@@ -90,7 +90,7 @@
                 <th>প্রারম্ভিক মজুদ</th>
                 <th>ক্রয়</th>
                 <th>বিক্রয়</th>
-                <th>অবশিষ্ট মজুদ (পরিমাণ)</th>
+                <th>অবশিষ্ট মজুদ</th>
                 <th>সমাপনী মজুদ<br>(ট্যাংক ডিপ+লোড)</th>
                 <th>মজুদপণ্যের ক্রয়মুল্য</th>
                 <th>ব্যবধান (পরিমাণ)</th>
@@ -145,29 +145,98 @@
             </tr>
         </table>
     </div> 
-    <div class="card-columns">
-        <div class="card">
-            <h4 class="card-header">আয়</h4>
-            <div class="card-body">
-                <ul>
-                    {% for revenue in revenue_group %}
-                    <li><a href="#">{{revenue.name}}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
 
-        <div class="card">
-            <h4 class="card-header">ব্যয়</h4>
-            <div class="card-body">
-                <ul>
-                    {% for expenditure in expenditure_group %}
-                    <li><a href="#">{{expenditure.name}}</a></li>
-                    {% endfor %}
-                </ul>
+    {% if revenues or withdraws or expenditures %}
+    <div>
+        <i class="new-window bi bi-box-arrow-in-up-left btn py-0 float-right d-print-none" style="font-size: 1.5rem"></i>
+        <div class="row">
+            <div class="col-md-6">
+                {% if revenues %}
+                <div id="revenue-section">
+                    <h4 class="text-center p-2">
+                        <u>আয়সমূহ</u>
+                        <a href="{% url 'revenue-ledger' month=month year=year %}">
+                            <i class="bi bi-arrow-right-circle-fill d-print-none"></i>
+                        </a>
+                    </h4>
+                    <table class="table table-sm table-bordered table-striped">
+                        <tr class="text-center">
+                            <th>আয়ের খাত</th>
+                            <th>টাকা</th>
+                        </tr>
+                        {% for revenue in revenues %}
+                        <tr>
+                            <td>{{revenue.group__name}}</td>
+                            <td>{{revenue.total_amount|e2b_digit|ezynumber}}/=</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <th class="text-right">মোটঃ</th>
+                            <th>{{revenue_total|e2b_digit|ezynumber}}/=</th>
+                        </tr>
+                    </table>
+                </div>
+                {% endif %}
+                
+                {% if withdraws %}
+                <div id="withdraw-section">
+                    <h4 class="text-center p-2">
+                        <u>উত্তোলন</u>
+                        <a href="{% url 'withdraw-ledger' month=month year=year %}">
+                            <i class="bi bi-arrow-right-circle-fill d-print-none"></i>
+                        </a>
+                    </h4>
+                    <table class="table table-sm table-bordered table-striped">
+                        <tr class="text-center">
+                            <th>নাম</th>
+                            <th>টাকা</th>
+                        </tr>
+                        {% for withdraw in withdraws %}
+                        <tr>
+                            <td>{{withdraw.owner__name}}</td>
+                            <td>{{withdraw.total_amount|e2b_digit|ezynumber}}/=</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <th class="text-right">মোটঃ</th>
+                            <th>{{withdraw_total|e2b_digit|ezynumber}}/=</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-md-6">
+                {% if expenditures %}
+                <div id="expenditure-section">
+                    <h4 class="text-center p-2">
+                        <u>ব্যায়সমূহ</u>
+                        <a href="{% url 'expenditure-ledger' month=month year=year %}">
+                            <i class="bi bi-arrow-right-circle-fill d-print-none"></i>
+                        </a>
+                    </h4>
+                    <table class="table table-sm table-bordered table-striped">
+                        <tr class="text-center">
+                            <th>ব্যায়ের খাত</th>
+                            <th>টাকা</th>
+                        </tr>
+                        {% for expenditure in expenditures %}
+                        <tr>
+                            <td>{{expenditure.group__name}}</td>
+                            <td>{{expenditure.total_amount|e2b_digit|ezynumber}}/=</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <th class="text-right">মোটঃ</th>
+                            <th>{{expenditure_total|e2b_digit|ezynumber}}/=</th>
+                        </tr>
+                    </table>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
+    {% endif %}
+    
 </div>
 
 <script>

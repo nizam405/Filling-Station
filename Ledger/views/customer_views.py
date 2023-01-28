@@ -2,7 +2,6 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import CreateView
 from django.db.models import Sum
-import pybengali
 import datetime
 
 from Customer.models import Customer, GroupofCompany, DueSell, DueCollection
@@ -62,27 +61,6 @@ class CustomerLedger(TemplateView):
                 month = first_bal_date.month, 
                 year = first_bal_date.year)
 
-        # lb_month = int(last_balance.month)
-        # fb_month = int(first_balance.month)
-        # current_month = lb_month + 1 if lb_month < 12 else 1
-        # current_year = last_balance.year if lb_month < 12 else last_balance.year + 1
-        # first_month = fb_month + 1 if fb_month < 12 else 1
-        # first_year = last_balance.year if lb_month < 12 else last_balance.year + 1
-        # self.kwargs['current_month'] = current_month
-        # self.kwargs['current_year'] = current_year
-        # if request with no date, just redirect to next day
-        # if 'month' not in self.kwargs:
-        #     return redirect('customer-ledger', pk=self.kwargs['pk'], month=current_month, year=current_year)
-
-
-        # Don't let go future
-        # if month > current_month or year > current_year:
-        #     return redirect('customer-ledger', pk=pk, month=current_month, year=current_year)
-        # Don't let go before first date of account starts
-        # if month < first_month or year < first_year:
-        #     return redirect('customer-ledger', pk=pk, month=first_month, year=first_year)
-            
-        # end
         return super().get(request, *args, **kwargs)
     
     def get_context_data(self, *args, **kwargs):
@@ -113,11 +91,6 @@ class CustomerLedger(TemplateView):
         context['balance_bf'] = balance.amount
         context['balance_bf_date'] = datetime.date(year,month,1)
         context['has_balance'] = True
-
-        # balance_cf_date = datetime.date(day=1,
-        #     month = context['next']['month'],
-        #     year = context['next']['year']) - datetime.timedelta(days=1)
-        
         # Data
         duesells = DueSell.objects.filter(customer=pk, date__year=year, date__month=month)
         duecollections = DueCollection.objects.filter(customer=pk, date__year=year, date__month=month)
@@ -179,20 +152,6 @@ class CustomerLedger(TemplateView):
         total_collection = duecollections.aggregate(Sum("amount"))['amount__sum']
         context['total_sell'] = total_sell or "00"
         context['total_collection'] = total_collection or "00"
-
-        # Autosave balance
-        # balance_cf_date = last day of month
-        # cash_balance = CashBalance.objects.filter(date=balance_cf_date)
-        # if cash_balance.count() == 1:
-        #     customer_balance, created = CustomerBalance.objects.get_or_create(
-        #         month = month, year = year, 
-        #         customer = context['customer'],
-        #         amount = balance
-        #     )
-        #     if created:
-        #         print("Ledger Saved Successfully")
-        # else: print("Ledger will be saved after saving daily transaction of the last day of this month.")
-
         return context
 
 class GroupofCompanyLedger(TemplateView):
@@ -245,37 +204,15 @@ class GroupofCompanyLedger(TemplateView):
                 pk = self.kwargs['pk'], 
                 month = first_bal_date.month, 
                 year = first_bal_date.year)
-
-        # lb_month = int(last_balance.month)
-        # fb_month = int(first_balance.month)
-        # current_month = lb_month + 1 if lb_month < 12 else 1
-        # current_year = last_balance.year if lb_month < 12 else last_balance.year + 1
-        # first_month = fb_month + 1 if fb_month < 12 else 1
-        # first_year = last_balance.year if lb_month < 12 else last_balance.year + 1
-        # self.kwargs['current_month'] = current_month
-        # self.kwargs['current_year'] = current_year
-        # if request with no date, just redirect to next day
-        # if 'month' not in self.kwargs:
-        #     return redirect('customer-ledger', pk=self.kwargs['pk'], month=current_month, year=current_year)
-
-
-        # Don't let go future
-        # if month > current_month or year > current_year:
-        #     return redirect('groupofcompany-ledger', pk=pk, month=current_month, year=current_year)
-        # Don't let go before first date of account starts
-        # if month < first_month or year < first_year:
-        #     return redirect('groupofcompany-ledger', pk=pk, month=first_month, year=first_year)
-            
-        # end
         return super().get(request, *args, **kwargs)
     
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         pk = self.kwargs['pk']
+        self.kwargs['customer'] = pk
         month = self.kwargs['month']
         year = self.kwargs['year']
-        context['filter_form'] = GroupofCompanyLedgerFilterForm(self.request.GET or None)
-        context['filter_form'].initial = {'customer':pk,'month':month,'year':year}
+        context['filter_form'] = GroupofCompanyLedgerFilterForm(self.request.GET or self.kwargs or None)
         context['month'] = month
         context['year'] = year
         context['prev'] = {
@@ -296,11 +233,6 @@ class GroupofCompanyLedger(TemplateView):
         context['balance_bf'] = balance.amount
         context['balance_bf_date'] = datetime.date(year,month,1)
         context['has_balance'] = True
-
-        # balance_cf_date = datetime.date(day=1,
-        #     month = context['next']['month'],
-        #     year = context['next']['year']) - datetime.timedelta(days=1)
-        
         # Data
         duesells = DueSell.objects.filter(customer__group=pk, date__year=year, date__month=month)
         duecollections = DueCollection.objects.filter(customer__group=pk, date__year=year, date__month=month)
@@ -308,17 +240,19 @@ class GroupofCompanyLedger(TemplateView):
         context['sub_companies'] = sub_companies
         
         data = []
+        totals = {sub_company:0 for sub_company in sub_companies}
         dates = [obj['date'] for obj in duesells.values("date").distinct()]
         for obj in duecollections.values("date").distinct():
             if obj['date'] not in dates:
                 dates.append(obj['date'])
 
-        total_diesel = 0
         for date in dates:
             sub_company_data = []
             for sub_company in sub_companies:
                 per_company_sells = duesells.filter(date=date,customer=sub_company.pk)
                 per_company_amount = per_company_sells.aggregate(Sum('amount'))['amount__sum']
+                if per_company_amount:
+                    totals[sub_company] += per_company_amount
                 sub_company_data.append({
                     # 'instance':sub_company,
                     'sells': per_company_sells,
@@ -331,21 +265,10 @@ class GroupofCompanyLedger(TemplateView):
                 'sub_company_data': sub_company_data,
                 'amount': sells.aggregate(Sum("amount"))["amount__sum"] if sells.count() > 0 else False,
                 'collection': collection.aggregate(Sum("amount"))["amount__sum"] if collection.count() > 0 else False
-            }
-            # diesel = sells.filter(product__item__name="ডিজেল")
-            # print(diesel)
-            # if diesel.count() > 0:
-            #     d_qnt = diesel.aggregate(Sum('quantity'))['quantity__sum']
-            #     total_diesel += d_qnt
-            #     data_today.update({'diesel': d_qnt, 'total_diesel': total_diesel})
-            # others = sells.exclude(product__item__name="ডিজেল")
-            # print(others)
-            # if others.count() > 0:
-            #     o_amount = others.aggregate(Sum('amount'))['amount__sum']
-            #     data_today.update({'others': o_amount})
-                
+            } 
             data.append(data_today)
         
+        context['totals'] = totals
         balance = context['balance_bf']
         # data = sorted(data, key=lambda x:x['date'])
         for obj in data:

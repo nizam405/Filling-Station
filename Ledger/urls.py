@@ -2,7 +2,7 @@ from django.urls import path, register_converter, include
 from Core.converters import DateConverter
 register_converter(DateConverter, 'date')
 
-from .views.main import LedgerList, saveLedger
+from .views.main import LedgerList, saveLedger, RevenueLedger, ExpenditureLedger, WithdrawLedger
 from .views.customer_views import (
     CustomerLedger, GroupofCompanyLedger,
     CustomerBalanceView, deleteCustomerBalance,
@@ -40,5 +40,17 @@ urlpatterns = [
             path('<int:pk>', ProductLedger.as_view(), name='product-ledger'),
             path('<int:pk>/<int:month>-<int:year>/', ProductLedger.as_view(), name='product-ledger'),
         ])),
+    ])),
+    path('revenue/', include([
+        path('', RevenueLedger.as_view(), name='revenue-ledger'),
+        path('<int:month>-<int:year>/', RevenueLedger.as_view(), name='revenue-ledger'),
+    ])),
+    path('expenditure/', include([
+        path('', ExpenditureLedger.as_view(), name='expenditure-ledger'),
+        path('<int:month>-<int:year>/', ExpenditureLedger.as_view(), name='expenditure-ledger'),
+    ])),
+    path('withdraw/', include([
+        path('', WithdrawLedger.as_view(), name='withdraw-ledger'),
+        path('<int:month>-<int:year>/', WithdrawLedger.as_view(), name='withdraw-ledger'),
     ])),
 ]

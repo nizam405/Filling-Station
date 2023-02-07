@@ -1,4 +1,6 @@
 from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.contrib import messages
 from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import CreateView
 from django.db.models import Sum
@@ -6,7 +8,6 @@ import datetime
 
 from Customer.models import Customer, GroupofCompany, DueSell, DueCollection
 from Product.models import Product
-from Transaction.models import CashBalance
 from Ledger.models import CustomerBalance, GroupofCompanyBalance
 from Ledger.forms import CustomerLedgerFilterForm, GroupofCompanyLedgerFilterForm
 
@@ -17,26 +18,20 @@ class CustomerLedger(TemplateView):
         today = datetime.date.today()
         # pk
         if 'customer' in self.request.GET:
-            pk = self.request.GET.get('customer')
-        elif 'pk' in self.kwargs:
-            pk = self.kwargs['pk']
-        else: pk = 1
-        # Month
-        if 'month' in self.request.GET:
-            month = int(self.request.GET.get('month'))
-        elif 'month' in self.kwargs:
-            month = int(self.kwargs['month'])
-        else: month = today.month
-        # Year
-        if 'year' in self.request.GET:
-            year = int(self.request.GET.get('year'))
-        elif 'year' in self.kwargs:
-            year = int(self.kwargs['year'])
-        else: year = today.year
+            self.kwargs['pk'] = self.request.GET.get('customer')
+        elif 'pk' not in self.kwargs:
+            self.kwargs['pk'] = Customer.objects.filter(cust_type='Individual').first().pk
+        # Month and year
+        if 'month' in self.request.GET and 'year' in self.request.GET:
+            self.kwargs['month'] = int(self.request.GET.get('month'))
+            self.kwargs['year'] = int(self.request.GET.get('year'))
+        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
+            self.kwargs['month'] = today.month
+            self.kwargs['year'] = today.year
 
-        self.kwargs['pk'] = pk
-        self.kwargs['month'] = month
-        self.kwargs['year'] = year
+        pk = self.kwargs['pk']
+        month = self.kwargs['month']
+        year = self.kwargs['year']
 
         balances = CustomerBalance.objects.filter(customer=pk)
         if balances.count() == 0:
@@ -49,17 +44,19 @@ class CustomerLedger(TemplateView):
         target_date = datetime.date(year,month,1)
         first_bal_date = datetime.date(int(first_balance.year), int(first_balance.month),1)
         last_bal_date = datetime.date(int(last_balance.year), int(last_balance.month),1)
+        next_to_first = first_bal_date + datetime.timedelta(days=31)
+        next_to_last = last_bal_date + datetime.timedelta(days=31)
 
-        if target_date > last_bal_date + datetime.timedelta(days=31):
+        if target_date > next_to_last:
             return redirect('customer-ledger', 
                 pk = self.kwargs['pk'], 
-                month = last_bal_date.month, 
-                year = last_bal_date.year)
-        elif target_date < first_bal_date:
+                month = next_to_last.month, 
+                year = next_to_last.year)
+        elif target_date < next_to_first:
             return redirect('customer-ledger', 
                 pk = self.kwargs['pk'], 
-                month = first_bal_date.month, 
-                year = first_bal_date.year)
+                month = next_to_first.month, 
+                year = next_to_first.year)
 
         return super().get(request, *args, **kwargs)
     
@@ -161,26 +158,20 @@ class GroupofCompanyLedger(TemplateView):
         today = datetime.date.today()
         # pk
         if 'customer' in self.request.GET:
-            pk = self.request.GET.get('customer')
-        elif 'pk' in self.kwargs:
-            pk = self.kwargs['pk']
-        else: pk = 1
-        # Month
-        if 'month' in self.request.GET:
-            month = int(self.request.GET.get('month'))
-        elif 'month' in self.kwargs:
-            month = int(self.kwargs['month'])
-        else: month = today.month
-        # Year
-        if 'year' in self.request.GET:
-            year = int(self.request.GET.get('year'))
-        elif 'year' in self.kwargs:
-            year = int(self.kwargs['year'])
-        else: year = today.year
+            self.kwargs['pk'] = self.request.GET.get('customer')
+        elif 'pk' not in self.kwargs:
+            self.kwargs['pk'] = GroupofCompany.objects.first().pk
+        # Month and year
+        if 'month' in self.request.GET and 'year' in self.request.GET:
+            self.kwargs['month'] = int(self.request.GET.get('month'))
+            self.kwargs['year'] = int(self.request.GET.get('year'))
+        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
+            self.kwargs['month'] = today.month
+            self.kwargs['year'] = today.year
 
-        self.kwargs['pk'] = pk
-        self.kwargs['month'] = month
-        self.kwargs['year'] = year
+        pk = self.kwargs['pk']
+        month = self.kwargs['month']
+        year = self.kwargs['year']
 
         balances = GroupofCompanyBalance.objects.filter(customer=pk)
         if balances.count() == 0:
@@ -193,17 +184,19 @@ class GroupofCompanyLedger(TemplateView):
         target_date = datetime.date(year,month,1)
         first_bal_date = datetime.date(int(first_balance.year), int(first_balance.month),1)
         last_bal_date = datetime.date(int(last_balance.year), int(last_balance.month),1)
+        next_to_first = first_bal_date + datetime.timedelta(days=31)
+        next_to_last = last_bal_date + datetime.timedelta(days=31)
 
-        if target_date > last_bal_date + datetime.timedelta(days=31):
+        if target_date > next_to_last:
             return redirect('groupofcompany-ledger', 
                 pk = self.kwargs['pk'], 
-                month = last_bal_date.month, 
-                year = last_bal_date.year)
-        elif target_date < first_bal_date:
+                month = next_to_last.month, 
+                year = next_to_last.year)
+        elif target_date < next_to_first:
             return redirect('groupofcompany-ledger', 
                 pk = self.kwargs['pk'], 
-                month = first_bal_date.month, 
-                year = first_bal_date.year)
+                month = next_to_first.month, 
+                year = next_to_first.year)
         return super().get(request, *args, **kwargs)
     
     def get_context_data(self, *args, **kwargs):
@@ -304,13 +297,65 @@ class CustomerBalanceView(CreateView, ListView):
     model = CustomerBalance
     fields = '__all__'
     template_name = 'Ledger/customer_balance.html'
-    success_url = '.'
+
+    def get(self,request,*args, **kwargs):
+        today = datetime.date.today()
+        if CustomerBalance.objects.exists():
+            # first_bal_date = Storage.objects.first().date
+            last_bal_date = CustomerBalance.objects.last()
+            self.kwargs['month'] = last_bal_date.month
+            self.kwargs['year'] = last_bal_date.year
+        # elif 'month' in self.request.GET and 'year' in self.request.GET:
+        #     self.kwargs['month'] = int(self.request.GET['month'])
+        #     self.kwargs['year'] = int(self.request.GET['year'])
+        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
+            self.kwargs['month'] = today.month
+            self.kwargs['year'] = today.year
+
+        return super().get(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        month = self.kwargs['month']
+        year = self.kwargs['year']
+        qs = self.model.objects.filter(month=month, year=year)
+        return qs
+
+    def get_success_url(self):
+        return reverse_lazy('customer-balance', kwargs=self.kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        month = form.cleaned_data['month']
+        year = form.cleaned_data['year']
+        return redirect(reverse_lazy('customer-balance', kwargs={'month':month, 'year':year}))
+    
+    def form_invalid(self, form):
+        self.object_list = self.get_queryset()
+        messages.error(self.request, "এক পার্টির ব্যাল্যান্স মাসে একবারই লিপিবদ্ধ হয়!")
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
 
     def get_initial(self):
         initial = super().get_initial()
-        if 'cust_id' in self.kwargs:
-            initial.update({'customer':self.kwargs['cust_id']})
+        initial.update(self.kwargs)
         return initial
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # মাসিক খতিয়ান এর parameter সেট করার জন্য, যেন পরবর্তী মাসে চলে যায়
+        month = int(self.kwargs['month'])
+        year = int(self.kwargs['year'])
+        date = datetime.datetime(year,month,1)
+        target_date = date + datetime.timedelta(days=31)
+        context['month'] = target_date.month
+        context['year'] = target_date.year
+        # Show storage date on heading
+        context['due_month'] = month
+        context['due_year'] = year
+        qs = self.get_queryset()
+        if qs:
+            context['total'] = qs.aggregate(Sum('amount'))['amount__sum']
+        return context
 
 def deleteCustomerBalance(request, pk):
     obj = CustomerBalance.objects.get(pk=pk)
@@ -322,13 +367,38 @@ class GroupofCompanyBalanceView(CreateView, ListView):
     model = GroupofCompanyBalance
     fields = '__all__'
     template_name = 'Ledger/groupofcompany_balance.html'
-    success_url = '.'
+
+    def get_success_url(self):
+        return reverse_lazy('groupofcompany-balance', kwargs=self.kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        month = form.cleaned_data['month']
+        year = form.cleaned_data['year']
+        return redirect(reverse_lazy('groupofcompany-balance', kwargs={'month':month, 'year':year}))
+    
+    def form_invalid(self, form):
+        self.object_list = self.get_queryset()
+        messages.error(self.request, "এক পার্টির ব্যাল্যান্স মাসে একবারই লিপিবদ্ধ হয়!")
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
 
     def get_initial(self):
         initial = super().get_initial()
-        if 'cust_id' in self.kwargs:
-            initial.update({'customer':self.kwargs['cust_id']})
+        initial.update(self.kwargs)
         return initial
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # মাসিক খতিয়ান এর parameter সেট করার জন্য, যেন পরবর্তী মাসে চলে যায়
+        if 'month' in self.kwargs and 'year' in self.kwargs:
+            month = int(self.kwargs['month'])
+            year = int(self.kwargs['year'])
+            date = datetime.datetime(year,month,1)
+            target_date = date + datetime.timedelta(days=31)
+            context['month'] = target_date.month
+            context['year'] = target_date.year
+        return context
 
 def deleteGroupofCompanyBalance(request, pk):
     obj = CustomerBalance.objects.get(pk=pk)

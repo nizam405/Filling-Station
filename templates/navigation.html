@@ -1,69 +1,26 @@
-<nav id="sidebar" class="navbar navbar-light card mr-3 d-print-none">
-    <ul class="navbar-nav bangla" id="navbar">
-        {% comment %} <li class="nav-item bangla">
-            <div class="btn-group">
-                <h5 class="card-title">Transactions</h5>
-                <button class="btn btn-sm btn-info ml-4 hide-nav">
-                    <i class="bi bi-caret-up"></i>
-                </button>
-            </div>
-            <ul class="nav pl-3 flex-column">
-                <li class="nav-item">
-                    <a href="{% url 'purchases' %}" class="nav-link">Purchase</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'sells' %}" class="nav-link">Sell</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'expenditure-list' %}" class="nav-link">Expenditure</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'revenue-list' %}" class="nav-link">Revenue</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'duesell-list' %}" class="nav-link">Due Sell</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'duecollection-list' %}" class="nav-link">Due Collection</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'withdraw-list' %}" class="nav-link">Withdraw</a>
-                </li>
-            </ul>
-        </li> {% endcomment %}
-        {% comment %} <h5 class="card-title"><a href="#" class="nav-link">Monthly Ledger</a></h5> {% endcomment %}
-        <h5 class="card-title">মেন্যু</h5>
+<nav id="sidebar" class="card d-print-none">
+    <ul class="card-body" id="navbar">
+        <li class='nav-header'>মাল</li>
+        <li><a href="{% url 'products' %}">মালের তালিকা</a></li>
+        <li><a href="{% url 'daily-product-storage' %}">দৈনিক মজুদের পরিমাণ</a></li>
+        <li><a href="{% url 'product-storage' %}">মজুদ মাল</a></li>
+        <li><a href="{% url 'product-ledger' %}">মালের খতিয়ান</a></li>
+
+        <li class='nav-header'>আয়-ব্যয়</li>
+        <li><a href="{% url 'expenditure-group' %}">খরচের খাত</a></li>
+        <li><a href="{% url 'revenue-group' %}">আয়ের খাত</a></li>
+        <li><a href="{% url 'expenditure-ledger' %}">খরচের খতিয়ান</a></li>
+        <li><a href="{% url 'revenue-ledger' %}">আয়ের খতিয়ান</a></li>
         
-        <li class="nav-item">
-            <a href="{% url 'cashbalance-list' %}" class="nav-link">ব্যাল্যান্স</a>
-        </li>
-        <li class="nav-item">
-            <a href="{% url 'products' %}" class="nav-link">মালের তালিকা</a>
-        </li>
-        {% comment %} <li class="nav-item">
-            <a href="{% url 'selling-rates' %}" class="nav-link">Selling Rates</a>
-        </li> {% endcomment %}
-        <li class="nav-item">
-            <a href="{% url 'expenditure-group' %}" class="nav-link">খরচের খাত</a>
-        </li>
-        <li class="nav-item">
-            <a href="{% url 'revenue-group' %}" class="nav-link">আয়ের খাত</a>
-        </li>
-        <li class="nav-item">পার্টিসমূহ
-            <ul class="nav pl-3 flex-column">
-                <li class="nav-item">
-                    <a href="{% url 'groupofcompanies' %}" class="nav-link">গ্রুপ অফ কোম্পানি</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'customers' %}" class="nav-link">পার্টি</a>
-                </li>
-            </ul>
-        </li>
-        <li class="nav-item">
-            <a href="{% url 'owners' %}" class="nav-link">মালিক</a>
-        </li>
-        {% comment %} <li class="nav-item">
-            <a href="{% url 'investment-list' %}" class="nav-link">মালিকানা স্বত্ব</a>
-        </li> {% endcomment %}
+        <li class='nav-header'>পার্টিসমূহ</li>
+        <li><a href="{% url 'groupofcompanies' %}">গ্রুপ অফ কোম্পানি</a></li>
+        <li><a href="{% url 'customers' %}">পার্টি</a></li>
+        <li><a href="{% url 'groupofcompany-ledger' %}">গ্রুপ অফ কোম্পানি খতিয়ান</a></li>
+        <li><a href="{% url 'customer-ledger' %}">পার্টি খতিয়ান</a></li>
+        
+        <li class='nav-header'>ব্যাল্যান্স</li>
+        <li><a href="{% url 'cashbalance-list' %}">দৈনিক হাতে নগদ</a></li>
+        <li><a href="{% url 'customer-balance' %}">পার্টি ব্যাল্যান্স</a></li>
+        <li><a href="{% url 'groupofcompany-balance' %}">গ্রুপ অফ কোম্পানি ব্যাল্যান্স</a></li>
     </ul>
 </nav>

@@ -10,12 +10,13 @@
 {% block main %}
 
 {% load bootstrap4 %}
+{% load extra_tags %}
 
-<h3><span class="bangla">ব্যয়সমূহ - তারিখঃ</span> {{date}}</h3>
+<h3>ব্যয়সমূহ - তারিখঃ {{date|e2b_date}}</h3>
 <form action="" method="post">
     {% csrf_token %}
     <div id="form-container">
-        <div class="row bangla text-center">
+        <div class="row text-center">
             <div class="col-sm-3">খাত</div>
             <div class="col-sm-6">বিবরণ</div>
             <div class="col-sm-2">টাকা</div>
@@ -26,21 +27,22 @@
         <div class="row forms text-center">
             {{form.date}}
             {{form.id}}
-            <div class="col-sm-3 bangla">{% bootstrap_field form.group show_label=False %}</div>
+            <div class="col-sm-3">{% bootstrap_field form.group show_label=False %}</div>
             <div class="col-sm-6">{% bootstrap_field form.detail show_label=False %}</div>
-            <div class="col-sm-2">{% bootstrap_field form.amount show_label=False %}</div>
-            <div class="col-sm-1">{{form.DELETE}}</div>
+            <div class="col-sm-2 eng">{% bootstrap_field form.amount show_label=False %}</div>
+            <div class="col-sm-1 p-2">{{form.DELETE}}</div>
         </div>
         {% endfor %}
     </div>
     <div id="empty-form" class="d-none">
         {{empty_form.date}}
-        <div class="col-sm-3 bangla">{% bootstrap_field empty_form.group show_label=False %}</div>
+        <div class="col-sm-3">{% bootstrap_field empty_form.group show_label=False %}</div>
         <div class="col-sm-6">{% bootstrap_field empty_form.detail show_label=False %}</div>
-        <div class="col-sm-2">{% bootstrap_field empty_form.amount show_label=False %}</div>
-        <div class="col-sm-1">{{empty_form.DELETE}}</div>
+        <div class="col-sm-2 eng">{% bootstrap_field empty_form.amount show_label=False %}</div>
+        <div class="col-sm-1 p-2">{{empty_form.DELETE}}</div>
     </div>
     {% include 'forms_buttons.html' %}
+    <div class="p-2"><a href="{% url 'expenditure-group' %}">খরচের খাত যুক্ত করুন</a></div>
 </form>
 
 {% load static %}

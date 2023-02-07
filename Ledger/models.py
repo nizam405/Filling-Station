@@ -16,7 +16,7 @@ class CustomerBalance(models.Model):
         ordering = ['-year','-month']
 
     def __str__(self):
-        return f"{self.month}, {self.year} - {self.customer}"
+        return f"{self.month}, {self.year} - {self.customer} - {self.amount}"
     
     def get_absolute_url(self):
         return reverse("customer-ledger", kwargs={"pk": self.pk})
@@ -26,13 +26,13 @@ class GroupofCompanyBalance(models.Model):
     month = models.CharField(max_length=20, choices=MONTHS, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
     customer = models.ForeignKey(GroupofCompany, on_delete=models.CASCADE, verbose_name="পার্টি")
-    amount = models.IntegerField(default=0, verbose_name="পরিমাণ (টাকা)")
+    amount = models.IntegerField(default=0, verbose_name="পরিমাণ")
 
     class Meta:
         ordering = ['-year','-month','customer']
 
     def __str__(self):
-        return f"{self.month}, {self.year} - {self.customer}"
+        return f"{self.month}, {self.year} - {self.customer} - {self.amount}"
     
     def get_absolute_url(self):
         return reverse("groupofcompany-balance")
@@ -42,15 +42,20 @@ class GroupofCompanyBalance(models.Model):
 class Storage(models.Model):
     month = models.CharField(max_length=20, choices=MONTHS, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
-    product = models.ForeignKey(to=Product, on_delete=models.SET_NULL, null=True, verbose_name="মাল")
-    amount = models.FloatField(default=0, verbose_name="পরিমাণ")
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল")
+    quantity = models.FloatField(default=0, verbose_name="পরিমাণ")
+    price = models.IntegerField(default=0, verbose_name='ক্রয়মুল্য')
     
     class Meta:
         ordering = ['-year','-month','product']
         constraints = [models.UniqueConstraint(fields=['year','month','product'], name='unique_storage')]
 
+    def save(self, *args, **kwargs):
+        self.price = self.product.purchase_rate * self.quantity
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.month}, {self.year} - {self.product} - {self.amount}"
+        return f"{self.month}, {self.year} - {self.product} - {self.quantity}"
     
     def get_absolute_url(self):
         return reverse('ledger-list')

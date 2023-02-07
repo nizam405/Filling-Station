@@ -1,0 +1,11 @@
+2023-02-07
+----------
+For Views: LedgerList, ProdutLedger, RevenueLedger, ExpenditureLedger
+>> Redirect to 'Daily-transactions' if no 'Cashbalance' found
+>> Solved navigation problem. Limits only those page that has data. (prev,next, DateFilter)
+
+>> New Sidebar
+>> 'Storage' will save with price and show results for current month only
+>> 'CustomerBalance' will show results for current month only
+>> Pagination added in 'Daily Storage Reading'
+>> Print friedly design

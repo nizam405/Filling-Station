@@ -5,8 +5,8 @@ from django.urls import reverse
 
 # Create your models here.
 class CashBalance(models.Model):
-    date = models.DateField(default=timezone.now, unique=True)
-    amount = models.IntegerField(default=0)
+    date = models.DateField(default=timezone.now, unique=True, verbose_name="তারিখ")
+    amount = models.IntegerField(default=0, verbose_name="পরিমাণ")
     
     class Meta:
         ordering = ['date']

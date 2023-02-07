@@ -17,8 +17,8 @@ class GroupofCompany(models.Model):
         return reverse("groupofcompanies")
 
 class Customer(models.Model):
-    name = models.CharField(max_length=255, verbose_name="নাম")
-    short_name = models.CharField(max_length=25, verbose_name="সংক্ষিপ্ত নাম")
+    name = models.CharField(max_length=255, verbose_name="নাম", unique=True)
+    short_name = models.CharField(max_length=25, verbose_name="সংক্ষিপ্ত নাম", null=True, blank=True)
     cust_type = models.CharField(verbose_name="ধরণ", choices=customer_type, default=customer_type[0], max_length=20)
     group = models.ForeignKey(to=GroupofCompany, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="গ্রুপ")
     mobile = models.CharField(max_length=11, null=True, blank=True, verbose_name="মোবাইল")
@@ -39,8 +39,8 @@ class Customer(models.Model):
 class DueSell(models.Model):
     date = models.DateField(default=timezone.now, verbose_name="তারিখ")
     customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
-    product = models.ForeignKey(to=Product, on_delete=models.SET_NULL, null=True, verbose_name="মাল")
-    quantity = models.FloatField(default=0.0, verbose_name="পরিমাণ")
+    product = models.ForeignKey(to=Product, default=1, on_delete=models.SET_NULL, null=True, verbose_name="মাল")
+    quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
     rate = models.FloatField(default=0.0, verbose_name="দর")
     amount = models.IntegerField(default=0, verbose_name="মোট")
 

@@ -3,19 +3,19 @@
 {% load extra_tags %}
 {% block main %}
 
-<h3 class="bangla">ব্যাল্যান্স সমূহ</h3>
+<h3 class='print-center'>দৈনিক হাতে নগদ</h3>
 {% if object_list %}
 <table class="table table-sm table-striped table-bordered text-center">
-    <tr class="bangla">
+    <tr>
         <th>তারিখ</th>
         <th>টাকা</th>
-        <th></th>
+        <th class='d-print-none'></th>
     </tr>
     {% for object in object_list %}
     <tr>
         <td>{{object.date|e2b_date}}</td>
-        <td>{{object.amount|e2b_digit|ezynumber}}</td>
-        <td>
+        <td>{{object.amount|e2b_digit|ezynumber}}/=</td>
+        <td class='d-print-none'>
             {% if object == object_list.last %}
             <form method='POST' action="{% url 'delete-cashbalance' pk=object.pk %}">
                 {% csrf_token %}

@@ -15,16 +15,16 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
-<h3>মজুদ মাল
-    <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
+<h3 class='print-center'>মজুদ মাল - {{storage_month|e2b_month}}, {{storage_year|e2b_digit}}
+    <i class="bi bi-plus-circle btn p-0 d-print-none" id="add-form"></i>
 </h3>
-<div id="form-container" class="{{container_class}}">
+<div id="form-container" class="hidden d-print-none">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-sm-6">{% bootstrap_field form.month  layout='horizontal' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.year  layout='horizontal' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.product  layout='horizontal' %} </div>
-        <div class="col-sm-6">{% bootstrap_field form.amount  layout='horizontal' addon_after="লিটার"%}</div>
+        <div class="col-sm-6">{% bootstrap_field form.month layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.year layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.product layout='horizontal' %} </div>
+        <div class="col-sm-6">{% bootstrap_field form.quantity layout='horizontal' addon_after="<span class='bangla'>লিটার</span>" field_class='eng col-md-9' %}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'product-storage' %}" class="btn btn-secondary">Cancel</a>
@@ -32,22 +32,38 @@
     </form>
 </div>
 
+<div class='d-print-none'>{% bootstrap_messages %}</div>
+
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
         <th>মাস ও বছর</th>
         <th>মাল</th>
         <th>পরিমাণ</th>
+        <th>মুল্য</th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{sln|e2b_digit}}</td>
         <td class="text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
+        {% if object.product.type == 'Pack' %}
+        <td>
+            <span class="eng">{{object.product.name}}</span> {{object.product.capacity|e2b_digit}} লিঃ
+        </td>
+        <td>{{object.quantity|floatformat:-2|e2b_digit|ezynumber}} টি</td>
+        <td class='text-right'>{% if object.price %}{{object.price|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</td>
+        {% else %}
         <td>{{object.product}}</td>
-        <td>{{object.amount|e2b_digit|ezynumber}}</td>
+        <td>{{object.quantity|floatformat:-2|e2b_digit|ezynumber}} লিটার</td>
+        <td class='text-right'>{% if object.price %}{{object.price|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</td>
+        {% endif %}
     </tr>
     {% endfor %}
+    <tr class='text-right'>
+        <th colspan='4'>মজুদপণ্যের মোট ক্রয়মূল্যঃ</th>
+        <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
+    </tr>
     {% else %}
     <tr><td colspan="5" class="text-seocndary text-center">কোনো মজুদ মাল তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}

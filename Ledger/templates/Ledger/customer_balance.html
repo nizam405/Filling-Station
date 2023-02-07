@@ -15,17 +15,17 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
-<h3 class="bangla">পার্টি ব্যাল্যান্স
-    <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
+<h3 class='print-center'>পার্টি ব্যাল্যান্স - {{due_month|e2b_month}}, {{due_year|e2b_digit}}
+    <i class="bi bi-plus-circle btn p-0 d-print-none" id="add-form"></i>
 </h3>
-<div id="form-container" class="{{container_class}}">
+<div id="form-container" class="hidden d-print-none">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-sm-6 bangla">{% bootstrap_field form.month  layout='horizontal' %}</div>
-        <div class="col-sm-6 bangla">{% bootstrap_field form.year  layout='horizontal' %}</div>
-        <div class="col-sm-6 bangla">{% bootstrap_field form.customer  layout='horizontal' %} </div>
-        <div class="col-sm-6 bangla">{% bootstrap_field form.amount  layout='horizontal' addon_after="<span class='bangla'>টাকা</span>"%}</div>
-        <div class="col-12 nowrap text-center">
+        <div class="col-sm-6">{% bootstrap_field form.month  layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.year  layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.customer  layout='horizontal' %} </div>
+        <div class="col-sm-6">{% bootstrap_field form.amount  layout='horizontal' addon_after="<span class='bangla'>টাকা</span>" field_class='eng col-md-9' %}</div>
+        <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'customer-balance' %}" class="btn btn-secondary">Cancel</a>
         </div>
@@ -35,25 +35,29 @@
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
-        <th class="bangla">মাস ও বছর</th>
-        <th class="bangla">পার্টি</th>
-        <th class="bangla">পরিমাণ</th>
-        <th></th>
+        <th>মাস ও বছর</th>
+        <th>পার্টি</th>
+        <th>পরিমাণ</th>
+        <th class='d-print-none'></th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{sln|e2b_digit}}</td>
-        <td class="bangla text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
-        <td class="bangla">{{object.customer}}</td>
-        <td>{{object.amount|e2b_digit|ezynumber}}</td>
-        <td>
+        <td class="text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
+        <td class="text-left">{{object.customer}}</td>
+        <td class='text-right'>{% if object.amount %}{{object.amount|e2b_digit|ezynumber}}/={% endif %}</td>
+        <td class='d-print-none'>
             <a href="{% url 'delete-customer-balance' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
         </td>
     </tr>
     {% endfor %}
+    <tr class='text-right'>
+        <th colspan='3'>মোট বকেয়ার পরিমাণঃ</th>
+        <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
+    </tr>
     {% else %}
-    <tr><td colspan="5" class="text-seocndary text-center bangla">কোনো পার্টির ব্যাল্যান্স তালিকাভুক্ত করা হয়নি!</td><tr>
+    <tr><td colspan="5" class="text-seocndary text-center">কোনো পার্টির ব্যাল্যান্স তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
 

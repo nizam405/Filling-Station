@@ -5,19 +5,22 @@
     .form-control, .input-group-text {
         border-radius: 0;
     }
+    .copy-bal {display:none;}
 </style>
 {% endblock style %}
 {% block main %}
 
 {% load bootstrap4 %}
+{% load extra_tags %}
 
-<h3><span class="bangla">বকেয়া আদায় - তারিখঃ</span> {{date}}</h3>
+<h3>বকেয়া আদায় - তারিখঃ {{date|e2b_date}}</h3>
 <form action="" method="post">
     {% csrf_token %}
     <div id="form-container">
-        <div class="row bangla text-center">
-            <div class="col-sm-6">দেনাদার</div>
-            <div class="col-sm-4">টাকা</div>
+        <div class="row text-center">
+            <div class="col-sm-4">দেনাদার</div>
+            <div class="col-sm-3">আদায়</div>
+            <div class="col-sm-3">অবশিষ্ট পাওনা</div>
             <div class="col-sm-2">বাতিল</div>
         </div>
         {{formset.management_form}}
@@ -25,25 +28,89 @@
         <div class="row forms text-center">
             {{form.date}}
             {{form.id}}
-            <div class="col-sm-6 bangla">{% bootstrap_field form.customer show_label=False %}</div>
-            <div class="col-sm-4">{% bootstrap_field form.amount show_label=False %}</div>
-            <div class="col-sm-2">{{form.DELETE}}</div>
+            <div class="col-sm-4">{% bootstrap_field form.customer show_label=False %}</div>
+            <div class="col-sm-3 eng">{% bootstrap_field form.amount show_label=False %}</div>
+            <div class="col-sm-3" style="font-size: 1.5rem;">
+                <span class='bi bi-arrow-left-square mr-2 copy-bal' style='cursor:pointer;'></span>
+                <span class='remaining-bal eng'></span>
+            </div>
+            <div class="col-sm-2 p-2">{{form.DELETE}}</div>
         </div>
         {% endfor %}
     </div>
     <div id="empty-form" class="d-none">
         {{empty_form.date}}
-        <div class="col-sm-6 bangla">{% bootstrap_field empty_form.customer show_label=False %}</div>
-        <div class="col-sm-3">{% bootstrap_field empty_form.amount show_label=False %}</div>
-        <div class="col-sm-1">{{empty_form.DELETE}}</div>
+        <div class="col-sm-4">{% bootstrap_field empty_form.customer show_label=False %}</div>
+        <div class="col-sm-3 eng">{% bootstrap_field empty_form.amount show_label=False %}</div>
+        <div class="col-sm-3" style="font-size: 1.5rem;">
+            <span class='bi bi-arrow-left-square mr-2 copy-bal' style='cursor:pointer;'></span>
+            <span class='remaining-bal eng'></span>
+        </div>
+        <div class="col-sm-2 p-2">{{empty_form.DELETE}}</div>
     </div>
     {% include 'forms_buttons.html' %}
+    <div class="p-2"><a href="{% url 'customers' %}">পার্টি যুক্ত করুন</a></div>
 </form>
 {% load static %}
 <script src="{% static 'formset.js' %}"></script> 
 <script>
-    $("#add-form").click(addForm)
-    $(".delete-form").click(deleteForm)
+    function reserveAmount(){
+        let amount = $("input[id$='-amount']")
+        amount.attr('saved_amount',amount.val())
+    }
+    reserveAmount()
+    $("#add-form").click(function(){
+        addForm()
+        reserveAmount()
+        $("select[id$='-customer']").on('change', getRemainingBal)
+        $("input[id$='-amount']").on('keyup', getRemainingBal)
+    })
+    $(".delete-form").click(markDelete)
+
+    function copyBal(e){
+        target = e.target
+        parent = $(target).closest('.forms')
+        val = parent.find('.remaining-bal').html()
+        parent.find("input[id$='-amount']").val(val)
+        // Reset
+        parent.find('.copy-bal').hide()
+        parent.find('.remaining-bal').html(0)
+    }
+
+    function getRemainingBal(){
+        init_form = parseInt($('#id_form-INITIAL_FORMS').val())
+        let parent = $(this).closest('.forms')
+        // date is used for get class name or form number
+        date = parent.find("input[id$='-date']")
+        formNum = parseInt(date.attr('id').match(/\d+/)[0])+1
+
+        // input : current amount
+        let amount = parent.find("input[id$='-amount']").val()
+        let saved_amount = parent.find("input[id$='-amount']").attr('saved_amount')
+        
+        // from customer attr
+        let customer = parent.find("select[id$='-customer'] option:selected")
+        let due = customer.attr('due')
+        let collection = customer.attr('collection')
+        
+        if(init_form<=formNum){
+            collection -= saved_amount
+            console.log(collection)
+        }
+        // label: remaining balance
+        let rem_bal = parent.find('.remaining-bal')
+        rem_bal.html(due-collection-amount)
+        //console.log(amount)
+        if(amount==0 && rem_bal.html()!=''){
+            parent.find('.copy-bal').show()
+        } else {
+            parent.find('.copy-bal').hide()
+        }
+        parent.find('.copy-bal').off('click').click(copyBal)
+    }
+
+    $("select[id$='-customer']").on('change', getRemainingBal)
+    $("input[id$='-amount']").on('keyup', getRemainingBal)
 </script>
 
 {% endblock main %}

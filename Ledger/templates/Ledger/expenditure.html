@@ -28,10 +28,10 @@
     {% endif %}
 </div>
 
-<div class="bangla">
+<div>
     <div class="text-center">
         <h3>ব্যয়সমূহ</h3>
-        <h4>{% if month %}{{month|e2b_month}} {{year|e2b_digit}} এর {% endif %}খতিয়ান</h4>
+        <h4>{% if month %}{{month|e2b_month}}, {{year|e2b_digit}} এর {% endif %}খতিয়ান</h4>
     </div>
 
     <table class="table table-striped table-bordered table-sm">
@@ -53,8 +53,8 @@
         {% endfor %}
         <tr class="text-right">
             <td>মোটঃ</td>
-            {% for rg in totals %}
-            <td>{{rg.total_amount|e2b_digit|ezynumber}}/=</td>
+            {% for total in totals.values %}
+            <td>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</td>
             {% endfor %}
             <td>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</td>
         </tr>

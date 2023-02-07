@@ -33,6 +33,7 @@ def ExpenditureFormsetView(request, date):
     extra = 0 if qs.count() > 0 else 1
     ExpenditureFormSet = modelformset_factory(Expenditure, ExpenditureForm, extra=extra, can_delete=True)
     formset = ExpenditureFormSet(request.POST or None, queryset=qs)
+    formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Expenditure/expenditure_formset.html"

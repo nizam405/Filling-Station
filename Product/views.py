@@ -35,13 +35,14 @@ class StorageReadingView(CreateView, ListView):
     template_name = 'Product/storage.html'
     success_url = '.'
     fields = '__all__'
+    paginate_by = 20
     
     def get_queryset(self):
+        queryset = super().get_queryset()
         if 'date' in self.kwargs:
             date = self.kwargs['date']
-            queryset = self.model.objects.filter(date=date)
-            return queryset
-        return super().get_queryset()
+            queryset = queryset.filter(date=date)
+        return queryset
 
     def get_initial(self):
         initial = super().get_initial()
@@ -82,9 +83,11 @@ class StorageReadingDeleteView(DeleteView):
 # Purchase
 def PurchaseFormsetView(request, date):
     qs = Purchase.objects.filter(date=date)
+    # No extra form for edit or delete
     extra = 0 if qs.count() > 0 else 1
     PurchaseFormSet = modelformset_factory(Purchase, form=PurchaseForm, extra=extra, can_delete=True)
     formset = PurchaseFormSet(request.POST or None, queryset=qs)
+    formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Product/purchase_formset.html"
@@ -108,6 +111,7 @@ def SellFormsetView(request, date):
     extra = 0 if qs.count() > 0 else 1
     SellFormSet = modelformset_factory(Sell, SellForm, extra=extra, can_delete=True)
     formset = SellFormSet(request.POST or None, queryset=qs)
+    formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Product/sell_formset.html"

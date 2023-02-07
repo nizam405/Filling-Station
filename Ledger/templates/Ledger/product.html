@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}{{customer.name}} - খতিয়ান{% endblock title %}
+{% block title %}{{product.name}} - খতিয়ান{% endblock title %}
 {% block style %}
 <style>
     .full-details {display: none;}
@@ -13,7 +13,7 @@
 {% load bootstrap4 %}
 {% block main %}
 
-<div class="d-print-none bangla d-flex">
+<div class="d-print-none d-flex">
     {% if filter_form %}
     <form method="get" class="row" id="filter">
         <div class="col-md-4 pr-0">{% bootstrap_field filter_form.product layout='horizontal' %}</div>
@@ -34,14 +34,20 @@
     {% endif %}
 </div>
 
-<div class="bangla">
+<div>
     <div class="text-center">
-        <h3>{{product}} হিসাব</h3>
-        <h4>{% if month %}{{month|e2b_month}} {{year|e2b_digit}} এর {% endif %}খতিয়ান</h4>
+        <h3>
+            {% if product.type == 'Pack' %}
+            <span class="eng">{{product.name}}</span> {{product.capacity|e2b_digit}} লিঃ
+            {% else %}
+            {{product}} হিসাব
+            {% endif %}
+        </h3>
+        <h4>{% if month %}{{month|e2b_month}}, {{year|e2b_digit}} এর {% endif %}খতিয়ান</h4>
     </div>
 
-    <table class="table table-striped table-bordered table-sm">
-        <tr class="text-center">
+    <table class="table table-striped table-bordered table-sm text-center">
+        <tr>
             <th>তারিখ</th>
             <th>প্রাঃ মজুদ</th>
             <th>ক্রয়</th>
@@ -57,9 +63,12 @@
         {% for obj in qs %}
         <tr>
             <td>{{obj.date|e2b_date}}</td>
-            <td class="text-right">
+            <td>
                 {% if obj.pre_storage_qnt > 0 %}
-                <div>{{obj.pre_storage_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div>
+                    {{obj.pre_storage_qnt|floatformat:-2|e2b_digit|ezynumber}}
+                    {% if product.type == 'Loose' %}লিঃ{% endif %}
+                </div>
                 <div class="price">{{obj.pre_storage_price|e2b_digit|ezynumber}}/=</div>
                 {% else %}
                 <div class="text-center">
@@ -67,36 +76,45 @@
                 </div>
                 {% endif %}
             </td>
-            <td class="text-right">
+            <td>
                 {% if obj.purchase_qnt > 0 %}
-                <div>{{obj.purchase_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div>
+                    {{obj.purchase_qnt|floatformat:-2|e2b_digit|ezynumber}}
+                    {% if product.type == 'Loose' %}লিঃ{% endif %}
+                </div>
                 <div class="price">{{obj.purchase_amount|e2b_digit|ezynumber}}/=</div>
                 {% endif %}
             </td>
-            <td class="text-right">
+            <td>
                 {% if obj.sell_qnt > 0 %}
-                <div>{{obj.sell_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div>
+                    {{obj.sell_qnt|floatformat:-2|e2b_digit|ezynumber}}
+                    {% if product.type == 'Loose' %}লিঃ{% endif %}
+                </div>
                 <div class="price">{{obj.sell_amount|e2b_digit|ezynumber}}/=</div>
                 {% endif %}
             </td>
-            <td class="text-right">
+            <td>
                 {% if obj.remaining_storage_qnt > 0 %}
-                <div>{{obj.remaining_storage_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div>
+                    {{obj.remaining_storage_qnt|floatformat:-2|e2b_digit|ezynumber}}
+                    {% if product.type == 'Loose' %}লিঃ{% endif %}
+                </div>
                 <div class="price">{{obj.remaining_storage_amount|e2b_digit|ezynumber}}/=</div>
                 {% endif %}
             </td>
             {% if obj.storage_qnt > 0 %}
-            <td class="text-right">
+            <td>
                 {% if obj.tank_deep > 0 %}
                 {{obj.tank_deep|floatformat:-2|e2b_digit|ezynumber}} লিঃ
                 {% endif %}
             </td>
-            <td class="text-right">
+            <td>
                 {% if obj.lorry_load > 0 %}
                 {{obj.lorry_load|floatformat:-2|e2b_digit|ezynumber}} লিঃ
                 {% endif %}
             </td>
-            <td class="text-right">
+            <td>
                 {% if obj.diff_qnt != 0 %}
                 <i class="float-left bi 
                     {% if obj.diff_qnt < 0 %} bi-caret-down-fill text-danger
@@ -107,21 +125,27 @@
                 <div class="price">{{obj.diff_amount|e2b_digit|ezynumber}}/=</div>
                 {% endif %}
             </td>
-            <td class="text-right">
+            <td>
                 <div>{{obj.storage_qnt|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
                 <div class="price">{{obj.storage_amount|e2b_digit|ezynumber}}/=</div>
             </td>
             {% endif %}
         </tr>
         {% endfor %}
-        <tr class="text-right">
+        <tr>
             <th colspan="2">মোটঃ</th>
             <th>
-                <div>{{total.total_purchase_quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div>
+                    {{total.total_purchase_quantity|floatformat:-2|e2b_digit|ezynumber}}
+                    {% if product.type == 'Loose' %}লিঃ{% endif %}
+                </div>
                 <div class="price">{{total.total_purchase_amount|e2b_digit|ezynumber}}/=</div>
             </th>
             <th>
-                <div>{{total.total_sell_quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</div>
+                <div>
+                    {{total.total_sell_quantity|floatformat:-2|e2b_digit|ezynumber}}
+                    {% if product.type == 'Loose' %}লিঃ{% endif %}
+                </div>
                 <div class="price">{{total.total_sell_amount|e2b_digit|ezynumber}}/=</div>
             </th>
         </tr>

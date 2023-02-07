@@ -4,13 +4,13 @@ import datetime, calendar
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
-from django.db.models import Sum
+from django.db.models import Sum, Prefetch, QuerySet
 
 from Product.models import Sell, Purchase, StorageReading
-from Customer.models import DueSell, DueCollection
+from Customer.models import DueSell, DueCollection, Customer
 from Expenditure.models import Expenditure
 from Revenue.models import Revenue
-from Owner.models import Withdraw
+from Owner.models import Withdraw, Owner
 from .forms import DateForm, CashBalanceForm, CashBalanceForm2
 from .models import CashBalance
 
@@ -33,6 +33,9 @@ class DailyTransactionView(TemplateView):
     
     def get(self,request, *args, **kwargs):
         balances = CashBalance.objects.all()
+        if balances.count() == 0:
+            context = self.get_context_data()
+            return super(TemplateView, self).render_to_response(context)
         last_balance = balances.last()
         first_balance = balances.first()
         current_day = last_balance.date + datetime.timedelta(days=1)
@@ -55,9 +58,6 @@ class DailyTransactionView(TemplateView):
         if date < first_day:
             return redirect('daily-transactions', date=first_day)
             
-        if balances.count() == 0:
-            context = self.get_context_data()
-            return super(TemplateView, self).render_to_response(context)
 
         return super().get(request, *args, **kwargs)
 
@@ -76,8 +76,6 @@ class DailyTransactionView(TemplateView):
         context['next_day'] = date + datetime.timedelta(days=1)
         date_str = date.strftime("%d/%m/%Y")
         context['date_str'] = date_str
-        # date_str = date.strftime("%d %B, %Y")
-        context['date_form'] = DateForm(self.request.GET or None, initial={'date':date})
 
         context['active_accounts'] = True
         balances = CashBalance.objects.all()
@@ -86,6 +84,8 @@ class DailyTransactionView(TemplateView):
         if balances.count() == 0:
             context['active_accounts'] = False
             return context
+        # date_str = date.strftime("%d %B, %Y")
+        context['date_form'] = DateForm(self.request.GET or None, initial={'date':date})
 
         # Queries
         sells = Sell.objects.filter(date=date)
@@ -93,9 +93,32 @@ class DailyTransactionView(TemplateView):
         revenues = Revenue.objects.filter(date=date)
 
         purchases = Purchase.objects.filter(date=date)
+        # Duesell
         duesells = DueSell.objects.filter(date=date)
+        customers = Customer.objects.all()
+        duesell_data = []
+        for customer in customers:
+            cust_duesells = duesells.filter(customer=customer)
+            if cust_duesells:
+                duesell_data.append({
+                    'customer': customer,
+                    'due_sells': cust_duesells,
+                    'cust_total': cust_duesells.aggregate(Sum('amount'))['amount__sum']
+                })
+
         expenditures = Expenditure.objects.filter(date=date)
+        # Withdraws
         withdraws = Withdraw.objects.filter(date=date)
+        owners = Owner.objects.all()
+        withdraw_data = []
+        for owner in owners:
+            owner_wds = withdraws.filter(owner=owner)
+            if owner_wds:
+                withdraw_data.append({
+                    'owner': owner, 'withdraws': owner_wds,
+                    'owner_total': owner_wds.aggregate(Sum('amount'))['amount__sum']
+                })
+
         storages = StorageReading.objects.filter(date=date)
 
         context['sells'] = sells
@@ -107,11 +130,11 @@ class DailyTransactionView(TemplateView):
 
         context['purchases'] = purchases
         context['total_purchase'] = purchases.aggregate(Sum('amount'))['amount__sum']
-        context['duesells'] = duesells
+        context['duesells'] = duesell_data
         context['total_duesells'] = duesells.aggregate(Sum('amount'))['amount__sum']
         context['expenditures'] = expenditures
         context['total_expenditures'] = expenditures.aggregate(Sum('amount'))['amount__sum']
-        context['withdraws'] = withdraws
+        context['withdraws'] = withdraw_data
         context['total_withdraws'] = withdraws.aggregate(Sum('amount'))['amount__sum']
         context['storages'] = storages
         

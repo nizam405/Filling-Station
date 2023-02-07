@@ -9,8 +9,9 @@ function getPurchaseRate(e){
 
 function getSellingRate(e){
     target = e.target
-    let product = $(target).find(":selected")
     let parent = $(target).closest('.forms')
+    let product = parent.find("select[id$='-product'] option:selected")
+    console.log("parent:", parent)
     let rate = product.attr("selling_rate")
     parent.find("input[id$='-rate']").val(rate)
     console.log("Executed Selling Rate: ", rate)
@@ -32,13 +33,8 @@ function getRate(e){
     console.log("Executed Rate: ", amount/qnt)
 }
 
-$("input[id$='-quantity'], input[id$='-rate']").on('keyup', getAmount)
-$("#add-form").click(function(){
-    addForm()
-    $("select[id$='-product']").on('change', getSellingRate)
-    $("input[id$='-quantity'], input[id$='-rate']").on('keyup', function(e){
-        getAmount(e)
-    })
+$("input[id$='-quantity'], input[id$='-rate']").on({
+    change: getAmount, keyup: getAmount
 })
-
-$("input[id$='-amount']").on('keyup', getRate)
+//$("input[id$='-amount']").on('keyup', getRate)
+$("input[id$='-amount']").on({keyup: getRate, change: getRate})

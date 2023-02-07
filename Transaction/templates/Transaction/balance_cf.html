@@ -20,4 +20,29 @@
             {% endif %}
         </th>
     </tr>
+    <tr class='d-print-none'>
+        <td>হাতে নগদ</td>
+        <td>
+            <div class='form-group eng row mb-0'>
+                <div class='col-md-6'>
+                    <input type='number' id='cash' class='form-control'>
+                </div>
+                <div class='col-md-6'>
+                    <label id='adjust_amount' class='form-label p-2'></label>
+                </div>
+            </div>
+        </td>
+    </tr>
 </table>
+
+<script>
+    function getAdjusted(e){
+        target = e.target
+        let cash = $(target).val()
+        let calculated = {{balance_cf_abs}}
+        $('#adjust_amount').html(cash-calculated)
+    }
+    $('#cash').on({
+        change: getAdjusted, keyup: getAdjusted
+    })
+</script>

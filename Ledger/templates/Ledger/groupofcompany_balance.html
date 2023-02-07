@@ -15,16 +15,16 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
-<h3>গ্রুপ অফ কোম্পানি ব্যাল্যান্স
-    <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
+<h3 class='print-center'>গ্রুপ অফ কোম্পানি ব্যাল্যান্স
+    <i class="bi bi-plus-circle btn p-0 d-print-none" id="add-form"></i>
 </h3>
-<div id="form-container" class="{{container_class}}">
+<div id="form-container" class="hidden d-print-none">
     <form method="post" class="row mb-3">
         {% csrf_token %}
         <div class="col-sm-6">{% bootstrap_field form.month layout='horizontal' %}</div>
         <div class="col-sm-6">{% bootstrap_field form.year layout='horizontal' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.customer layout='horizontal' %} </div>
-        <div class="col-sm-6">{% bootstrap_field form.amount layout='horizontal' addon_after="টাকা"%}</div>
+        <div class="col-sm-6">{% bootstrap_field form.customer layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.amount layout='horizontal' field_class='eng col-md-9' addon_after="<span class='bangla'>টাকা</span>"%}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'customer-balance' %}" class="btn btn-secondary">Cancel</a>
@@ -53,7 +53,7 @@
     </tr>
     {% endfor %}
     {% else %}
-    <tr><td colspan="5" class="text-seocndary text-center bangla">কোনো পার্টির ব্যাল্যান্স তালিকাভুক্ত করা হয়নি!</td><tr>
+    <tr><td colspan="5" class="text-seocndary text-center">কোনো পার্টির ব্যাল্যান্স তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
 

@@ -15,14 +15,14 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
-<h3>দৈনিক মজুদ মালের হিসাব</h3>
-<div id="form-container">
+<h3 class='print-center'>দৈনিক মজুদ মালের হিসাব</h3>
+<div id="form-container" class='d-print-none'>
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-sm-6">{% bootstrap_field form.date  layout='horizontal' label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.product  layout='horizontal'  label_class='col-sm-4' field_class='col-sm-8' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.tank_deep  layout='horizontal' label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.lorry_load  layout='horizontal' addon_after="লিটার" label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.date layout='horizontal' label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.product layout='horizontal'  label_class='col-sm-4' field_class='col-sm-8' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.tank_deep layout='horizontal' label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.lorry_load layout='horizontal' addon_after="লিটার" label_class='col-sm-4' field_class='col-sm-8 eng' %}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             {% if date %}
@@ -41,7 +41,7 @@
         <th>ট্যাংক ডিপ</th>
         <th>লোড</th>
         <th>মোট মজুদ</th>
-        <th></th>
+        <th class='d-print-none'></th>
     </tr>
     {% if object_list %}
     {% for object in object_list %}
@@ -49,10 +49,14 @@
         <td>{{object.date|e2b_date}}</td>
         <td>{{object.product}}</td>
         <td>{{object.tank_deep|floatformat:-2|e2b_digit|ezynumber}} লিটার</td>
-        <td>{{object.lorry_load|floatformat:-2|e2b_digit|ezynumber}} লিটার</td>
-        <td>{{object.tank_deep|add:object.lorry_load|e2b_digit|ezynumber}} লিটার</td>
         <td>
-            {% if object.date == object_list.last.date %}
+            {% if object.lorry_load %}
+            {{object.lorry_load|floatformat:-2|e2b_digit|ezynumber}} লিটার
+            {% endif %}
+        </td>
+        <td>{{object.tank_deep|add:object.lorry_load|e2b_digit|ezynumber}} লিটার</td>
+        <td class='p-0 d-print-none'>
+            {% if object.date == object_list.first.date %}
             <form method="POST" action="{% url 'delete-daily-product-storage' pk=object.pk %}">
                 {% csrf_token %}
                 {% if date %}
@@ -70,6 +74,36 @@
     <tr><td colspan="5" class="text-seocndary text-center">কোনো মজুদ মাল তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
+
+<nav>
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Previous</span>
+        </li>
+        {% endif %}
+        <li class="page-item active">
+            <span class="page-link">
+            {{ page_obj.number }}
+            <span class="sr-only">(current)</span>
+            </span>
+        </li>
+        {% if page_obj.has_next %}
+            <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+            <span class="page-link">Next</span>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+  
 
 {% comment %} {% load static %}
 <script src="{% static 'form_list.js' %}"></script> {% endcomment %}

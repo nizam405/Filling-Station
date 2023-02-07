@@ -40,14 +40,14 @@
         <i class="new-window bi bi-box-arrow-in-up-left btn py-0 float-right d-print-none" style="font-size: 1.5rem"></i>
         <h4 class="text-center"><u>পার্টি হিসাব</u></h4>
         <div class="pb-1 d-print-none">
-            <a href="{% url 'groupofcompany-balance' %}" class="btn btn-light">গ্রুপ অফ কোম্পানি ব্যাল্যান্স</a>
-            <a href="{% url 'customer-balance' %}" class="btn btn-light">পার্টি ব্যাল্যান্স</a>
+            <a href="{% url 'groupofcompany-balance' month=prev.month year=prev.year %}" class="btn btn-light">গ্রুপ অফ কোম্পানি ব্যাল্যান্স</a>
+            <a href="{% url 'customer-balance' month=prev.month year=prev.year %}" class="btn btn-light">পার্টি ব্যাল্যান্স</a>
         </div>
         <table class="table table-sm table-bordered table-striped">
             <tr class="text-center">
                 <th>পার্টি</th>
                 <th>পূর্ববর্তী পাওনা</th>
-                <th>বিক্রয়</th>
+                <th>চলতি মাস বকেয়া</th>
                 <th>আদায়</th>
                 <th>বর্তমান পাওনা</th>
             </tr>
@@ -82,7 +82,7 @@
         <i class="new-window bi bi-box-arrow-in-up-left btn py-0 float-right d-print-none" style="font-size: 1.5rem"></i>
         <h4 class="text-center"><u>মজুদপণ্য</u></h4>
         <div class="pb-1 d-print-none">
-            <a href="{% url 'product-storage' %}" class="btn btn-light">প্রারম্ভিক মজুদের তালিকা</a>
+            <a href="{% url 'product-storage' month=prev.month year=prev.year %}" class="btn btn-light">প্রারম্ভিক মজুদের তালিকা</a>
         </div>
         <table class="table table-sm table-bordered table-striped">
             <tr class="text-center">
@@ -167,11 +167,11 @@
                         {% for revenue in revenues %}
                         <tr>
                             <td>{{revenue.group__name}}</td>
-                            <td>{{revenue.total_amount|e2b_digit|ezynumber}}/=</td>
+                            <td class="text-right">{{revenue.total_amount|e2b_digit|ezynumber}}/=</td>
                         </tr>
                         {% endfor %}
-                        <tr>
-                            <th class="text-right">মোটঃ</th>
+                        <tr class="text-right">
+                            <th>মোটঃ</th>
                             <th>{{revenue_total|e2b_digit|ezynumber}}/=</th>
                         </tr>
                     </table>
@@ -194,11 +194,11 @@
                         {% for withdraw in withdraws %}
                         <tr>
                             <td>{{withdraw.owner__name}}</td>
-                            <td>{{withdraw.total_amount|e2b_digit|ezynumber}}/=</td>
+                            <td class="text-right">{{withdraw.total_amount|e2b_digit|ezynumber}}/=</td>
                         </tr>
                         {% endfor %}
-                        <tr>
-                            <th class="text-right">মোটঃ</th>
+                        <tr class="text-right">
+                            <th>মোটঃ</th>
                             <th>{{withdraw_total|e2b_digit|ezynumber}}/=</th>
                         </tr>
                     </table>
@@ -222,11 +222,11 @@
                         {% for expenditure in expenditures %}
                         <tr>
                             <td>{{expenditure.group__name}}</td>
-                            <td>{{expenditure.total_amount|e2b_digit|ezynumber}}/=</td>
+                            <td class="text-right">{{expenditure.total_amount|e2b_digit|ezynumber}}/=</td>
                         </tr>
                         {% endfor %}
-                        <tr>
-                            <th class="text-right">মোটঃ</th>
+                        <tr class="text-right">
+                            <th>মোটঃ</th>
                             <th>{{expenditure_total|e2b_digit|ezynumber}}/=</th>
                         </tr>
                     </table>

@@ -1,25 +1,67 @@
+
+@font-face {
+    font-family: "kalpurush_static";
+    src: url("fonts/kalpurush.ttf") format("truetype");
+}
+
+.bangla {
+    font-family: "kalpurush_static";
+}
+
+@font-face {
+    font-family: "Siyamrupali_static";
+    src: url("fonts/Siyamrupali.ttf") format("truetype");
+}
+
+.bangla2 {
+    font-family: "Siyamrupali_static";
+}
+
 .wrapper {
     display: flex;
 }
 
 #sidebar {
-    width: 250px;
+    min-width: 220px;
+    min-height: 100dvh;
+}
+
+#navbar {
     display: block;
+    font-family: "Siyamrupali_static";
 }
 
 #sidebarCollapse{display: none;}
 
-#navbar {
-    width: 150px;
+#sidebar ul {
+    margin: 0;
+    padding: 0;
 }
 
-@font-face {
-    font-family: "kalpurush_static";
-    src: url("kalpurush.ttf") format("truetype");
+#sidebar ul li {
+    list-style-type: none;
 }
 
-.bangla {
-    font-family: "kalpurush_static";
+#sidebar ul li.nav-header {
+    background-color: #666;
+    color: white;
+    padding: 5px 15px;
+    margin-top: 15px;
+}
+
+#sidebar a:hover {
+    border-left: 3px solid tomato;
+    border-right: 3px solid tomato;
+    text-decoration: none;
+}
+
+#sidebar a, #sidebar a:link #sidebar a:visited {
+    color: #333;
+    padding: 5px 15px;
+    display: block;
+    white-space: nowrap;
+    border-left: 3px solid white;
+    border-right: 3px solid white;
 }
 
 .eng {
@@ -29,7 +71,6 @@
 .hide-nav {display: none;}
 
 .action-btns {display: none;}
-/* .group-label .bi {font-size: 1.2rem;} */
 
 #cr-plus, #dr-plus {
     font-size: 1.5rem;
@@ -41,6 +82,10 @@
     list-style: none;
     padding: 0;
     margin: 0;
+}
+
+@media print {
+    .print-center {text-align: center;}
 }
 
 @media only screen and (max-width: 991px) {
@@ -66,6 +111,10 @@
         display: inline;
     }
 }
+
+/* @media screen {
+    #main{margin-bottom: 200px;}
+} */
 
 #dr-add-btn {
     display: none;

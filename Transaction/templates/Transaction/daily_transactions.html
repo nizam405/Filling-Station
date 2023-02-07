@@ -21,7 +21,8 @@
 
 {% load extra_tags %}
 {% load bootstrap4 %}
- 
+
+{% if date_form %}
 <div class="row container-fluid px-0 d-print-none eng">
     <div class="col-md-9">
         <form method="get" class="row">
@@ -42,7 +43,14 @@
         </div>
     </div>
 </div>
-<div class="d-print-none">
+{% endif %}
+<div class="text-center">
+    <h3 class="d-none d-print-block">প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
+    <h3>দৈনিক লেনদেন</h3>
+    <h5 class="d-none d-print-block">তারিখ: {{date|e2b_date}}</h5>
+</div>
+
+<div>
     <i class="text-info">মজুদ মালের পরিমানঃ</i>
     {% if storages.count == 0 %}<span class="text-danger">তালিকাভুক্ত হয়নি</span>{% endif %}
     {% for store in storages %}
@@ -51,11 +59,6 @@
     {% if not forloop.last %}, {% endif %}
     {% endfor %}
     <a href="{% url 'daily-product-storage' date %}"><i class="bi bi-pencil-square text-info"></i></a>
-</div>
-<div class="text-center">
-    <h3 class="d-none d-print-block">প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
-    <h3>দৈনিক লেনদেন</h3>
-    <h5 class="d-none d-print-block">তারিখ: {{date|e2b_date}}</h5>
 </div>
 
 <div class="row" id="transaction-table">
@@ -67,7 +70,7 @@
                 <th>বিবরন</th>
                 <th>পরিমান</th>
                 <th>টাকা</th>
-                <th class="subtotal">টাকা</th>
+                <th class="subtotal">মোট</th>
             </tr>
             {% if balance_bf_side == 'debit' %}
             <tr>
@@ -96,13 +99,11 @@
                 <td class="text-right">{{obj.product.capacity|floatformat:-2|e2b_digit|ezynumber}} লিঃ &times; {{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} </td>
                 {% endif %}
                 <td class="text-right">{{obj.amount|floatformat:-2|e2b_digit|ezynumber}}</td>
-                <td class="subtotal"></td>
+                {% if forloop.first %}
+                <td rowspan="{{sells.count}}" class="subtotal text-right align-bottom">{{total_sell|e2b_digit|ezynumber}}</td>
+                {% endif %}
             </tr>
             {% endfor %}
-            <tr class="subtotal">
-                <td colspan="3" class="cp-3 text-right">মোটঃ</td>
-                <td class="text-right">{{total_sell|e2b_digit|ezynumber}}</td>
-            </tr>
             {% endif %}
 
             <tr {% if revenues.count == 0 %}class="d-print-none"{% endif %}>
@@ -119,13 +120,11 @@
                     {% if revenue.detail %}-{{revenue.detail}}{% endif %}
                 </td>
                 <td class="text-right">{{revenue.amount|e2b_digit|ezynumber}}</td>
-                <td class="subtotal"></td>
+                {% if forloop.first %}
+                <td class="subtotal text-right align-bottom">{{total_revenues|e2b_digit|ezynumber}}</td>
+                {% endif %}
             </tr>
             {% endfor %}
-            <tr class="subtotal">
-                <td colspan="3" class="cp-3 text-right">মোটঃ</td>
-                <td class="text-right">{{total_revenues|e2b_digit|ezynumber}}</td>
-            </tr>
             {% endif %}
 
             <tr {% if duecollections.count == 0 %}class="d-print-none"{% endif %}>
@@ -140,13 +139,11 @@
             <tr class="transaction-entry">
                 <td colspan="2">{{duecollection.customer}}</td>
                 <td class="text-right">{{duecollection.amount|e2b_digit|ezynumber}}</td>
-                <td class="subtotal"></td>
+                {% if forloop.first %}
+                <td rowspan="{{duecollections.count}}" class="subtotal text-right align-bottom">{{total_duecollections|e2b_digit|ezynumber}}</td>
+                {% endif %}
             </tr>
             {% endfor %}
-            <tr class="subtotal">
-                <td colspan="3" class="cp-3 text-right">মোটঃ</td>
-                <td class="text-right">{{total_duecollections|e2b_digit|ezynumber}}</td>
-            </tr>
             {% endif %}
 
             <tr>
@@ -163,7 +160,7 @@
                 <th>বিবরন</th>
                 <th>পরিমান</th>
                 <th>টাকা</th>
-                <th class="subtotal">টাকা</th>
+                <th class="subtotal">মোট</th>
             </tr>
             
             {% if balance_bf_side == 'credit' %}
@@ -191,13 +188,11 @@
                 <td class="text-right">{{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</td>
                 {% endif %}
                 <td class="text-right">{{obj.amount|e2b_digit|ezynumber}}</td>
-                <td class="subtotal"></td>
+                {% if forloop.first %}
+                <td rowspan="{{purchases.count}}" class="subtotal text-right align-bottom">{{total_purchase|e2b_digit|ezynumber}}</td>
+                {% endif %}
             </tr>
             {% endfor %}
-            <tr class="subtotal">
-                <td colspan="3" class="cp-3 text-right">মোটঃ</td>
-                <td class="text-right">{{total_purchase|e2b_digit|ezynumber}}</td>
-            </tr>
             {% endif %}
 
             <tr {% if expenditures.count == 0 %}class="d-print-none"{% endif %}>
@@ -214,42 +209,11 @@
                     {% if expenditure.detail %}- {{expenditure.detail}}{% endif %}
                 </td>
                 <td class="text-right">{{expenditure.amount|e2b_digit|ezynumber}}</td>
-                <td class="subtotal"></td>
+                {% if forloop.first %}
+                <td rowspan="{{expenditures.count}}" class="subtotal text-right align-bottom">{{total_expenditures|e2b_digit|ezynumber}}</td>
+                {% endif %}
             </tr>
             {% endfor %}
-            <tr class="subtotal">
-                <td colspan="3" class="cp-3 text-right">মোটঃ</td>
-                <td class="text-right">{{total_expenditures|e2b_digit|ezynumber}}</td>
-            </tr>
-            {% endif %}
-            
-            <tr {% if duesells.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">বাকি বিক্রয়
-                    {% if can_change %}
-                    <a href="{% url 'duesell' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
-                    {% endif %}
-                </th>
-            </tr>
-            {% if duesells %}
-            {% for obj in duesells %}
-            <tr class="transaction-entry">
-                
-                <td>
-                    {{obj.customer}} - 
-                    {% if obj.product.type == "Loose" %} {{obj.product.name}}
-                    {% else %} <span class="eng">{{obj.product.brand}}</span>{% endif %}
-                </td>
-                <td class="text-right">{{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</td>
-                <td class="text-right">{{obj.product.capacity|e2b_digit}} লিঃ &times; {{obj.quantity|floatformat:-2|e2b_digit|ezynumber}}</td>
-                
-                <td class="text-right">{{obj.amount|e2b_digit|ezynumber}}</td>
-                <td class="subtotal"></td>
-            </tr>
-            {% endfor %}
-            <tr class="subtotal">
-                <td colspan="3" class="cp-3 text-right">মোটঃ</td>
-                <td class="text-right">{{total_duesells|e2b_digit|ezynumber}}</td>
-            </tr>
             {% endif %}
             
             <tr {% if withdraws.count == 0 %}class="d-print-none"{% endif %}>
@@ -260,11 +224,21 @@
                 </th>
             </tr>
             {% if withdraws %}
-            {% for withdraw in withdraws %}
+            {% for obj in withdraws %}
             <tr class="transaction-entry">
-                <td colspan="2">{{withdraw.owner.name}} - {{withdraw.detail}}</td>
-                <td class="text-right">{{withdraw.amount|e2b_digit|ezynumber}}</td>
-                <td class="subtotal"></td>
+                <td colspan='3'>
+                    <div class='row'>
+                        <div class="col-12"><u>{{obj.owner.name}}:</u></div>
+                        {% for withdraw in obj.withdraws %}
+                        <div class="col-8 pl-4">
+                            {% if withdraw.detail %}{{withdraw.detail}}
+                            {% else %}---{% endif %}
+                        </div>
+                        <div class="col-4 text-right">{{withdraw.amount|e2b_digit|ezynumber}}</div>
+                        {% endfor %}
+                    </div>
+                </td>
+                <td class='subtotal text-right align-bottom'>{{obj.owner_total|e2b_digit|ezynumber}}</td>
             </tr>
             {% endfor %}
             <tr class="subtotal">
@@ -273,6 +247,33 @@
             </tr>
             {% endif %}
 
+            <tr {% if duesells.count == 0 %}class="d-print-none"{% endif %}>
+                <th colspan="4" class="group-label">বাকি বিক্রয়
+                    {% if can_change %}
+                    <a href="{% url 'duesell' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
+                    {% endif %}
+                </th>
+            </tr>
+            {% if duesells %}
+            {% for obj in duesells %}
+            <tr class="transaction-entry">
+                <td colspan="2">
+                    {{obj.customer}} - 
+                    {% for duesell in obj.due_sells %}
+                    {% if duesell.product.type == 'Pack' %}
+                    <span class="eng">{{duesell.product.short_name}}</span>
+                    {% else %}{{duesell.product.short_name}}
+                    {% endif %}
+                    : {{duesell.quantity|floatformat:-2|e2b_digit|ezynumber}}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td class="text-right">{{obj.cust_total|e2b_digit|ezynumber}}</td>
+                {% if forloop.first %}
+                <td rowspan="{{duesells|length}}" class="subtotal text-right align-bottom">{{total_duesells|e2b_digit|ezynumber}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% endif %}
             <tr>
                 <th colspan="3" class="cp-3 text-right">সর্বমোটঃ</th>
                 <th class="text-right">{{total_credit|e2b_digit|ezynumber}}</th>

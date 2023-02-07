@@ -15,15 +15,15 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
-<h3 class="bangla">মালিক
+<h3>মালিক
     <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
 </h3>
 <div id="form-container" class="{{container_class}}">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-md-6 bangla">{% bootstrap_field form.name  layout='horizontal' %}</div>
-        <div class="col-md-6 bangla">{% bootstrap_field form.mobile  layout='horizontal' %}</div>
-        <div class="col nowrap">
+        <div class="col-md-6">{% bootstrap_field form.name  layout='horizontal' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.mobile  layout='horizontal' field_class="eng" %}</div>
+        <div class="col nowrap eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'owners' %}" class="btn btn-secondary">Cancel</a>
         </div>
@@ -33,16 +33,16 @@
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
-        <th class="bangla">নাম</th>
-        <th class="bangla">মোবাইল</th>
+        <th>নাম</th>
+        <th>মোবাইল</th>
         <th></th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
     <tr>
-        <td>{{ sln }}</td>
-        <td class="bangla">{{object.name}}</td>
-        <td>{% if object.mobile %}{{object.mobile}}{% else %}-{% endif %}</td>
+        <td>{{ sln|e2b_digit }}</td>
+        <td>{{object.name}}</td>
+        <td class="eng">{% if object.mobile %}{{object.mobile}}{% else %}-{% endif %}</td>
         <td>
             <a href="{% url 'update-owner' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-owner' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
@@ -50,7 +50,7 @@
     </tr>
     {% endfor %}
     {% else %}
-    <tr><td colspan="4" class="text-seocndary text-center bangla">মালিক তালিকাভুক্ত করা হয়নি!</td><tr>
+    <tr><td colspan="4" class="text-seocndary text-center">মালিক তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
 

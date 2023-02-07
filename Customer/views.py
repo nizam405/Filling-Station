@@ -57,6 +57,7 @@ def DueCollectionFormsetView(request, date):
     extra = 0 if qs.count() > 0 else 1
     DueCollectionFormSet = modelformset_factory(DueCollection, DueCollectionForm, extra=extra, can_delete=True)
     formset = DueCollectionFormSet(request.POST or None, queryset=qs)
+    formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Customer/duecollection_formset.html"
@@ -80,6 +81,7 @@ def DueSellFormsetView(request, date):
     extra = 0 if qs.count() > 0 else 1
     DueSellFormSet = modelformset_factory(DueSell, DueSellForm, extra=extra, can_delete=True)
     formset = DueSellFormSet(request.POST or None, queryset=qs)
+    formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Customer/duesell_formset.html"

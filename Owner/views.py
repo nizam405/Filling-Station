@@ -34,6 +34,7 @@ def WithdrawFormsetView(request, date):
     extra = 0 if qs.count() > 0 else 1
     WithdrawFormSet = modelformset_factory(Withdraw, WithdrawForm, extra=extra, can_delete=True)
     formset = WithdrawFormSet(request.POST or None, queryset=qs)
+    formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Owner/withdraw_formset.html"

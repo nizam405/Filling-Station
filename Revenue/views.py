@@ -33,6 +33,7 @@ def RevenueFormsetView(request, date):
     extra = 0 if qs.count() > 0 else 1
     RevenueFormSet = modelformset_factory(Revenue, RevenueForm, extra=extra, can_delete=True)
     formset = RevenueFormSet(request.POST or None, queryset=qs)
+    formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
     empty_form.initial = {'date':date}
     template = "Revenue/revenue_formset.html"
@@ -43,12 +44,9 @@ def RevenueFormsetView(request, date):
         }
 
     if request.method == 'POST':
-        # if formset.errors:
-        #     print(formset.errors)
+        if formset.errors:
+            print(formset.errors)
         if formset.is_valid():
             formset.save()
-            # instances = formset.save(commit=False)
-            # for obj in formset.deleted_objects:
-            #     obj.delete()
             return redirect('daily-transactions', date)
     return render(request,template,context)

@@ -1,7 +1,10 @@
 from django import forms
 from .choices import MONTHS, YEAR
-from .models import CustomerBalance, GroupofCompanyBalance, Storage
+# from Customer.choices import customerDueChoice
+from .models import CustomerBalance, GroupofCompanyBalance, Storage, BadDebt
+from Core.widgets import SelectCustomer
 # from Customer.models import Customer
+# from django.db.models import Q
 
 # class FilterForm(forms.Form):
 #     qs = Customer.objects.filter(cust_type='Individual')
@@ -31,3 +34,13 @@ class StorageFilterForm(forms.ModelForm):
     class Meta:
         model = Storage
         fields = ['product','month','year']
+
+class BadDebtForm(forms.ModelForm):
+    disable_customer = forms.BooleanField(
+        required=False, label="পার্টি নিষ্ক্রিয় করুন",
+        widget=forms.CheckboxInput())
+    class Meta:
+        model = BadDebt
+        # fields = '__all__'
+        fields = ['month','year','customer','amount', 'disable_customer']
+        widgets = {'customer':SelectCustomer}

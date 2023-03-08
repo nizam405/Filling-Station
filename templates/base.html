@@ -9,45 +9,66 @@
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'bootstrap-4.4.1-dist/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'jquery-ui.css' %}">
     <script src="{% static 'jquery-3.6.0.min.js' %}"></script>
-    <script src="{% static 'jquery-ui.js' %}"></script>
+    {% comment %} DatePicker 
+    <link rel="stylesheet" href="{% static 'date_picker/bootstrap-datetimepicker.min.css' %}">
+    <script src="{% static 'date_picker/bootstrap-datetimepicker.min.js' %}"></script>
+    {% endcomment %}
     <title>{% block title %}{% endblock title %}</title>
     {% block style %}{% endblock style %}
 </head>
-<body>
-    <div class="container-fluid pl-0 bangla">
-        <div class="bg-info d-print-none row">
-            <h2><a href="{% url 'home' %}" class="nav-link text-light bangla2">
-                <i class="bi bi-fuel-pump pl-3"></i> প্রধান সি.এন.জি এন্ড ফিলিং স্টেশন
-            </a></h2>
+<body class='bangla'>
+    <nav class="sticky-top navbar navbar-light bg-light d-print-none p-0">
+        <div class='bg-info w-100'>
+            <h2>
+                <a href="{% url 'home' %}" class="nav-link text-light bangla2">
+                    <i class="bi bi-fuel-pump"></i> প্রধান সি.এন.জি এন্ড ফিলিং স্টেশন
+                </a>
+            </h2>
         </div>
-        <div class="wrapper">
-            {% include 'navigation.html' %}
-            <div id="content" class="container-fluid">
-                <nav class="navbar navbar-light bg-light px-0 d-print-none">
-                    <div>
-                        <button type="button" id="sidebarCollapse" class="btn btn-info rounded-0">
-                            <i class="bi bi-justify"></i>
-                        </button>
-                        <a href="{% url 'daily-transactions' %}" class="btn btn-primary rounded-0">দৈনিক লেনদেন</a>
-                        {% if month and year %}
-                        <a href="{% url 'ledger-list' month year %}" class="btn btn-info rounded-0">মাসিক খতিয়ান</a>
-                        {% else %}
-                        <a href="{% url 'ledger-list' %}" class="btn btn-info rounded-0">মাসিক খতিয়ান</a>
-                        {% endif %}
-                        <a href="{% url 'incomestatement' %}" class="btn btn-info rounded-0">আয়-ব্যায় বিবরণী</a>
-                        
-                        <i class="bi bi-printer btn py-0" style="font-size: 1.5rem" onclick="window.print()"></i>
-                    </div>
-                </nav>
-                <div id="main">
-                    {% block main %}
-                    {% endblock main %}
-                </div>
-            </div>
+        <div id='menu' class="pl-3">
+            <button type="button" id="sidebarCollapse" class="btn btn-info menu-item">
+                <i class="bi bi-justify"></i>
+            </button>
+            <!-- Daily Transaction -->
+            <a href="{% url 'daily-transactions' %}" class="btn btn-primary menu-item">দৈনিক লেনদেন</a>
+            <!-- Ledgers -->
+            {% if month and year %}
+            {% comment %} <a href="{% url 'ledger-list'       month year %}" class="btn btn-info rounded-0">মাসিক খতিয়ান</a> {% endcomment %}
+            <a href="{% url 'customer-topsheet' month year %}" class="btn btn-info menu-item">পার্টি খতিয়ান</a>
+            <a href="{% url 'product-topsheet'  month year %}" class="btn btn-info menu-item">মালের খতিয়ান</a>
+            <a href="{% url 'revenue-ledger'    month year %}" class="btn btn-info menu-item">আয়ের খতিয়ান</a>
+            <a href="{% url 'expenditure-ledger' month year %}" class="btn btn-info menu-item">ব্যায়ের খতিয়ান</a>
+            <a href="{% url 'withdraw-ledger' month year %}" class="btn btn-info menu-item">উত্তোলন</a>
+            <a href="{% url 'incomestatement'   month year %}" class="btn btn-info menu-item">আয়-ব্যায় বিবরণী</a>
+            {% else %}
+            {% comment %} <a href="{% url 'ledger-list' %}" class="btn btn-info rounded-0">মাসিক খতিয়ান</a> {% endcomment %}
+            <a href="{% url 'customer-topsheet' %}" class="btn btn-info menu-item">পার্টি খতিয়ান</a>
+            <a href="{% url 'product-topsheet' %}" class="btn btn-info menu-item">মালের খতিয়ান</a>
+            <a href="{% url 'revenue-ledger' %}" class="btn btn-info menu-item">আয়ের খতিয়ান</a>
+            <a href="{% url 'expenditure-ledger' %}" class="btn btn-info menu-item">ব্যায়ের খতিয়ান</a>
+            <a href="{% url 'withdraw-ledger' %}" class="btn btn-info menu-item">উত্তোলন</a>
+            <a href="{% url 'incomestatement' %}" class="btn btn-info menu-item">আয়-ব্যায় বিবরণী</a>
+            {% endif %}
+            
+            <i class="bi bi-printer btn py-0" style="font-size: 1.5rem" onclick="window.print()"></i>
+        </div>
+    </nav>
+
+    <div id="content" class="container-fluid d-flex">
+        {% include 'navigation.html' %}
+        <div class='w-100'>
+            {% block main %}
+            {% endblock main %}
         </div>
     </div>
+
+    <div class="eng text-center text-secondary" id="footer">
+        Developed by CyberWith. 
+        Contact: <a href="mailto:nizamuddin405@gmail.com" >nizamuddin405@gmail.com</a>;
+        01303036193
+    </div>
+
     <script src="{% static 'bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
     <script>
         $(document).ready(function(){

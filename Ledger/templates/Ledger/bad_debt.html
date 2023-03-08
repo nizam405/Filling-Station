@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}অনাদায়ী পাওনা{% endblock title %}
+{% block style %}
+<style>
+    .hidden {
+        display: none;
+    }
+    #add-form {
+        font-size: 2rem;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load extra_tags %}
+{% load bootstrap4 %}
+
+<h3 class='print-center'>অনাদায়ী পাওনা
+    <i class="bi bi-plus-circle btn p-0 d-print-none" id="add-form"></i>
+</h3>
+<div id="form-container" class="hidden d-print-none">
+    <form method="post" class="row mb-3">
+        {% csrf_token %}
+        <div class="col-md-4">{% bootstrap_field form.month  layout='horizontal' %}</div>
+        <div class="col-md-4">{% bootstrap_field form.year  layout='horizontal' %}</div>
+        <div class="col-md-4 text-center" style="font-size: 1.5rem;">
+            <span class='bi bi-arrow-down-square mr-2 copy-bal' style='cursor:pointer;'></span>
+            <span class='remaining-bal eng'></span>
+        </div>
+        <div class="col-md-4">{% bootstrap_field form.customer  layout='horizontal' %}</div>
+        <div class="col-md-4">{% bootstrap_field form.disable_customer  layout='horizontal' %}</div>
+        <div class="col-md-4">{% bootstrap_field form.amount  layout='horizontal' addon_after="<span class='bangla'>টাকা</span>" field_class='eng col-md-9' %}</div>
+        <div class="col-12 nowrap text-center eng">
+            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
+            <a href="{% url 'baddebt' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<table class="table table-sm table-striped table-bordered text-center">
+    <tr>
+        <th>#</th>
+        <th>মাস ও বছর</th>
+        <th>পার্টি</th>
+        <th>পরিমাণ</th>
+        <th class='d-print-none'></th>
+    </tr>
+    {% if object_list %}
+    {% for object,sln in object_list|zip %}
+    <tr>
+        <td>{{sln|e2b_digit}}</td>
+        <td class="text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
+        <td class="text-left">{{object.customer}}</td>
+        <td class='text-right'>{% if object.amount %}{{object.amount|e2b_digit|ezynumber}}/={% endif %}</td>
+        <td class='d-print-none'>
+            <a href="{% url 'delete-baddebt' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
+        </td>
+    </tr>
+    {% endfor %}
+    <tr class='text-right'>
+        <th colspan='3'>মোট অনাদায়ী পাওনার পরিমাণঃ</th>
+        <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="text-seocndary text-center">কোনো অনাদায়ী পাওনা তালিকাভুক্ত করা হয়নি!</td><tr>
+    {% endif %}
+</table>
+
+{% load static %}
+<script src="{% static 'form_list.js' %}"></script>
+<script>
+    function reserveAmount(){
+        let amount = $("input[id='id_amount']")
+        amount.attr('saved_amount',amount.val())
+    }
+    reserveAmount()
+
+    function copyBal(e){
+        target = e.target
+        parent = $(target).closest('form')
+        val = parent.find('.remaining-bal').html()
+        parent.find("input[id='id_amount']").val(val)
+        // Reset
+        parent.find('.copy-bal').hide()
+        parent.find('.remaining-bal').html(0)
+    }
+
+    function getRemainingBal(){
+        let parent = $(this).closest('form')
+
+        // input : current amount
+        let amount = parent.find("input[id='id_amount']").val()
+        let saved_amount = parent.find("input[id='id_amount']").attr('saved_amount')
+        
+        // from customer attr
+        let customer = parent.find("select[id='id_customer'] option:selected")
+        let due = customer.attr('due')
+        let collection = customer.attr('collection')
+        
+        if(saved_amount < 0){
+            // For saved / initialized forms
+            collection -= saved_amount
+        }
+        // label: remaining balance
+        let rem_bal = parent.find('.remaining-bal')
+        rem_bal.html(due-collection-amount)
+        //console.log(amount)
+        if(amount==0 && rem_bal.html()!=''){
+            parent.find('.copy-bal').show()
+        } else {
+            parent.find('.copy-bal').hide()
+        }
+        parent.find('.copy-bal').off('click').click(copyBal)
+    }
+
+    $("select[id='id_customer']").on('change', getRemainingBal)
+    $("input[id='id_amount']").on('keyup', getRemainingBal)
+</script>
+
+{% endblock main %}

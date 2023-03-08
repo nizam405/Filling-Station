@@ -1,5 +1,5 @@
-<nav id="sidebar" class="card d-print-none">
-    <ul class="card-body" id="navbar">
+<nav id="sidebar" class="d-print-none">
+    <ul id="navbar">
         <li class='nav-header'>মাল</li>
         <li><a href="{% url 'products' %}">মালের তালিকা</a></li>
         <li><a href="{% url 'daily-product-storage' %}">দৈনিক মজুদের পরিমাণ</a></li>
@@ -17,6 +17,9 @@
         <li><a href="{% url 'customers' %}">পার্টি</a></li>
         <li><a href="{% url 'groupofcompany-ledger' %}">গ্রুপ অফ কোম্পানি খতিয়ান</a></li>
         <li><a href="{% url 'customer-ledger' %}">পার্টি খতিয়ান</a></li>
+
+        <li class='nav-header'>মালিক/অংশীদার</li>
+        <li><a href="{% url 'ownersequity' %}">মূলধন</a></li>
         
         <li class='nav-header'>ব্যাল্যান্স</li>
         <li><a href="{% url 'cashbalance-list' %}">দৈনিক হাতে নগদ</a></li>

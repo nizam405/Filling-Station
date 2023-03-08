@@ -6,6 +6,8 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from .models import Product, Purchase, Sell, StorageReading
 from .forms import SellForm, PurchaseForm, StorageReadingForm
+from datetime import timedelta
+from bootstrap_datepicker_plus.widgets import DatePickerInput
 
 # Product
 class ProductView(CreateView, ListView):
@@ -33,21 +35,37 @@ class ProductDeleteView(DeleteView):
 class StorageReadingView(CreateView, ListView):
     model = StorageReading
     template_name = 'Product/storage.html'
-    success_url = '.'
-    fields = '__all__'
+    # fields = '__all__'
+    form_class = StorageReadingForm
     paginate_by = 20
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
+
+    def get_success_url(self):
+        url = reverse_lazy('daily-product-storage')
         if 'date' in self.kwargs:
-            date = self.kwargs['date']
-            queryset = queryset.filter(date=date)
-        return queryset
+            url = reverse_lazy('daily-product-storage', kwargs={'date':self.kwargs['date']})
+        return  url
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     if 'date' in self.kwargs:
+    #         date = self.kwargs['date']
+    #         queryset = queryset.filter(date=date)
+    #     return queryset
+    
+    # def get_form(self):
+    #     form = super().get_form()
+    #     form.fields['date'].widget = DatePickerInput()
+    #     return form
 
     def get_initial(self):
         initial = super().get_initial()
-        if 'date' in self.kwargs:
-            initial.update({'date':self.kwargs['date']})
+        if self.model.objects.exists():
+            date = self.model.objects.order_by('date').last().date
+            qs = self.model.objects.filter(date=date)
+            if qs.count() > 1:
+                date = date + timedelta(days=1)
+        elif 'date' in self.kwargs:
+            date = self.kwargs['date']
+        initial.update({'date':date})
         return initial
     
     def get_context_data(self, **kwargs):

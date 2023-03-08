@@ -26,5 +26,5 @@ class StorageReadingForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'product': SelectProduct,
-            'date': forms.HiddenInput,
+            'date': forms.SelectDateWidget,
             }

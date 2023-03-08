@@ -20,7 +20,9 @@
         <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
         <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
         <div class="col-md-3 p-0" id="buttons">
-            {% bootstrap_button 'Go' button_type='submit' button_class='btn btn-success' %}
+            <button type="submit" class='btn' id='go-btn'>
+                <i class='bi bi-arrow-right-square-fill text-success'></i>
+            </button>
             <a href="{% url 'revenue-ledger' month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
             <a href="{% url 'revenue-ledger' month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
         </div>
@@ -44,7 +46,9 @@
         </tr>
         {% for revenue in data %}
         <tr>
-            <td>{{revenue.date|e2b_date}}</td>
+            <td>
+                <a href="{% url 'daily-transactions' date=revenue.date %}">{{revenue.date|e2b_date}}</a>
+            </td>
             {% for rg in revenue.groups %}
             <td class="text-right">{% if rg > 0 %}{{rg|e2b_digit|ezynumber}}/={% endif %}</td>
             {% endfor %}

@@ -21,8 +21,9 @@
 <div id="form-container" class="{{container_class}}">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-sm-8">{% bootstrap_field form.name  layout='horizontal' %}</div>
-        <div class="col-sm-4 eng">
+        <div class="col-sm-6">{% bootstrap_field form.name  layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.status  layout='horizontal' %}</div>
+        <div class="col-sm-12 eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'groupofcompanies' %}" class="btn btn-secondary">Cancel</a>
         </div>

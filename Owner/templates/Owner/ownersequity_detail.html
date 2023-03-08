@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}{{owner.name}} এর মালিকানা স্বত্ব{% endblock title %}
+{% block style %}
+<style>
+    .full-details {display: none;}
+    #filter select, #buttons button, #buttons a {
+        border-radius:0rem;
+    }
+    table td:nth-child(1) {
+        text-align: center;
+    }
+    table td:nth-child(2) {
+        text-align: left;
+    }
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap4 %}
+{% block main %}
+
+<div class="d-print-none d-flex">
+    {% if filter_form %}
+    <form method="get" class="row" id="filter">
+        <div class="col-md-4 pr-0">{% bootstrap_field filter_form.owner layout='horizontal' %}</div>
+        <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div class="col-md-3 p-0" id="buttons">
+            <button type="submit" class='btn' id='go-btn'>
+                <i class='bi bi-arrow-right-square-fill text-success'></i>
+            </button>
+            <a href="{% url 'ownersequity-details' pk=pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
+            <a href="{% url 'ownersequity-details' pk=pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<table class="table table-sm table-striped table-bordered text-right">
+    <tr class="text-center">
+        <th>তারিখ</th>
+        <th>বিবরণ</th>
+        <th>উত্তোলন</th>
+        <th>টাকা</th>
+    </tr>
+    <tr>
+        <td>১ {{prev_oe.month|e2b_month}}, {{prev_oe.year|e2b_digit}}</td>
+        <td colspan="2">প্রারম্ভিক মূলধন</td>
+        <td>{{prev_oe.amount|e2b_digit|ezynumber}}/=</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td colspan="2">মুনাফা</td>
+        <td>{{current_oe.profit|e2b_digit|ezynumber}}/=</td>
+    </tr>
+    {% if investments %}
+    {% for investment in investments %}
+    <tr>
+        <td>{{investment|e2b_date}}</td>
+        <td>অতিরিক্ত মূলধন - {{investment.detail}}</td>
+        <td>{{investment.amount|e2b_digit|ezynumber}}</td>
+        {% if forloop.first %}
+        <td rowspan="{{investments.count}}">{{total_investment|e2b_digit|ezynumber}}/=</td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    {% endif %}
+
+    <tr>
+        <th colspan="4" class="text-left">বাদঃ উত্তোলনসমূহ</th>
+    </tr>
+    {% for row in withdraws %}
+    <tr>
+        <td>{{row.date|e2b_date}}</td>
+        <td>
+            {% for item in row.wds %}
+                <div class="float-left">{% if item.detail %}{{item.detail}}{% endif %}</div>
+                <div class="float-right">{% if item.amount %}{{item.amount|e2b_digit|ezynumber}}/={% endif %}</div>
+                <div class="clearfix"></div>
+            {% endfor %}
+        </td>
+        <td class="align-bottom">{% if row.total %}{{row.total|e2b_digit|ezynumber}}/={% endif %}</td>
+        {% if forloop.first %}
+        <td class="align-bottom" rowspan="{{wd_rowspan}}">
+            ({% if total_withdraw %}{{total_withdraw|e2b_digit|ezynumber}}{% endif %}/=)
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    <tr>
+        <th colspan="3">বর্তমান মালিকানা স্বত্বঃ</th>
+        <th>{{current_oe.amount|e2b_digit|ezynumber}}/=</th>
+    </tr>
+</table>
+
+{% endblock main %}

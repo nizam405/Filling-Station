@@ -17,18 +17,31 @@
     font-family: "Siyamrupali_static";
 }
 
-.wrapper {
-    display: flex;
+#content {
+    min-height: 100vh;
+}
+
+#footer {
+    background-color: aliceblue;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    z-index: 1000;
 }
 
 #sidebar {
     min-width: 220px;
-    min-height: 100dvh;
+    box-shadow: 0px -5px 15px lightgray;
+    z-index: 998;
+    min-height: 90vh;
+    height: 100%;
+    margin-right: 15px;
+    margin-top: -15px;
 }
 
-#navbar {
-    display: block;
+#sidebar #navbar {
     font-family: "Siyamrupali_static";
+    background-color: #fff;
 }
 
 #sidebarCollapse{display: none;}
@@ -43,15 +56,16 @@
 }
 
 #sidebar ul li.nav-header {
-    background-color: #666;
+    background-color: lightslategray;
     color: white;
     padding: 5px 15px;
     margin-top: 15px;
 }
 
 #sidebar a:hover {
-    border-left: 3px solid tomato;
-    border-right: 3px solid tomato;
+    border-left: 3px solid #007bff;
+    border-right: 3px solid #007bff;
+    background-color: #bfdeff;
     text-decoration: none;
 }
 
@@ -62,6 +76,16 @@
     white-space: nowrap;
     border-left: 3px solid white;
     border-right: 3px solid white;
+    transition: all 0.2s;
+}
+
+#menu {
+    margin-top: 8px;
+}
+
+#menu .menu-item {
+    border-radius: 0;
+    margin-bottom: 8px;
 }
 
 .eng {
@@ -76,6 +100,14 @@
     font-size: 1.5rem;
 }
 
+#go-btn {
+    padding: 0;
+}
+#go-btn .bi {
+    font-size: 2.2rem;
+    line-height: 100%;
+}
+
 .nowrap {white-space: nowrap;}
 
 .no-bullet {
@@ -86,6 +118,19 @@
 
 @media print {
     .print-center {text-align: center;}
+    a {
+        text-decoration: none !important; 
+        color: #000 !important;
+    }
+    #footer, #footer * {
+        color: #999 !important;
+    }
+}
+
+@media screen {
+    #content {
+        margin-bottom: 100px;
+    }
 }
 
 @media only screen and (max-width: 991px) {
@@ -111,10 +156,6 @@
         display: inline;
     }
 }
-
-/* @media screen {
-    #main{margin-bottom: 200px;}
-} */
 
 #dr-add-btn {
     display: none;

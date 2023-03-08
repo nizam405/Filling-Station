@@ -80,6 +80,7 @@
     function getRemainingBal(){
         init_form = parseInt($('#id_form-INITIAL_FORMS').val())
         let parent = $(this).closest('.forms')
+        
         // date is used for get class name or form number
         date = parent.find("input[id$='-date']")
         formNum = parseInt(date.attr('id').match(/\d+/)[0])+1
@@ -93,9 +94,9 @@
         let due = customer.attr('due')
         let collection = customer.attr('collection')
         
-        if(init_form<=formNum){
+        if(formNum<=init_form){
+            // For saved / initialized forms
             collection -= saved_amount
-            console.log(collection)
         }
         // label: remaining balance
         let rem_bal = parent.find('.remaining-bal')

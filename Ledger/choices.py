@@ -17,7 +17,8 @@ MONTHS = [
 ]
 
 today = date.today()
-currentMonth = 12 if today.month == 1 else today.month-1
+currentMonth = today.month
+prevMonth = 12 if today.month == 1 else today.month-1
 
 firstYear = 2022
 currentYear = today.year

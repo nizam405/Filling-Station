@@ -44,7 +44,7 @@ class Purchase(models.Model):
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল")
     quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
     rate = models.FloatField(default=0, verbose_name="দর")
-    amount = models.IntegerField(default=0, verbose_name="মোট")
+    amount = models.IntegerField(null=True, blank=False, verbose_name="মোট")
 
     class Meta:
         ordering = ['-date']
@@ -60,7 +60,7 @@ class Sell(models.Model):
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল")
     quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
     rate = models.FloatField(default=0, verbose_name="দর")
-    amount = models.IntegerField(default=0, verbose_name="মোট")
+    amount = models.IntegerField(null=True, blank=False, verbose_name="মোট")
 
     class Meta:
         ordering = ['-date']
@@ -74,7 +74,7 @@ class Sell(models.Model):
 class StorageReading(models.Model):
     date = models.DateField(default=timezone.now, verbose_name="তারিখ")
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE, limit_choices_to={'need_rescale':True}, verbose_name="মাল")
-    tank_deep = models.FloatField(default=0, verbose_name="ট্যাংক ডিপ")
+    tank_deep = models.FloatField(null=True, blank=False, verbose_name="ট্যাংক ডিপ")
     lorry_load = models.FloatField(default=0, verbose_name="লোড")
 
     class Meta:

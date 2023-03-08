@@ -2,25 +2,31 @@ from django.urls import path, register_converter, include
 from Core.converters import DateConverter
 register_converter(DateConverter, 'date')
 
-from .views.main import LedgerList, saveLedger, RevenueLedger, ExpenditureLedger, WithdrawLedger
+from .views.main import saveLedger, RevenueLedger, ExpenditureLedger, WithdrawLedger
 from .views.customer_views import (
+    CustomerTopSheet,
     CustomerLedger, GroupofCompanyLedger,
     CustomerBalanceView, deleteCustomerBalance,
     GroupofCompanyBalanceView, deleteGroupofCompanyBalance,
+    BadDebtView, deleteBadDebt,
 )
-from .views.product_views import StorageView, ProductLedger
+from .views.product_views import StorageView, ProductLedger, ProductTopSheet
 from .views.incomestatement_view import IncomeStatementView
 
 urlpatterns = [
-    path('', include([
-        path('', LedgerList.as_view(), name='ledger-list'),
-        path('<int:month>-<int:year>/', LedgerList.as_view(), name='ledger-list'),
-    ])),
     path('customer/', include([
+        path('topsheet/', include([
+            path('', CustomerTopSheet.as_view(), name='customer-topsheet'),
+            path('<int:month>-<int:year>/', CustomerTopSheet.as_view(), name='customer-topsheet'),
+        ])),
+        path('bad-debt/', include([
+            path('', BadDebtView.as_view(), name='baddebt'),
+            path('<int:pk>/delete', deleteBadDebt, name='delete-baddebt'),
+        ])),
         path('', include([
             path('', CustomerLedger.as_view(), name='customer-ledger'),
-            path('<int:pk>/', CustomerLedger.as_view(), name='customer-ledger'),
-            path('<int:pk>/<int:month>-<int:year>/', CustomerLedger.as_view(), name='customer-ledger'),
+            path('<int:customer>/', CustomerLedger.as_view(), name='customer-ledger'),
+            path('<int:customer>/<int:month>-<int:year>/', CustomerLedger.as_view(), name='customer-ledger'),
         ])),
         path('balance/', include([
             path('', CustomerBalanceView.as_view(), name='customer-balance'),
@@ -32,8 +38,8 @@ urlpatterns = [
     path('groupofcompany/', include([
         path('', include([
             path('', GroupofCompanyLedger.as_view(), name='groupofcompany-ledger'),
-            path('<int:pk>/', GroupofCompanyLedger.as_view(), name='groupofcompany-ledger'),
-            path('<int:pk>/<int:month>-<int:year>/', GroupofCompanyLedger.as_view(), name='groupofcompany-ledger'),
+            path('<int:customer>/', GroupofCompanyLedger.as_view(), name='groupofcompany-ledger'),
+            path('<int:customer>/<int:month>-<int:year>/', GroupofCompanyLedger.as_view(), name='groupofcompany-ledger'),
         ])),
         path('balance/', include([
             path('', GroupofCompanyBalanceView.as_view(), name='groupofcompany-balance'),
@@ -43,16 +49,20 @@ urlpatterns = [
         ])),
     ])),
     path('product/', include([
-        path('storage/', include([
-            path('', StorageView.as_view(), name='product-storage'),
-            path('<int:product_id>/', StorageView.as_view(), name='product-storage'),
-            path('<int:product_id>/<int:month>-<int:year>/', StorageView.as_view(), name='product-storage'),
-            path('<int:month>-<int:year>/', StorageView.as_view(), name='product-storage'),
+        path('topsheet', include([
+            path('', ProductTopSheet.as_view(), name='product-topsheet'),
+            path('<int:month>-<int:year>/', ProductTopSheet.as_view(), name='product-topsheet'),
         ])),
         path('',include([
             path('', ProductLedger.as_view(), name='product-ledger'),
             path('<int:pk>', ProductLedger.as_view(), name='product-ledger'),
             path('<int:pk>/<int:month>-<int:year>/', ProductLedger.as_view(), name='product-ledger'),
+        ])),
+        path('storage/', include([
+            path('', StorageView.as_view(), name='product-storage'),
+            path('<int:product_id>/', StorageView.as_view(), name='product-storage'),
+            path('<int:product_id>/<int:month>-<int:year>/', StorageView.as_view(), name='product-storage'),
+            path('<int:month>-<int:year>/', StorageView.as_view(), name='product-storage'),
         ])),
     ])),
     path('revenue/', include([

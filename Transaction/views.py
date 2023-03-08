@@ -3,16 +3,17 @@ from django.urls import reverse_lazy
 import datetime, calendar
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
-from django.db.models import Sum, Prefetch, QuerySet
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.db.models import Sum
 
 from Product.models import Sell, Purchase, StorageReading
 from Customer.models import DueSell, DueCollection, Customer
 from Expenditure.models import Expenditure
 from Revenue.models import Revenue
-from Owner.models import Withdraw, Owner
+from Owner.models import Withdraw, Owner, Investment
 from .forms import DateForm, CashBalanceForm, CashBalanceForm2
 from .models import CashBalance
+from Core.choices import last_day_of_month
 
 class DailyTransactionView(TemplateView):
     template_name = "Transaction/daily_transactions.html"
@@ -23,21 +24,23 @@ class DailyTransactionView(TemplateView):
         if 'balance_form' in request.POST:
             if context['balance_form'].is_valid():
                 context['balance_form'].save()
-                num_days = calendar.monthrange(date.year,date.month)[1]
-                last_date = datetime.date(date.year,date.month,num_days)
+                last_date = last_day_of_month(date.year,date.month)
+                print(last_date==date)
                 if date == last_date:
-                    return redirect('save-ledger',date)
+                    return redirect(reverse_lazy('save-ledger',kwargs={'date':date}))
 
             return redirect('.', date)
         return super(TemplateView, self).render_to_response(context)
     
     def get(self,request, *args, **kwargs):
-        balances = CashBalance.objects.all()
-        if balances.count() == 0:
+        if not CashBalance.objects.exists():
             context = self.get_context_data()
             return super(TemplateView, self).render_to_response(context)
-        last_balance = balances.last()
-        first_balance = balances.first()
+        # In models, CashBalances are ordered by '-date'
+        last_balance = CashBalance.objects.order_by('date').last()
+        first_balance = CashBalance.objects.order_by('date').first()
+        self.kwargs['last_balance'] = last_balance
+        
         current_day = last_balance.date + datetime.timedelta(days=1)
         first_day = first_balance.date + datetime.timedelta(days=1)
         # if request with no date, just redirect to next day
@@ -58,14 +61,14 @@ class DailyTransactionView(TemplateView):
         if date < first_day:
             return redirect('daily-transactions', date=first_day)
             
-
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)        
         today = datetime.date.today()
         if 'date_day' in self.request.GET:
-            date = datetime.date(int(self.request.GET.get('date_year')),
+            date = datetime.date(
+                int(self.request.GET.get('date_year')),
                 int(self.request.GET.get('date_month')),
                 int(self.request.GET.get('date_day')))
         elif 'date' in self.kwargs:
@@ -78,10 +81,8 @@ class DailyTransactionView(TemplateView):
         context['date_str'] = date_str
 
         context['active_accounts'] = True
-        balances = CashBalance.objects.all()
-        context['balances'] = balances
         # If no balance at all, add first
-        if balances.count() == 0:
+        if not CashBalance.objects.exists():
             context['active_accounts'] = False
             return context
         # date_str = date.strftime("%d %B, %Y")
@@ -89,8 +90,9 @@ class DailyTransactionView(TemplateView):
 
         # Queries
         sells = Sell.objects.filter(date=date)
-        duecollections = DueCollection.objects.filter(date=date)
+        duecollections = DueCollection.objects.filter(date=date).order_by('id')
         revenues = Revenue.objects.filter(date=date)
+        investments = Investment.objects.filter(date=date)
 
         purchases = Purchase.objects.filter(date=date)
         # Duesell
@@ -127,6 +129,8 @@ class DailyTransactionView(TemplateView):
         context['total_duecollections'] = duecollections.aggregate(Sum('amount'))['amount__sum']
         context['revenues'] = revenues
         context['total_revenues'] = revenues.aggregate(Sum('amount'))['amount__sum']
+        context['investments'] = investments
+        context['total_investments'] = investments.aggregate(Sum('amount'))['amount__sum']
 
         context['purchases'] = purchases
         context['total_purchase'] = purchases.aggregate(Sum('amount'))['amount__sum']
@@ -139,6 +143,7 @@ class DailyTransactionView(TemplateView):
         context['storages'] = storages
         
         # Balance B/F
+        balances = CashBalance.objects.order_by('date').all()
         balances_lt_date = balances.filter(date__lt=date)
         balance_bf_last = balances_lt_date.last()
         context['balance_bf'] = balance_bf_last.amount
@@ -161,6 +166,7 @@ class DailyTransactionView(TemplateView):
             total_debit += context['total_duecollections']
         if context['total_revenues']:
             total_debit += context['total_revenues']
+        if investments: total_debit += context['total_investments']
         context['total_debit'] = total_debit
 
         if context['total_purchase']:
@@ -186,7 +192,8 @@ class DailyTransactionView(TemplateView):
                 context['need_update'] = True
 
         # Limit Editing features
-        context['can_change'] = False
+        context['can_change'] = True
+        # context['can_change'] = False
         # same day / today
         next_date = balances.last().date + datetime.timedelta(days=1)
         if date == next_date:
@@ -199,7 +206,8 @@ class DailyTransactionView(TemplateView):
 
 class CashBalanceListView(ListView):
     model = CashBalance
-    fields = '__all__'
+    ordering = ['-date']
+    paginate_by = 20
 
 class CashBalanceCreateView(CreateView):
     model = CashBalance

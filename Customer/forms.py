@@ -10,6 +10,10 @@ class DueSellForm(forms.ModelForm):
             'product': SelectProduct,
             'date': forms.HiddenInput
             }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['customer'].queryset = Customer.objects.filter(status='active').order_by('cust_type','group','name')
 
 class DueCollectionForm(forms.ModelForm):
     class Meta:
@@ -19,9 +23,17 @@ class DueCollectionForm(forms.ModelForm):
             'date': forms.HiddenInput,
             'customer': SelectCustomer
             }
-        # widgets = {'date': forms.SelectDateWidget}
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['customer'].queryset = Customer.objects.filter(status='active').order_by('cust_type','group','name')
+
 
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initial['serial'] = self.instance.get_next_serial()

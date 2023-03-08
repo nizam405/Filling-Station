@@ -49,7 +49,12 @@
     {% for object,sln in object_list|zip %}
     <tr>
         <td>{{ sln|e2b_digit }}</td>
-        <td {% if object.type == 'Pack' %}class="eng"{% endif %}>{{object.name}}</td>
+        <td class='text-left'>
+            {% if object.type == 'Pack' %}
+            <span class="eng">{{object.name}} {{object.capacity}}</span> লিঃ
+            {% else %}{{object.name}}
+            {% endif %}
+        </td>
         <td>{{object.get_type_display}}</td>
         <td {% if object.type == 'Pack' %}class="eng"{% endif %}>{{object.short_name}}</td>
         <td>{{object.purchase_rate|floatformat:-2|e2b_digit}}</td>

@@ -19,17 +19,13 @@
         <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
         <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
         <div class="col-md-3 p-0" id="buttons">
-            {% bootstrap_button 'Go' button_type='submit' button_class='btn btn-success' %}
-            <a href="{% url 'customer-ledger' pk=customer.pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
-            <a href="{% url 'customer-ledger' pk=customer.pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
+            <button type="submit" class='btn' id='go-btn'>
+                <i class='bi bi-arrow-right-square-fill text-success'></i>
+            </button>
+            <a href="{% url 'customer-ledger' customer=customer.pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
+            <a href="{% url 'customer-ledger' customer=customer.pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
         </div>
     </form>
-    <div class="ml-3">
-        <div class="form-check p-2">
-            <input type="checkbox" id="full-details-check">
-            <label for="full-details-check" class="form-check-label">পূর্ণ বিবরণী</label>
-        </div>
-    </div>
     {% endif %}
 </div>
 
@@ -43,27 +39,22 @@
     <table class="table table-striped table-bordered table-sm">
         <tr class="text-center">
             <th>তারিখ</th>
-            <th class="full-details">বিবরণ</th>
-            <th class="short-details">ডিজেল - মোট ডিজেল</th>
-            <th class="short-details">অন্যান্য</th>
+            <th>বিবরণ</th>
             <th>মোট বিক্রয়</th>
             <th>আদায়</th>
             <th>পাওনা</th>
         </tr>
         <tr>
             <td class="text-center">{{balance_bf_date|e2b_date}}</td>
-            <td colspan="4" id="balance-bf">ব্যাল্যান্স বি/এফ</td>
+            <td colspan="3" id="balance-bf">ব্যালেন্স বি/এফ</td>
             <td class="text-right">{{balance_bf|e2b_digit|ezynumber}}</td>
         </tr>
         {% for obj in qs %}
         <tr>
-            <td class="text-center">{{obj.date|e2b_date}}</td>
-            <td class="short-details">
-                {% if 'diesel' in obj %}
-                {{obj.diesel|floatformat:-2|e2b_digit|ezynumber}} লিঃ - {{obj.total_diesel|floatformat:-2|e2b_digit|ezynumber}} লিঃ
-                {% endif %}
+            <td class="text-center">
+                <a href="{% url 'daily-transactions' date=obj.date %}">{{obj.date|e2b_date:True}}</a>
             </td>
-            <td class="full-details">
+            <td>
                 {% if obj.sells.count > 0 %}
                 <ul class="no-bullet">
                     {% for sell in obj.sells %}
@@ -84,50 +75,55 @@
                 </ul>
                 {% endif %}
             </td>
-            <td class="short-details">
-                {% if 'others' in obj %}
-                {{obj.others|floatformat:-2|e2b_digit|ezynumber}} টাকা
-                {% endif %}
-            </td>
-            <td class="text-right">{{obj.amount|e2b_digit|ezynumber}}</td>
+            <td class="text-right">{% if obj.amount %}{{obj.amount|e2b_digit|ezynumber}}{% endif %}</td>
             <td class="text-right">{% if obj.collection %}{{obj.collection|e2b_digit|ezynumber}}{% endif %}</td>
-            <td class="text-right {% if forloop.last %}font-weight-bold{% endif %}">
+            <td class="text-right">
+                {% if obj.balance == 0 %}<i class="bi bi-check-lg text-success float-left"></i>
+                {% elif obj.balance < 0 %}<i class="bi bi-exclamation-triangle text-danger float-left"></i>
+                {% endif %}
                 {{obj.balance|e2b_digit|ezynumber}}
             </td>
         </tr>
         {% endfor %}
+        
+        {% if baddebt %}
+        <tr class='text-danger'>
+            <td></td>
+            <td colspan='3'>অনাদায়ী পাওনা</td>
+            <td class='text-right'>({{baddebt|floatformat:-2|e2b_digit|ezynumber}})</td>
+        </tr>
+        {% endif %}
+        <tr class='text-right'>
+            <th colspan='2'>মোটঃ</th>
+            <th>{{total_sell|e2b_digit|ezynumber}}</th>
+            <th>{{total_collection|e2b_digit|ezynumber}}</th>
+            <th>{{balance_cf|e2b_digit|ezynumber}}</th>
+        </tr>
     </table>
 
-    <h5><u>সার-সংক্ষেপঃ</u>
+    <h5>
         <input type="checkbox" id="summary-check" class="d-print-none" checked>
+        <u>সার-সংক্ষেপঃ</u>
+        <span id="summary" class="font-italic">
+            {% for product in summary %}
+            {% if product.product.type == 'Pack' %}
+                <span class="eng">{{product.product.name}}</span> - 
+                {{product.product.capacity|floatformat:-2|e2b_digit}} লিঃ &times; 
+                {{product.quantity|floatformat:-2|e2b_digit}}
+            {% else %}
+                {{product.product}} - 
+                {{product.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ
+            {% endif %}
+            = {{product.amount|e2b_digit|ezynumber}} টাকা;
+            {% endfor %}
+        </span>
     </h5>
-    <div id="summary">
-        <div class="row">
-            <div class="col-sm-6">
-                {% for product in summary %}
-                {% if product.product.type == 'Pack' %}
-                    <span class="eng">{{product.product.name}}</span> - 
-                    {{product.product.capacity|floatformat:-2|e2b_digit}} লিঃ &times; 
-                    {{product.quantity|floatformat:-2|e2b_digit}}
-                {% else %}
-                    {{product.product}} - 
-                    {{product.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ
-                {% endif %}
-                = {{product.amount|e2b_digit|ezynumber}} টাকা<br>
-                {% endfor %}
-            </div>
-            <div class="col-sm-6">
-                <div>মোট বিক্রয়ঃ {{total_sell|e2b_digit|ezynumber}} টাকা</div>
-                <div>মোট আদায়ঃ {{total_collection|e2b_digit|ezynumber}} টাকা</div>
-            </div>
-        </div>
-    </div>
     {% else %}
 
     <div class="card">
         <div class="text-center m-5 text-secondary">
-            <div class="display-3">দুঃখিত! প্রাথমিক ব্যাল্যান্স নেই</div>
-            <a href="{% url 'customer-balance' customer.pk %}" class="btn btn-primary m-3">ব্যাল্যান্স যুক্ত করুন</a>
+            <div class="display-3">দুঃখিত! প্রাথমিক ব্যালেন্স নেই</div>
+            <a href="{% url 'customer-balance' customer.pk %}" class="btn btn-primary m-3">ব্যালেন্স যুক্ত করুন</a>
         </div>
     </div>
     {% endif %}
@@ -141,17 +137,6 @@
         } else {
             $("#summary").addClass("d-none")
             $(this).parent().addClass("d-print-none")
-        }
-    })
-    $("#full-details-check").on('click',function(){
-        if($(this).is(":checked")){
-            $(".full-details").show()
-            $(".short-details").hide()
-            $("#balance-bf").attr("colspan",3)
-        } else {
-            $(".full-details").hide()
-            $(".short-details").show()
-            $("#balance-bf").attr("colspan",4)
         }
     })
 </script>

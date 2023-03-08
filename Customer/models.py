@@ -2,10 +2,12 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from Product.models import Product
-from .choices import customer_type
+from .choices import customer_type, customer_status
 
 class GroupofCompany(models.Model):
     name = models.CharField(max_length=255, verbose_name="নাম")
+    # সক্রিয় করলে customer dropdown list এ দেখাবে
+    status = models.CharField(max_length=20, choices=customer_status, default=customer_status[0], verbose_name='অবস্থা')
 
     class Meta:
         ordering = ['name']
@@ -19,13 +21,22 @@ class GroupofCompany(models.Model):
 class Customer(models.Model):
     name = models.CharField(max_length=255, verbose_name="নাম", unique=True)
     short_name = models.CharField(max_length=25, verbose_name="সংক্ষিপ্ত নাম", null=True, blank=True)
-    cust_type = models.CharField(verbose_name="ধরণ", choices=customer_type, default=customer_type[0], max_length=20)
+    cust_type = models.CharField(verbose_name="ধরণ", choices=customer_type, default=customer_type[0][0], max_length=20)
     group = models.ForeignKey(to=GroupofCompany, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="গ্রুপ")
     mobile = models.CharField(max_length=11, null=True, blank=True, verbose_name="মোবাইল")
-    serial = models.SmallIntegerField(default=0, verbose_name="ক্রম")
+    serial = models.SmallIntegerField(default=100, verbose_name="ক্রম")
+    # সক্রিয় করলে customer dropdown list এ দেখাবে
+    status = models.CharField(max_length=20, choices=customer_status, default=customer_status[0][0], verbose_name='অবস্থা')
 
     class Meta:
-        ordering = ['cust_type','group','serial','name']
+        ordering = ['status','cust_type','group','serial','name']
+    
+    def get_next_serial(self):
+        max_serial = Customer.objects.aggregate(models.Max('serial'))['serial__max']
+        if max_serial is None:
+            return 1
+        else:
+            return max_serial + 1
 
     def __str__(self):
         txt = self.name
@@ -38,11 +49,11 @@ class Customer(models.Model):
 
 class DueSell(models.Model):
     date = models.DateField(default=timezone.now, verbose_name="তারিখ")
-    customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
+    customer = models.ForeignKey(to=Customer, limit_choices_to={'status':'active'}, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
     product = models.ForeignKey(to=Product, default=1, on_delete=models.SET_NULL, null=True, verbose_name="মাল")
     quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
     rate = models.FloatField(default=0.0, verbose_name="দর")
-    amount = models.IntegerField(default=0, verbose_name="মোট")
+    amount = models.IntegerField(null=True, blank=False, verbose_name="মোট")
 
     class Meta:
         ordering = ['-date']
@@ -55,8 +66,8 @@ class DueSell(models.Model):
     
 class DueCollection(models.Model):
     date = models.DateField(default=timezone.now, verbose_name="তারিখ")
-    customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
-    amount = models.IntegerField(default=0, verbose_name="টাকা")
+    customer = models.ForeignKey(to=Customer, limit_choices_to={'status':'active'}, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
+    amount = models.IntegerField(null=True, blank=False, verbose_name="টাকা")
 
     class Meta:
         ordering = ['-date']

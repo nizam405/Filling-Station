@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect
 from django.forms import modelformset_factory
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from .models import Customer, DueSell, DueCollection, GroupofCompany
 from .forms import DueCollectionForm, DueSellForm, CustomerForm
-from Product.models import Product
 
 # Group of companies
 class GroupofCompaniesView(CreateView, ListView):
@@ -32,7 +31,7 @@ class GroupofCompanyDeleteView(DeleteView):
 # Customer
 class CustomerView(CreateView, ListView):
     model = Customer
-    fields = '__all__'
+    form_class = CustomerForm
     template_name = 'Customer/customers.html'
     success_url = '.'
 

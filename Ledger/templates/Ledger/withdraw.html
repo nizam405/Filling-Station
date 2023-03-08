@@ -20,7 +20,9 @@
         <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
         <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
         <div class="col-md-3 p-0" id="buttons">
-            {% bootstrap_button 'Go' button_type='submit' button_class='btn btn-success' %}
+            <button type="submit" class='btn' id='go-btn'>
+                <i class='bi bi-arrow-right-square-fill text-success'></i>
+            </button>
             <a href="{% url 'withdraw-ledger' month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
             <a href="{% url 'withdraw-ledger' month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
         </div>
@@ -39,34 +41,45 @@
             <th>তারিখ</th>
             {% for owner in owners %}
             <th>{{owner.name}}</th>
-            {% endfor %}
             <th>মোট</th>
+            {% endfor %}
+            <th>সর্বমোট</th>
         </tr>
         {% for row in data %}
         <tr>
-            <td>{{row.date|e2b_date}}</td>
-            {% for owner in row.owners %}
-            {% if owner %}
             <td>
-                {% for withdraw in owner %}
-                <div class="row">
-                    <div class="col">{{withdraw.detail}}</div>
-                    <div class="col text-right">{{withdraw.amount|e2b_digit|ezynumber}}/=</div>
+                <a href="{% url 'daily-transactions' date=row.date %}">{{row.date|e2b_date}}</a>
+            </td>
+            {% for owner in row.owners %}
+            {% if owner.withdraws %}
+            <td>
+                {% for withdraw in owner.withdraws %}
+                <div>
+                    {% if withdraw.detail %}
+                    <div class="float-left">{{withdraw.detail}}</div>
+                    <div class="float-right">{{withdraw.amount|e2b_digit|ezynumber}}</div>
+                    <div class="clearfix"></div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </td>
-            {% else %}<td></td>
+            <td class="align-bottom">
+                {% if owner.amount %}
+                {{owner.amount|e2b_digit|ezynumber}}
+                {% endif %}
+            </td>
+            {% else %}<td></td> <td></td>
             {% endif %}
             {% endfor %}
-            <td class="text-right">{{row.total|e2b_digit|ezynumber}}/=</td>
+            <td class="text-right align-bottom">{{row.total|e2b_digit|ezynumber}}</td>
         </tr>
         {% endfor %}
         <tr class="text-right">
-            <td>মোটঃ</td>
+            <th>মোটঃ</th>
             {% for amount in totals.values %}
-            <td>{% if amount %}{{amount|e2b_digit|ezynumber}}/={% endif %}</td>
+            <th colspan="2">{% if amount %}{{amount|e2b_digit|ezynumber}}{% endif %}</th>
             {% endfor %}
-            <td>{% if grand_total %}{{grand_total|e2b_digit|ezynumber}}/={% endif %}</td>
+            <th>{% if grand_total %}{{grand_total|e2b_digit|ezynumber}}{% endif %}</th>
         </tr>
     </table>
 </div>

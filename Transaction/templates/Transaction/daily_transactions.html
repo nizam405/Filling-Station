@@ -29,8 +29,10 @@
             <div class="col-sm-8 col-lg-8" id="date-filter">
                 {% bootstrap_form date_form layout='horizontal' label_class='col-sm-2 py-2' field_class='col-sm-10' bound_css_class=""%}
             </div>
-            <div class="col-sm-4 col-lg-4" id="buttons">
-                {% bootstrap_button "Go" button_type="submit" %}
+            <div class="col-sm-4 col-lg-4 pl-0" id="buttons">
+                <button type="submit" class='btn' id='go-btn'>
+                    <i class='bi bi-arrow-right-square-fill text-success'></i>
+                </button>
                 <a href="{% url 'daily-transactions' prev_day %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
                 <a href="{% url 'daily-transactions' next_day %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
             </div>
@@ -74,7 +76,7 @@
             </tr>
             {% if balance_bf_side == 'debit' %}
             <tr>
-                <td colspan="3" class="cp-3">ব্যাল্যান্স বি/এফ ({{balance_bf_date|e2b_date}})</td>
+                <td colspan="3" class="cp-3">ব্যালেন্স বি/এফ ({{balance_bf_date|e2b_date}})</td>
                 <td class="text-right">{{balance_bf_abs|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
@@ -87,7 +89,6 @@
                     {% endif %}
                 </th>
             </tr>
-            
             {% if sells %}
             {% for obj in sells %}
             <tr class="transaction-entry">
@@ -126,7 +127,6 @@
             </tr>
             {% endfor %}
             {% endif %}
-
             <tr {% if duecollections.count == 0 %}class="d-print-none"{% endif %}>
                 <th colspan="4" class="group-label">বকেয়া আদায়
                     {% if can_change %}
@@ -134,6 +134,7 @@
                     {% endif %}
                 </th>
             </tr>
+
             {% if duecollections %}
             {% for duecollection in duecollections %}
             <tr class="transaction-entry">
@@ -141,6 +142,29 @@
                 <td class="text-right">{{duecollection.amount|e2b_digit|ezynumber}}</td>
                 {% if forloop.first %}
                 <td rowspan="{{duecollections.count}}" class="subtotal text-right align-bottom">{{total_duecollections|e2b_digit|ezynumber}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% endif %}
+            
+            {% if investments %}
+            <tr {% if investments.count == 0 %}class="d-print-none"{% endif %}>
+                <th colspan="4" class="group-label">অতিরিক্ত মূলধন</th>
+            </tr>
+            {% for investment in investments %}
+            <tr class="transaction-entry">
+                <td colspan="2">
+                    {{investment.owner.name}}
+                    {% if investment.detail %}-{{investment.detail}}{% endif %}
+                    {% if can_change %}
+                    <a href="{% url 'delete-investment' investment.pk %}">
+                        <i class="bi bi-trash text-danger d-print-none"></i>
+                    </a>
+                    {% endif %}
+                </td>
+                <td class="text-right">{{investment.amount|e2b_digit|ezynumber}}</td>
+                {% if forloop.first %}
+                <td class="subtotal text-right align-bottom">{{total_investments|e2b_digit|ezynumber}}</td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -165,7 +189,7 @@
             
             {% if balance_bf_side == 'credit' %}
             <tr>
-                <td colspan="3" class="cp-3">ব্যাল্যান্স বি/এফ ({{balance_bf_date|e2b_date}})</td>
+                <td colspan="3" class="cp-3">ব্যালেন্স বি/এফ ({{balance_bf_date|e2b_date}})</td>
                 <td class="text-right">{{balance_bf_abs|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
@@ -293,8 +317,8 @@
     {% else %}
     <div class="col-sm-12">
         <div class="text-center m-5 text-secondary">
-            <div class="display-3">দুঃখিত! প্রাথমিক ব্যাল্যান্স নেই</div>
-            <a href="{% url 'create-cashbalance' date %}" class="btn btn-primary m-3">ব্যাল্যান্স যুক্ত করুন</a>
+            <div class="display-3">দুঃখিত! প্রাথমিক ব্যালেন্স নেই</div>
+            <a href="{% url 'create-cashbalance' date %}" class="btn btn-primary m-3">ব্যালেন্স যুক্ত করুন</a>
         </div>
     </div>
     {% endif %}

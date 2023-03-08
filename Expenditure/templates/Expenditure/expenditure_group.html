@@ -18,13 +18,14 @@
 <h3>খরচের খাত
     <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
 </h3>
-<div id="form-container" class="{{container_class}}">
+<div id="form-container">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-sm-8">{% bootstrap_field form.name  layout='horizontal' %}</div>
-        <div class="col-sm-4 eng">
+        <div class="col-sm-8">{% bootstrap_field form.name layout='horizontal' %}</div>
+        <div class="col-sm-4">{% bootstrap_field form.serial layout='horizontal' field_class='eng col-md-9' %}</div>
+        <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
-            <a href="{% url 'expenditure-group' %}" class="btn btn-secondary">Cancel</a>
+            <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
@@ -33,6 +34,7 @@
     <tr>
         <th>#</th>
         <th>নাম</th>
+        <th>ক্রম</th>
         <th></th>
     </tr>
     {% if object_list %}
@@ -40,6 +42,7 @@
     <tr>
         <td>{{ sln|e2b_digit }}</td>
         <td class="text-left">{{object.name}}</td>
+        <td>{% if object.serial %}{{object.serial|e2b_digit}}{% endif %}</td>
         <td>
             <a href="{% url 'update-expendituregroup' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-expendituregroup' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>

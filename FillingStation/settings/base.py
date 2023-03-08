@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     # 'django.forms',
 
     'bootstrap4',
+    'bootstrap_datepicker_plus',
     # 'django_htmx',
     
     'Core',

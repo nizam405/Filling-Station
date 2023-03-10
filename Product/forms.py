@@ -1,6 +1,7 @@
 from django import forms
 from .models import Sell, Purchase, StorageReading
 from Core.widgets import SelectProduct
+from Core.choices import year_choices
 
 class PurchaseForm(forms.ModelForm):
     class Meta:
@@ -26,5 +27,5 @@ class StorageReadingForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'product': SelectProduct,
-            'date': forms.SelectDateWidget,
+            'date': forms.SelectDateWidget(years=year_choices()),
             }

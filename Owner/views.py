@@ -4,8 +4,8 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, DeleteView
 from django.db.models import Sum
-from .models import Owner, Withdraw, Investment, OwnersEquity
-from .forms import WithdrawForm, InvestmentForm, OwnersEquityForm
+from .models import Owner, Withdraw, Investment, OwnersEquity, FixedAsset
+from .forms import WithdrawForm, InvestmentForm, OwnersEquityForm, FixedAssetForm
 import datetime
 from Core.choices import get_prev_month, last_day_of_month, all_dates_in_month
     
@@ -51,7 +51,7 @@ class OwnersEquityView(ListView):
             prev_month_year, prev_month = get_prev_month(year, month)
             prev_qs = queryset.filter(month=prev_month,year=prev_month_year,owner=qs.owner)
             if prev_qs:
-                prev_oe = prev_qs.last().amount
+                prev_oe = prev_qs.last()
                 withdraws = Withdraw.objects.filter(owner=qs.owner, date__month=month, date__year=year)
                 withdraw_amount = withdraws.aggregate(Sum('amount'))['amount__sum']
                 investments = Investment.objects.filter(owner=qs.owner, date__month=month, date__year=year)
@@ -60,17 +60,16 @@ class OwnersEquityView(ListView):
                     'month': qs.month, 
                     'year': qs.year, 
                     'owner': qs.owner,
-                    'prev_oe': prev_oe or 0,
+                    'prev_oe': prev_oe.amount or 0,
                     'profit': qs.profit or 0,
                     'withdraw': withdraw_amount or 0,
                     'investment': investment_amount or 0,
                     'current_oe': qs.amount or 0,
-                    'share': qs.share
+                    'share': qs.share,
+                    'prev_share': prev_oe.share
                 }
-                object_list.append(obj)
+                object_list.insert(0,obj)
         return object_list
-
-
 
 class OwnersEquityDetailView(TemplateView):
     template_name = 'Owner/ownersequity_detail.html'
@@ -108,14 +107,14 @@ class OwnersEquityDetailView(TemplateView):
         first_oe_date = datetime.date(int(first_oe.year),int(first_oe.month),1)
         last_oe_date = datetime.date(int(last_oe.year),int(last_oe.month),1)
         next_to_first = first_oe_date + datetime.timedelta(days=31)
-        next_to_last = last_oe_date + datetime.timedelta(days=31)
+        # next_to_last = last_oe_date + datetime.timedelta(days=31)
         # print(next_to_first, next_to_last)
         
-        if target_date > next_to_last:
+        if target_date > last_oe_date:
             return redirect('ownersequity-details', 
                 pk = self.kwargs['pk'], 
-                month = next_to_last.month, 
-                year = next_to_last.year)
+                month = last_oe_date.month, 
+                year = last_oe_date.year)
         elif target_date < next_to_first:
             return redirect('ownersequity-details', 
                 pk = self.kwargs['pk'], 
@@ -126,8 +125,8 @@ class OwnersEquityDetailView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        owner = self.kwargs['pk']
-        context['pk'] = owner
+        owner = Owner.objects.get(pk=self.kwargs['pk'])
+        context['owner'] = owner
         self.kwargs['owner'] = owner
         month = self.kwargs['month']
         year = self.kwargs['year']
@@ -172,7 +171,6 @@ class OwnersEquityDetailView(TemplateView):
         context['total_withdraw'] = withdraw_amount
         return context
     
-
 class InvestmentCreateView(CreateView):
     model = Investment
     form_class = InvestmentForm
@@ -185,3 +183,12 @@ class InvestmentCreateView(CreateView):
 class InvestmentDeleteView(DeleteView):
     model = Investment
     success_url = reverse_lazy('daily-transactions')
+
+class FixedAssetView(CreateView, ListView):
+    model = FixedAsset
+    form_class = FixedAssetForm
+    template_name = 'Owner/fixedassets.html'
+
+class FixedAssetDeleteView(DeleteView):
+    model = FixedAsset
+    success_url = reverse_lazy('fixed-assets')

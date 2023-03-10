@@ -21,11 +21,11 @@
         <th>#</th>
         <th>তারিখ</th>
         <th>অংশীদারের নাম</th>
-        <th>পূর্ববর্তি মূলধন</th>
+        <th>পূর্ববর্তি মালিকানা স্বত্ব</th>
         <th>মুনাফা</th>
         <th>উত্তোলন</th>
         <th>অতিঃ মূলধন</th>
-        <th>বর্তমান মূলধন</th>
+        <th>বর্তমান মালিকানা স্বত্ব</th>
         <th>শেয়ার</th>
     </tr>
     {% if object_list %}
@@ -40,8 +40,28 @@
         <td>{{obj.profit|e2b_digit|ezynumber}}</td>
         <td>{{obj.withdraw|e2b_digit|ezynumber}}</td>
         <td>{{obj.investment|e2b_digit|ezynumber}}</td>
-        <td>{{obj.current_oe|e2b_digit|ezynumber}}</td>
-        <td>{{obj.share|floatformat:-2|e2b_digit}}%</td>
+        <td>
+            <div class='float-left'>
+                <i class="bi 
+                    {% if obj.current_oe < obj.prev_oe %} bi-caret-down-fill text-danger
+                    {% elif obj.current_oe > obj.prev_oe %} bi-caret-up-fill text-success
+                    {% endif %}">
+                </i>
+            </div>
+            {{obj.current_oe|e2b_digit|ezynumber}}
+        </td>
+        <td>
+            {% if obj.prev_share %}
+            <div class='float-left'>
+                <i class="bi 
+                    {% if obj.share < obj.prev_share %} bi-caret-down-fill text-danger
+                    {% elif obj.share > obj.prev_share %} bi-caret-up-fill text-success
+                    {% endif %}">
+                </i>
+            </div>
+            {% endif %}
+            {{obj.share|floatformat:-2|e2b_digit}}%
+        </td>
     </tr>
     {% endfor %}
     {% else %}

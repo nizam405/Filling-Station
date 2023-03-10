@@ -266,7 +266,6 @@ class WithdrawLedger(TemplateView):
             if day_total > 0:
                 data.append(day_data)
         context['data'] = data
-        print(data)
         context['totals'] = totals
         context['grand_total'] = sum(totals.values())
             

@@ -122,7 +122,9 @@
                 </td>
                 <td class="text-right">{{revenue.amount|e2b_digit|ezynumber}}</td>
                 {% if forloop.first %}
-                <td class="subtotal text-right align-bottom">{{total_revenues|e2b_digit|ezynumber}}</td>
+                <td class="subtotal text-right align-bottom" rowspan="{{revenues.count}}">
+                    {{total_revenues|e2b_digit|ezynumber}}
+                </td>
                 {% endif %}
             </tr>
             {% endfor %}

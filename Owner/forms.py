@@ -1,5 +1,5 @@
 from django import forms
-from .models import Withdraw, Investment, OwnersEquity
+from .models import Withdraw, Investment, OwnersEquity, FixedAsset
 from Core.choices import year_choices
 
 class WithdrawForm(forms.ModelForm):
@@ -19,3 +19,9 @@ class OwnersEquityForm(forms.ModelForm):
     class Meta:
         model = OwnersEquity
         fields = ['owner', 'month', 'year']
+
+class FixedAssetForm(forms.ModelForm):
+    class Meta:
+        model = FixedAsset
+        fields = '__all__'
+        widgets = {'date': forms.SelectDateWidget(years=year_choices())}

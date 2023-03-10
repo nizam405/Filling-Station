@@ -25,7 +25,6 @@ class DailyTransactionView(TemplateView):
             if context['balance_form'].is_valid():
                 context['balance_form'].save()
                 last_date = last_day_of_month(date.year,date.month)
-                print(last_date==date)
                 if date == last_date:
                     return redirect(reverse_lazy('save-ledger',kwargs={'date':date}))
 
@@ -192,8 +191,8 @@ class DailyTransactionView(TemplateView):
                 context['need_update'] = True
 
         # Limit Editing features
-        context['can_change'] = True
-        # context['can_change'] = False
+        # context['can_change'] = True
+        context['can_change'] = False
         # same day / today
         next_date = balances.last().date + datetime.timedelta(days=1)
         if date == next_date:

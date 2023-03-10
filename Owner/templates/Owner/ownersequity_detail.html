@@ -28,11 +28,16 @@
             <button type="submit" class='btn' id='go-btn'>
                 <i class='bi bi-arrow-right-square-fill text-success'></i>
             </button>
-            <a href="{% url 'ownersequity-details' pk=pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
-            <a href="{% url 'ownersequity-details' pk=pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
+            <a href="{% url 'ownersequity-details' pk=owner.pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
+            <a href="{% url 'ownersequity-details' pk=owner.pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
         </div>
     </form>
     {% endif %}
+</div>
+
+<div class="text-center">
+    <h3>{{owner.name}} এর মালিকানা স্বত্ব</h3>
+    <h4>{{month|e2b_month}}, {{year|e2b_digit}}</h4>
 </div>
 
 <table class="table table-sm table-striped table-bordered text-right">

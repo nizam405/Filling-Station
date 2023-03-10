@@ -308,8 +308,8 @@ class CustomerLedger(TemplateView):
                     'amount': amount
                 })
         context['summary'] = summary
-        total_sell = duesells.aggregate(Sum("amount"))['amount__sum']
-        total_collection = duecollections.aggregate(Sum("amount"))['amount__sum']
+        total_sell = duesells.aggregate(Sum("amount"))['amount__sum'] if duesells else 0
+        total_collection = duecollections.aggregate(Sum("amount"))['amount__sum'] if duecollections else 0
         context['total_sell'] = total_sell
         context['total_collection'] = total_collection
         context['balance_cf'] = context['balance_bf'] + total_sell - total_collection - baddebt
@@ -506,7 +506,7 @@ class CustomerBalanceView(CreateView, ListView):
     def get_queryset(self):
         month = self.kwargs['month']
         year = self.kwargs['year']
-        qs = self.model.objects.filter(month=month, year=year)
+        qs = self.model.objects.filter(month=month, year=year, customer__group__isnull=True)
         return qs
 
     def get_success_url(self):

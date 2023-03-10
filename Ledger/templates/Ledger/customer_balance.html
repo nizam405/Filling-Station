@@ -5,6 +5,9 @@
     .hidden {
         display: none;
     }
+    .zero-balance {
+        display: none;
+    }
     #add-form {
         font-size: 2rem;
     }
@@ -32,6 +35,11 @@
     </form>
 </div>
 
+<div class="d-print-none">
+    <input type="checkbox" id="zero-balance-check">
+    <label for="zero-balance-check">শুন্য ব্যালেন্স</label>
+</div>
+
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
         <th>#</th>
@@ -42,7 +50,7 @@
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
-    <tr>
+    <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
         <td>{{sln|e2b_digit}}</td>
         <td class="text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
         <td class="text-left">{{object.customer}}</td>
@@ -63,5 +71,10 @@
 
 {% load static %}
 <script src="{% static 'form_list.js' %}"></script>
+<script>
+    $("#zero-balance-check").on('click', function(){
+        $(".zero-balance").toggle('fast');
+    });
+</script>
 
 {% endblock main %}

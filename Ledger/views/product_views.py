@@ -332,7 +332,7 @@ class StorageView(CreateView, ListView):
         today = datetime.date.today()
         if Storage.objects.exists():
             # first_bal_date = Storage.objects.first().date
-            last_bal_date = Storage.objects.last()
+            last_bal_date = Storage.objects.order_by('year','month').last()
             self.kwargs['month'] = last_bal_date.month
             self.kwargs['year'] = last_bal_date.year
         # elif 'month' in self.request.GET and 'year' in self.request.GET:

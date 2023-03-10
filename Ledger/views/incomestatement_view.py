@@ -5,11 +5,11 @@ import datetime
 from Product.models import Product, Purchase, Sell, StorageReading
 from Expenditure.models import Expenditure
 from Revenue.models import Revenue
-from Ledger.models import Storage, BadDebt, CustomerBalance, Profit
+from Ledger.models import Storage, BadDebt, CustomerBalance, GroupofCompanyBalance, Profit
 from Ledger.forms import DateFilterForm
 from Transaction.models import CashBalance
 from Customer.models import DueSell, DueCollection
-from Owner.models import Withdraw, OwnersEquity, Owner, Investment
+from Owner.models import Withdraw, OwnersEquity, Owner, Investment, FixedAsset
 
 class IncomeStatementView(TemplateView):
     template_name = 'Ledger/incomestatement.html'
@@ -52,7 +52,10 @@ class IncomeStatementView(TemplateView):
         last_day_month = next_month_1st - datetime.timedelta(days=1)
 
         # Status: compare cashbalance date == last_day_month
-        self.kwargs['status'] = last_bal_date == last_day_month
+        cashbalance = CashBalance.objects.filter(date__year=year,date__month=month).order_by('date').last()
+        to_date = cashbalance.date
+        self.kwargs['to_date'] = to_date
+        self.kwargs['status'] = to_date == last_day_month
         self.kwargs['last_bal_date'] = last_bal_date
 
         return super().get(request, *args, **kwargs)
@@ -79,7 +82,7 @@ class IncomeStatementView(TemplateView):
         prev_month = self.kwargs['prev_month']
         prev_month_year = self.kwargs['prev_month_year']
         from_date = self.kwargs['target_date']
-        to_date = self.kwargs['last_bal_date']
+        to_date = self.kwargs['to_date']
 
         sells = Sell.objects.filter(date__gte=from_date,date__lte=to_date)
         purchases = Purchase.objects.filter(date__gte=from_date,date__lte=to_date).order_by('date')
@@ -105,25 +108,27 @@ class IncomeStatementView(TemplateView):
                 initial_qnt = storage.last().quantity if storage else 0
                 purchase = purchases.filter(product=product)
                 # Rate
-                rate = product.purchase_rate
-                if storage:
+                rate = 0
+                if purchase:
+                    rate = purchase.last().rate
+                elif storage:
                     rate = storage.last().price/initial_qnt
-                if purchases:
-                    rate = purchases.last().rate
+                else: rate = product.purchase_rate
+                # Ending Storage
                 if product.need_rescale:
-                    ending_storage = StorageReading.objects.filter(product=product,date=to_date)
+                    ending_storage = StorageReading.objects.filter(product=product,date=to_date).order_by('date')
                     if ending_storage:
                         obj = ending_storage.last()
                         ending_qnt = obj.tank_deep + obj.lorry_load
                         ending_storage_amount += int(ending_qnt*rate)
-                        continue
-                # Else
-                # initial+purchase-sell
-                sell = sells.filter(product=product)
-                sell_qnt = sell.last().quantity if sell else 0
-                purchase_qnt = purchase.last().quantity if purchase else 0
-                ending_qnt = initial_qnt + purchase_qnt + sell_qnt
-                ending_storage_amount += int(ending_qnt*rate)
+                        # print(product, ending_qnt, rate, int(ending_qnt*rate))
+                else:
+                    # initial+purchase-sell
+                    sell = sells.filter(product=product)
+                    sell_qnt = sell.aggregate(Sum('quantity'))['quantity__sum'] if sell else 0
+                    purchase_qnt = purchase.aggregate(Sum('quantity'))['quantity__sum'] if purchase else 0
+                    ending_qnt = initial_qnt + purchase_qnt - sell_qnt
+                    ending_storage_amount += int(ending_qnt*rate)
         context['sell_amount'] = sells_amount
         context['purchase_amount'] = purchase_amount
         context['initial_storage_amount'] = initial_storage_amount
@@ -168,20 +173,34 @@ class IncomeStatementView(TemplateView):
         context['cash'] = cash
 
         # দেনাদার
-        customer_balances = CustomerBalance.objects.filter(month=month,year=year)
+        customer_balances = CustomerBalance.objects.filter(month=month,year=year,customer__group__isnull=True)
+        goc_balances = GroupofCompanyBalance.objects.filter(month=month,year=year)
+
         dues = 0
         if customer_balances:
             dues = customer_balances.aggregate(Sum('amount'))['amount__sum']
+            dues += goc_balances.aggregate(Sum('amount'))['amount__sum']
         else:
-            prev_balances = CustomerBalance.objects.filter(month=prev_month, year=prev_month_year)
-            dues = prev_balances.last().amount if prev_balances else 0
+            # Prev Balances
+            prev_cust_balances = CustomerBalance.objects.filter(month=prev_month, year=prev_month_year,customer__group__isnull=True)
+            prev_cust_balances_amount = prev_cust_balances.aggregate(Sum('amount'))['amount__sum'] if prev_cust_balances else 0
+            dues += prev_cust_balances_amount
+            prev_goc_balances = GroupofCompanyBalance.objects.filter(month=prev_month, year=prev_month_year)
+            prev_goc_balances_amount = prev_goc_balances.aggregate(Sum('amount'))['amount__sum'] if prev_goc_balances else 0
+            dues += prev_goc_balances_amount
+            # print(prev_cust_balances_amount, prev_goc_balances_amount, dues)
+            # Due sells
             due_sells = DueSell.objects.filter(date__gte=from_date,date__lte=to_date)
             dues += due_sells.aggregate(Sum('amount'))['amount__sum'] if due_sells else 0
+            # Due collections
             due_collections = DueCollection.objects.filter(date__gte=from_date,date__lte=to_date)
-            dues += due_collections.aggregate(Sum('amount'))['amount__sum'] if due_sells else 0
+            dues -= due_collections.aggregate(Sum('amount'))['amount__sum'] if due_sells else 0
         context['dues'] = dues
-        total_asset = cash + dues
-        context['total_asset'] = total_asset
+        # স্থায়ী সম্পত্তি
+        fixed_assets = FixedAsset.objects.all()
+        fixed_assets_amount = fixed_assets.aggregate(Sum('price'))['price__sum'] if fixed_assets else 0
+        context['fixed_assets'] = fixed_assets_amount
+        total_asset = cash + dues + ending_storage_amount + fixed_assets_amount
 
         # প্রারম্ভিক মূলধন
         capital_amount = 0
@@ -201,6 +220,11 @@ class IncomeStatementView(TemplateView):
         total_oe = amount_before_profit + net_profit
         context['total_oe'] = total_oe
 
+        diff = total_asset-total_oe
+        context['diff'] = diff
+        total_asset -= diff
+        context['total_asset'] = total_asset
+
         # Distribute Profit
         if total_asset == total_oe:
             owners = Owner.objects.all()
@@ -212,7 +236,7 @@ class IncomeStatementView(TemplateView):
                 prev_oe = ownersequity.filter(owner=owner)
                 prev_oe_amount = prev_oe.last().amount if prev_oe else 0
                 owner_info['prev_oe'] = prev_oe_amount
-                prev_share = (prev_oe_amount*100)/capital_amount
+                prev_share = (prev_oe_amount*100)/capital_amount if prev_oe_amount else 0
                 owner_info['prev_share'] = prev_share
                 owner_profit = int((net_profit*prev_share)/100)
                 owner_info['profit'] = owner_profit

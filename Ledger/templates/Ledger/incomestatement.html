@@ -16,10 +16,10 @@
         text-align: left
     }
 
-    #profit-dist > div.col-sm-6:nth-child(even) {
+    #owners-equity, #profit-dist > div.col-sm-6:nth-child(even) {
         padding-right: 0.25rem;
     }
-    #profit-dist > div.col-sm-6:nth-child(odd) {
+    #financial-statement, #profit-dist > div.col-sm-6:nth-child(odd) {
         padding-left: 0.25rem;
     }
 </style>
@@ -131,38 +131,15 @@
                 </td>
             </tr>
         </table>
+    </div>
+    <div class="col-12 mb-5">
         <h4>নিট লাভঃ {{net_profit|e2b_digit|ezynumber}}/=</h4>
     </div>
 </div>
 
-<div class="row" id="owners-equity">
-    <div class="col-12">
+<div class="row">
+    <div class="col-sm-6" id="owners-equity">
         <h3 class="text-center">মালিকানা স্বত্ব বিবরণী</h3>
-    </div>
-    <div class="col-sm-6 pr-1">
-        <table class="table table-bordered table-striped table-sm text-right">
-            <tr class="text-center">
-                <th>সম্পদ সমূহ</th>
-                <th>টাকা</th>
-            </tr>
-            <tr>
-                <td>হাতে নগদ/ব্যাংক উদ্বৃত্ত</td>
-                <td>{{cash|e2b_digit|ezynumber}}</td>
-            </tr>
-            <tr>
-                <td>দেনাদার/পার্টি ব্যালেন্স</td>
-                <td>{{dues|e2b_digit|ezynumber}}</td>
-            </tr>
-            <tr>
-                <td colspan="2">&nbsp;</td>
-            </tr>
-            <tr>
-                <th>{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
-                <th>{{total_asset|e2b_digit|ezynumber}}</th>
-            </tr>
-        </table>
-    </div>
-    <div class="col-sm-6 pl-1">
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
                 <th>মালিকানা স্বত্ব</th>
@@ -195,6 +172,43 @@
                 <th>{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
                 <th></th>
                 <th>{{total_oe|e2b_digit|ezynumber}}</th>
+            </tr>
+        </table>
+    </div>
+    <div class="col-sm-6" id="financial-statement">
+        <h3 class="text-center">আর্থিক অবস্থার বিবরণী</h3>
+        <table class="table table-bordered table-striped table-sm text-right">
+            <tr class="text-center">
+                <th>সম্পদ সমূহ</th>
+                <th>টাকা</th>
+            </tr>
+            <tr>
+                <td>হাতে নগদ/ব্যাংক উদ্বৃত্ত</td>
+                <td>{{cash|e2b_digit|ezynumber}}</td>
+            </tr>
+            <tr>
+                <td>দেনাদার/পার্টি ব্যালেন্স</td>
+                <td>{{dues|e2b_digit|ezynumber}}</td>
+            </tr>
+            <tr>
+                <td>সমাপনী মজুদ পণ্য</td>
+                <td>{{ending_storage_amount|e2b_digit|ezynumber}}</td>
+            </tr>
+            {% if fixed_assets %}
+            <tr>
+                <td>স্থায়ী সম্পত্তি</td>
+                <td>{{fixed_assets|e2b_digit|ezynumber}}</td>
+            </tr>
+            {% endif %}
+            {% if diff %}
+            <tr>
+                <td>ব্যবধান</td>
+                <td>{{diff|e2b_digit|ezynumber}}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
+                <th>{{total_asset|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
     </div>

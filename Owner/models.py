@@ -70,7 +70,7 @@ class OwnersEquity(models.Model):
         constraints = [models.UniqueConstraint(fields=['year','month','owner'], name='unique_ownersequity')]
 
     def __str__(self):
-        return f"{self.month}, {self.year} - {self.amount}"
+        return f"{self.month}, {self.year} - {self.owner} - {self.amount}"
     
     # def save(self, *args, **kwargs):
     #     if self.share == 0:
@@ -80,3 +80,19 @@ class OwnersEquity(models.Model):
     #         pre_month_year, pre_month = get_prev_month(self.year,self.month)
     #         pre_oe = OwnersEquity.objects.filter(month=pre_month, year=pre_month_year, owner=self.owner)
     #     super().save(*args, **kwargs)
+
+class FixedAsset(models.Model):
+    date = models.DateField(default=timezone.now, verbose_name='তারিখ')
+    name = models.CharField(max_length=255, verbose_name="নাম")
+    detail = models.CharField(max_length=255, null=True, blank=True, verbose_name='বিবরণ')
+    price = models.IntegerField(null=True, blank=False, verbose_name='মূল্য')
+
+    class Meta:
+        ordering = ['-date']
+    
+    def __str__(self):
+        return f"{self.date} - {self.name} - {self.price}/="
+
+    def get_absolute_url(self):
+        return reverse("fixed-assets")
+    

@@ -58,7 +58,7 @@ class Investment(models.Model):
         super().save(*args, **kwargs)
 
 class OwnersEquity(models.Model):
-    month = models.CharField(max_length=20, choices=MONTHS, default=currentMonth, verbose_name="মাস")
+    month = models.IntegerField(choices=MONTHS, default=currentMonth, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
     owner = models.ForeignKey(to=Owner, on_delete=models.SET_NULL, null=True, verbose_name='মালিক')
     profit = models.IntegerField(default=0, verbose_name="মুনাফা")

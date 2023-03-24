@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock title %}
+{% block style %}
+<style>
+form {
+    max-width: 400px;
+    margin: auto;
+}
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load extra_tags %}
+{% load bootstrap4 %}
+
+<div class="text-center my-5">
+    <h1>সিস্টেমে প্রবেশ করুন</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="eng">{% bootstrap_field form.username layout='horizontal' %}</div>
+        <div class="eng">{% bootstrap_field form.password layout='horizontal' %}</div>
+        <div>{% bootstrap_button "লগইন" button_type="submit" %}</div>
+    </form>
+</div>
+
+{% endblock main %}

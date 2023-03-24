@@ -36,6 +36,9 @@
     <h3 class="d-none d-print-block">প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
     <h4>খতিয়ান: {{month|e2b_month}},{{year|e2b_digit}}</h4>
     <h4 class="text-center"><u>মজুদপণ্য</u></h4>
+    {% if not status %}
+    <div class='text-danger'>({{to_date|e2b_date}} তারিখ পর্যন্ত)</div>
+    {% endif %}
 </div>
 
 <div class="pb-1 d-print-none">

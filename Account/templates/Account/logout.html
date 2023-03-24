@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock title %}
+{% block main %}
+
+{% load extra_tags %}
+{% load bootstrap4 %}
+
+<div class="text-center my-5">
+    <h1>সফলভাবে লগ-আউট হয়েছে</h1>
+    <div>পুনরায় <a href="{% url 'login' %}">লগ-ইন করুন</a></div>
+</div>
+
+{% endblock main %}

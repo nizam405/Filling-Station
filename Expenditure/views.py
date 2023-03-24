@@ -3,11 +3,14 @@ from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
 from .models import Expenditure, ExpenditureGroup
 from .forms import ExpenditureForm
 
 # Expenditure Group
-class ExpenditureGroupView(CreateView, ListView):
+class ExpenditureGroupView(LoginRequiredMixin,CreateView, ListView):
     model = ExpenditureGroup
     fields = '__all__'
     template_name = 'Expenditure/expenditure_group.html'
@@ -18,16 +21,17 @@ class ExpenditureGroupView(CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class ExpenditureGroupUpdateView(UpdateView, ListView):
+class ExpenditureGroupUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = ExpenditureGroup
     fields = '__all__'
     template_name = 'Expenditure/expenditure_group.html'
     success_url = reverse_lazy('expenditure-group')
 
-class ExpenditureGroupDeleteView(DeleteView):
+class ExpenditureGroupDeleteView(LoginRequiredMixin,DeleteView):
     model = ExpenditureGroup
     success_url = reverse_lazy('expenditure-group')
 
+@login_required
 def ExpenditureFormsetView(request, date):
     qs = Expenditure.objects.filter(date=date)
     extra = 0 if qs.count() > 0 else 1

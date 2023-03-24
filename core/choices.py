@@ -27,3 +27,8 @@ def get_prev_month(year,month):
     first_date = datetime.date(int(year),int(month),1)
     prev_date = first_date - datetime.timedelta(days=1)
     return (prev_date.year,prev_date.month)
+
+status_choices = [
+    ("active", "সক্রিয়"),
+    ("inactive", "নিষ্ক্রিয়"),
+]

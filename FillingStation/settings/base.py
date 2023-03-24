@@ -5,6 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 ALLOWED_HOSTS = []
+LOGIN_REDIRECT_URL = '/transactions/'
 
 # Application definition
 INSTALLED_APPS = [
@@ -17,9 +18,8 @@ INSTALLED_APPS = [
     # 'django.forms',
 
     'bootstrap4',
-    'bootstrap_datepicker_plus',
-    # 'django_htmx',
     
+    'Account',
     'Core',
     'Customer',
     'Expenditure',

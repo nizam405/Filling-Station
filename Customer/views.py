@@ -3,11 +3,14 @@ from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
 from .models import Customer, DueSell, DueCollection, GroupofCompany
 from .forms import DueCollectionForm, DueSellForm, CustomerForm
 
 # Group of companies
-class GroupofCompaniesView(CreateView, ListView):
+class GroupofCompaniesView(LoginRequiredMixin,CreateView, ListView):
     model = GroupofCompany
     fields = '__all__'
     template_name = 'Customer/groupofcompanies.html'
@@ -18,18 +21,25 @@ class GroupofCompaniesView(CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class GroupofCompanyUpdateView(UpdateView, ListView):
+class GroupofCompanyUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = GroupofCompany
     fields = '__all__'
     template_name = 'Customer/groupofcompanies.html'
     success_url = reverse_lazy('groupofcompanies')
 
-class GroupofCompanyDeleteView(DeleteView):
+class GroupofCompanyDeleteView(LoginRequiredMixin,DeleteView):
     model = GroupofCompany
     success_url = reverse_lazy('groupofcompanies')
 
+@login_required
+def change_goc_status(requst, pk):
+    goc = GroupofCompany.objects.get(pk=pk)
+    goc.active = not goc.active
+    goc.save()
+    return redirect('groupofcompanies')
+
 # Customer
-class CustomerView(CreateView, ListView):
+class CustomerView(LoginRequiredMixin,CreateView, ListView):
     model = Customer
     form_class = CustomerForm
     template_name = 'Customer/customers.html'
@@ -40,17 +50,25 @@ class CustomerView(CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class CustomerUpdateView(UpdateView, ListView):
+class CustomerUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = Customer
     fields = '__all__'
     template_name = 'Customer/customers.html'
     success_url = reverse_lazy('customers')
 
-class CustomerDeleteView(DeleteView):
+class CustomerDeleteView(LoginRequiredMixin,DeleteView):
     model = Customer
     success_url = reverse_lazy('customers')
+
+@login_required
+def change_cust_status(requst, pk):
+    cust = Customer.objects.get(pk=pk)
+    cust.active = not cust.active
+    cust.save()
+    return redirect('customers')
     
 # Due Collection
+@login_required
 def DueCollectionFormsetView(request, date):
     qs = DueCollection.objects.filter(date=date)
     extra = 0 if qs.count() > 0 else 1
@@ -75,6 +93,7 @@ def DueCollectionFormsetView(request, date):
     return render(request,template,context)
 
 # Due Sell
+@login_required
 def DueSellFormsetView(request, date):
     qs = DueSell.objects.filter(date=date)
     extra = 0 if qs.count() > 0 else 1

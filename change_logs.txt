@@ -3,6 +3,7 @@
 >> Fix: Added Ending Storage to Assets
 >> Created: Fixed Assests Module and added to Financial Statement
 >> Added: Indicator to Owners Equity states
+>> Fixed: Package requirements
 
 2023-03-08
 ----------

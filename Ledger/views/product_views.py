@@ -5,26 +5,26 @@ from django.db.models import Sum
 from django.contrib import messages
 from django.urls import reverse_lazy
 import datetime
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Product.models import Product, StorageReading, Purchase, Sell
 from Ledger.models import Storage
 from Transaction.models import CashBalance
 from Ledger.forms import StorageFilterForm, DateFilterForm
-from Core.choices import all_dates_in_month, get_prev_month
+from Core.choices import all_dates_in_month, last_day_of_month
 
-class ProductTopSheet(TemplateView):
+class ProductTopSheet(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/product_topsheet.html'
 
     def get(self, request, *args, **kwargs):
-        # maintain cashbalance date to avoid blank page
-        if CashBalance.objects.exists():
-            first_bal_date = CashBalance.objects.order_by('date').first().date
-            last_bal_date = CashBalance.objects.order_by('date').last().date
+        if not CashBalance.objects.exists():
+            return redirect('create-cashbalance')
+        
+        first_bal_date = CashBalance.objects.order_by('date').first().date
+        last_bal_date = CashBalance.objects.order_by('date').last().date
 
-            first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
-            first_date = first_date + datetime.timedelta(days=31)
-        else:
-            return redirect('daily-transactions')
+        first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
+        first_date = first_date + datetime.timedelta(days=31)
 
         if 'month' in self.request.GET and 'year' in self.request.GET:
             self.kwargs['month'] = int(self.request.GET['month'])
@@ -72,6 +72,11 @@ class ProductTopSheet(TemplateView):
         year = int(self.kwargs['year'])
         prev_month = self.kwargs['prev_month']
         prev_month_year = self.kwargs['prev_month_year']
+        from_date = datetime.date(year,month,1)
+        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
+        last_day = last_day_of_month(year,month)
+        context['status'] = last_day == to_date
+        context['to_date'] = to_date
         products = Product.objects.all()
         for product in products:
             pre_storages = Storage.objects.filter(month=prev_month, year=prev_month_year, product=product)
@@ -93,8 +98,8 @@ class ProductTopSheet(TemplateView):
                 data.update({'pre_storage': pre_storage.quantity})
                 rate = pre_storage.price/pre_storage.quantity
 
-            purchases = Purchase.objects.filter(date__month=month, date__year=year, product=product).order_by('date')
-            sells = Sell.objects.filter(date__month=month, date__year=year, product=product)
+            purchases = Purchase.objects.filter(date__gte=from_date, date__lte=to_date, product=product).order_by('date')
+            sells = Sell.objects.filter(date__gte=from_date, date__lte=to_date, product=product)
             if purchases:
                 purchase_amount = purchases.aggregate(Sum('quantity'))['quantity__sum']
                 data.update({'purchase': purchase_amount})
@@ -113,7 +118,7 @@ class ProductTopSheet(TemplateView):
             data['price'] = int(data['current_storage']*rate)
 
             if product.need_rescale:
-                storage_readings = StorageReading.objects.filter(date__month=month, date__year=year,product=product)
+                storage_readings = StorageReading.objects.filter(date=to_date,product=product)
                 if storage_readings:
                     storage_last = storage_readings.order_by('date').last()
                     data['real_storage'] = storage_last.tank_deep + storage_last.lorry_load
@@ -133,10 +138,13 @@ class ProductTopSheet(TemplateView):
         }
         return context
 
-class ProductLedger(TemplateView):
+class ProductLedger(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/product.html'
 
     def get(self, request, *args, **kwargs):
+        if not CashBalance.objects.exists():
+            return redirect('create-cashbalance')
+        
         today = datetime.date.today()
         # pk
         if 'product' in self.request.GET:
@@ -323,24 +331,25 @@ class ProductLedger(TemplateView):
         return context
 
 # To store balances/Storage
-class StorageView(CreateView, ListView):
+class StorageView(LoginRequiredMixin, CreateView, ListView):
     model = Storage
     fields = ['month','year','product','quantity']
     template_name = 'Ledger/storage.html'
 
     def get(self,request,*args, **kwargs):
         today = datetime.date.today()
-        if Storage.objects.exists():
-            # first_bal_date = Storage.objects.first().date
-            last_bal_date = Storage.objects.order_by('year','month').last()
-            self.kwargs['month'] = last_bal_date.month
-            self.kwargs['year'] = last_bal_date.year
-        # elif 'month' in self.request.GET and 'year' in self.request.GET:
-        #     self.kwargs['month'] = int(self.request.GET['month'])
-        #     self.kwargs['year'] = int(self.request.GET['year'])
-        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
-            self.kwargs['month'] = today.month
-            self.kwargs['year'] = today.year
+        if 'month' not in self.kwargs and 'year' not in self.kwargs:
+            if Storage.objects.exists():
+                # first_bal_date = Storage.objects.first().date
+                last_bal_date = Storage.objects.order_by('year','month').last()
+                self.kwargs['month'] = last_bal_date.month
+                self.kwargs['year'] = last_bal_date.year
+            # elif 'month' in self.request.GET and 'year' in self.request.GET:
+            #     self.kwargs['month'] = int(self.request.GET['month'])
+            #     self.kwargs['year'] = int(self.request.GET['year'])
+            else:
+                self.kwargs['month'] = today.month
+                self.kwargs['year'] = today.year
 
         return super().get(request, *args, **kwargs)
     

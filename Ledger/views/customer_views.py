@@ -1,30 +1,31 @@
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.contrib import messages
-from django.views.generic import TemplateView, ListView
-from django.views.generic.edit import CreateView
-from django.db.models import Sum
+from django.shortcuts import redirect, render
+from django.forms import modelformset_factory
+from django.views.generic import TemplateView
+from django.db.models import Sum, Count
 import datetime
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 from Customer.models import Customer, GroupofCompany, DueSell, DueCollection
 from Product.models import Product
-from Ledger.models import CustomerBalance, GroupofCompanyBalance, BadDebt
-from Ledger.forms import CustomerLedgerFilterForm, GroupofCompanyLedgerFilterForm, DateFilterForm, BadDebtForm
+from Ledger.models import CustomerBalance, GroupofCompanyBalance
+from Ledger.forms import (CustomerLedgerFilterForm, GroupofCompanyLedgerFilterForm, DateFilterForm, 
+    CustomerBalanceForm, GroupofCompanyBalanceForm)
 from Transaction.models import CashBalance
+from Core.choices import last_day_of_month
 
-class CustomerTopSheet(TemplateView):
+class CustomerTopSheet(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/customer_topsheet.html'
 
     def get(self, request, *args, **kwargs):
-        # maintain cashbalance date to avoid blank page
-        if CashBalance.objects.exists():
-            first_bal_date = CashBalance.objects.order_by('date').first().date
-            last_bal_date = CashBalance.objects.order_by('date').last().date
+        if not CashBalance.objects.exists():
+            return redirect('create-cashbalance')
+        
+        first_bal_date = CashBalance.objects.order_by('date').first().date
+        last_bal_date = CashBalance.objects.order_by('date').last().date
 
-            first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
-            first_date = first_date + datetime.timedelta(days=31)
-        else:
-            return redirect('daily-transactions')
+        first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
+        first_date = first_date + datetime.timedelta(days=31)
 
         if 'month' in self.request.GET and 'year' in self.request.GET:
             self.kwargs['month'] = int(self.request.GET['month'])
@@ -74,26 +75,38 @@ class CustomerTopSheet(TemplateView):
         year = self.kwargs['year']
         prev_month = self.kwargs['prev_month']
         prev_month_year = self.kwargs['prev_month_year']
+        from_date = datetime.date(year,month,1)
+        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
+        last_day = last_day_of_month(year,month)
+        context['status'] = last_day == to_date
+        context['to_date'] = to_date
         # Group of Companies
         group_of_companies = GroupofCompany.objects.all()
         for goc in group_of_companies:
-            goc_balances = GroupofCompanyBalance.objects.filter(customer=goc.pk,month=prev_month,year=prev_month_year)
+            goc_balances = GroupofCompanyBalance.objects.filter(
+                customer=goc.pk, month=prev_month, year=prev_month_year)
             data = {
                 'name': "** " + goc.name,
                 'ledger_link': 'groupofcompany-ledger',
+                'link_css': "text-dark",
                 'pk': goc.pk,
                 'prev_balance': None,
                 'duesell': 0,
                 'duecollection': 0,
                 'balance': 0,
+                'baddebt': False,
                 }
             if goc_balances:
                 last_bal = goc_balances.last()
                 data.update({'prev_balance': last_bal})
                 total_prev_bal += last_bal.amount
+                if last_bal.bad_debt: 
+                    data['baddebt'] = True
+                    data['link_css'] = "text-secondary"
 
-            duesells = DueSell.objects.filter(date__month=month, date__year=year, customer__group=goc.pk)
-            duecollections = DueCollection.objects.filter(date__month=month, date__year=year, customer__group=goc.pk)
+            duesells = DueSell.objects.filter(date__gte=from_date, date__lte=to_date, customer__group=goc.pk)
+            duecollections = DueCollection.objects.filter(date__gte=from_date, date__lte=to_date, customer__group=goc.pk)
+            if duesells or duecollections: data['baddebt'] = False
 
             due_amount = 0
             if duesells:
@@ -106,37 +119,40 @@ class CustomerTopSheet(TemplateView):
                 collection = duecollections.aggregate(Sum('amount'))['amount__sum']
                 total_collection += collection
                 data.update({ 'duecollection': collection})
-            
-            baddebts = BadDebt.objects.filter(customer__group=goc.pk)
-            baddebt = baddebts.aggregate(Sum('amount'))['amount__sum'] if baddebts else 0
-            data['baddebt'] = baddebt
 
             bal = 0
             bal += data['prev_balance'].amount if data['prev_balance'] else 0
-            bal += data['duesell'] - data['duecollection'] - baddebt
+            bal += data['duesell'] - data['duecollection']
             data.update({'balance': bal})
             total_bal += bal
             customers.append(data)
         # Individual Customers
         individual_customers = Customer.objects.filter(cust_type='Individual')
         for customer in individual_customers:
-            customer_balances = CustomerBalance.objects.filter(customer=customer.pk,month=prev_month,year=prev_month_year)
+            customer_balances = CustomerBalance.objects.filter(
+                customer=customer.pk,month=prev_month,year=prev_month_year)
             data = {
                 'name': customer.name,
                 'ledger_link': 'customer-ledger',
+                'link_css': "text-dark",
                 'pk': customer.pk,
                 'prev_balance': None,
                 'duesell': 0,
                 'duecollection': 0,
                 'balance': 0,
+                'baddebt': False,
                 }
             if customer_balances:
                 last_bal = customer_balances.last()
                 data.update({'prev_balance': last_bal})
                 total_prev_bal += last_bal.amount
+                if last_bal.bad_debt: 
+                    data['baddebt'] = True
+                    data['link_css'] = "text-secondary"
 
-            duesells = DueSell.objects.filter(date__month=month, date__year=year, customer=customer.pk)
-            duecollections = DueCollection.objects.filter(date__month=month, date__year=year, customer=customer.pk)
+            duesells = DueSell.objects.filter(date__gte=from_date, date__lte=to_date, customer=customer.pk)
+            duecollections = DueCollection.objects.filter(date__gte=from_date, date__lte=to_date, customer=customer.pk)
+            if duesells or duecollections: data['baddebt'] = False
             
             due_amount = 0
             if duesells:
@@ -149,9 +165,6 @@ class CustomerTopSheet(TemplateView):
                 total_collection += collection
                 data.update({'duecollection': collection})
             
-            baddebts = BadDebt.objects.filter(customer=customer.pk, month=month)
-            baddebt = baddebts.aggregate(Sum('amount'))['amount__sum'] if baddebts else 0
-            data['baddebt'] = baddebt
             bal = 0
             last_bal = data['prev_balance'].amount if data['prev_balance'] else 0
             bal += last_bal
@@ -159,7 +172,7 @@ class CustomerTopSheet(TemplateView):
             if last_bal == 0 and due_amount == 0 and collection == 0:
                 continue
             
-            bal += data['duesell'] - data['duecollection'] - baddebt
+            bal += data['duesell'] - data['duecollection']
             data.update({'balance': bal})
             total_bal += bal
             customers.append(data)
@@ -173,10 +186,13 @@ class CustomerTopSheet(TemplateView):
         }
         return context
 
-class CustomerLedger(TemplateView):
+class CustomerLedger(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/customer.html'
 
     def get(self, request, *args, **kwargs):
+        if not CashBalance.objects.exists():
+            return redirect('create-cashbalance')
+        
         today = datetime.date.today()
         # Customer
         if 'customer' in self.request.GET:
@@ -233,22 +249,19 @@ class CustomerLedger(TemplateView):
         next_date = target_date + datetime.timedelta(days=31)
         context['prev'] = prev_date
         context['next'] = next_date
+        from_date = datetime.date(year,month,1)
+        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
 
         context['filter_form'] = CustomerLedgerFilterForm(self.kwargs or None)
         context['customer'] = Customer.objects.get(pk=customer)
         balances = CustomerBalance.objects.filter(customer=customer, year=prev_date.year, month=prev_date.month)
-        # if balances.count() == 0:
-            # context['has_balance'] = False
-            # return context
-        #     balance = None
-        # else: balance = balances.last()
 
         context['balance_bf'] = balances.last().amount if balances else 0
         context['balance_bf_date'] = datetime.date(year,month,1)
         context['has_balance'] = True
         # Data
-        duesells = DueSell.objects.filter(customer=customer, date__year=year, date__month=month)
-        duecollections = DueCollection.objects.filter(customer=customer, date__year=year, date__month=month)
+        duesells = DueSell.objects.filter(customer=customer, date__gte=from_date, date__lte=to_date)
+        duecollections = DueCollection.objects.filter(customer=customer, date__gte=from_date, date__lte=to_date)
         
         data = []
         dates = [obj['date'] for obj in duesells.values("date").distinct()]
@@ -266,24 +279,8 @@ class CustomerLedger(TemplateView):
                 'sells': sells,
                 'amount': sells.aggregate(Sum("amount"))["amount__sum"] if sells.count() > 0 else False,
                 'collection': collection.aggregate(Sum("amount"))["amount__sum"] if collection.count() > 0 else False
-            }
-            
-            # diesel = sells.filter(product__name="ডিজেল")
-            # if diesel.count() > 0:
-            #     d_qnt = diesel.aggregate(Sum('quantity'))['quantity__sum']
-            #     total_diesel += d_qnt
-            #     data_today.update({'diesel': d_qnt, 'total_diesel': total_diesel})
-            
-            # others = sells.exclude(product__name="ডিজেল")
-            # if others.count() > 0:
-            #     o_amount = others.aggregate(Sum('amount'))['amount__sum']
-            #     data_today.update({'others': o_amount})
-                
+            }                
             data.append(data_today)
-        
-        baddebts = BadDebt.objects.filter(customer=customer, month=month)
-        baddebt = baddebts.aggregate(Sum('amount'))['amount__sum'] if baddebts else 0
-        context['baddebt'] = baddebt
         
         balance = context['balance_bf']
         # data = sorted(data, key=lambda x:x['date'])
@@ -312,13 +309,16 @@ class CustomerLedger(TemplateView):
         total_collection = duecollections.aggregate(Sum("amount"))['amount__sum'] if duecollections else 0
         context['total_sell'] = total_sell
         context['total_collection'] = total_collection
-        context['balance_cf'] = context['balance_bf'] + total_sell - total_collection - baddebt
+        context['balance_cf'] = context['balance_bf'] + total_sell - total_collection
         return context
 
-class GroupofCompanyLedger(TemplateView):
+class GroupofCompanyLedger(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/groupofcompany.html'
 
     def get(self, request, *args, **kwargs):
+        if not CashBalance.objects.exists():
+            return redirect('create-cashbalance')
+        
         today = datetime.date.today()
         # customer
         if 'customer' in self.request.GET:
@@ -379,6 +379,8 @@ class GroupofCompanyLedger(TemplateView):
         next_date = target_date + datetime.timedelta(days=31)
         context['prev'] = prev_date
         context['next'] = next_date
+        from_date = datetime.date(year,month,1)
+        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
         
         balances = GroupofCompanyBalance.objects.filter(customer=customer, year=prev_date.year, month=prev_date.month)
         if balances.count() == 0:
@@ -390,8 +392,8 @@ class GroupofCompanyLedger(TemplateView):
         context['balance_bf_date'] = datetime.date(year,month,1)
         context['has_balance'] = True
         # Data
-        duesells = DueSell.objects.filter(customer__group=customer, date__year=year, date__month=month)
-        duecollections = DueCollection.objects.filter(customer__group=customer, date__year=year, date__month=month)
+        duesells = DueSell.objects.filter(customer__group=customer, date__gte=from_date, date__lte=to_date)
+        duecollections = DueCollection.objects.filter(customer__group=customer, date__gte=from_date, date__lte=to_date)
         sub_companies = Customer.objects.filter(group=customer)
         context['sub_companies'] = sub_companies
         
@@ -456,178 +458,159 @@ class GroupofCompanyLedger(TemplateView):
 
         return context
 
-# Customer
-class CustomerBalanceView(CreateView, ListView):
-    model = CustomerBalance
-    fields = '__all__'
+# Customer Balance (Group of company included)
+class CustomerBalanceView(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/customer_balance.html'
 
     def get(self,request,*args, **kwargs):
         today = datetime.date.today()
-        if 'month' not in self.kwargs and 'year' not in self.kwargs:
+        if 'month' in self.request.GET and 'year' in self.request.GET:
+                self.kwargs['month'] = int(self.request.GET['month'])
+                self.kwargs['year'] = int(self.request.GET['year'])
+        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
             if CustomerBalance.objects.exists():
-                # first_bal_date = CustomerBalance.objects.first()
-                # self.kwargs['month'] = first_bal_date.month
-                # self.kwargs['year'] = first_bal_date.year
-                last_bal_date = CustomerBalance.objects.last()
+                last_bal_date = CustomerBalance.objects.order_by('year','month').last()
                 self.kwargs['month'] = last_bal_date.month
                 self.kwargs['year'] = last_bal_date.year
-            # elif 'month' in self.request.GET and 'year' in self.request.GET:
-            #     self.kwargs['month'] = int(self.request.GET['month'])
-            #     self.kwargs['year'] = int(self.request.GET['year'])
             else:
                 self.kwargs['month'] = today.month
                 self.kwargs['year'] = today.year
         
-        # month = int(self.kwargs['month'])
-        # year = int(self.kwargs['year'])
+        month = int(self.kwargs['month'])
+        year = int(self.kwargs['year'])
         
-        # last_balance= CustomerBalance.objects.last()
-        # first_balance= CustomerBalance.objects.first()
+        last_balance= CustomerBalance.objects.order_by('year','month').last()
+        first_balance= CustomerBalance.objects.order_by('year','month').first()
 
-        # target_date = datetime.date(year,month,1)
-        # self.kwargs['target_date'] = target_date
-        # first_balance_date = datetime.date(int(first_balance.year),int(first_balance.month),1)
-        # last_balance_date = datetime.date(int(last_balance.year),int(last_balance.month),1)
-        # next_to_first = first_balance_date + datetime.timedelta(days=31)
-        # next_to_last = last_balance_date + datetime.timedelta(days=31)
+        target_date = datetime.date(year,month,1)
+        self.kwargs['target_date'] = target_date
+        first_balance_date = datetime.date(int(first_balance.year),int(first_balance.month),1)
+        last_balance_date = datetime.date(int(last_balance.year),int(last_balance.month),1)
         
-        # if target_date > next_to_last:
-        #     return redirect('customer-balance', 
-        #         month = next_to_last.month, 
-        #         year = next_to_last.year)
-        # elif target_date < next_to_first:
-        #     return redirect('customer-balance', 
-        #         month = next_to_first.month, 
-        #         year = next_to_first.year)
+        if target_date > last_balance_date:
+            return redirect('customer-balance', 
+                month = last_balance_date.month, 
+                year = last_balance_date.year)
+        elif target_date < first_balance_date:
+            return redirect('customer-balance', 
+                month = first_balance_date.month, 
+                year = first_balance_date.year)
 
         return super().get(request, *args, **kwargs)
-    
-    def get_queryset(self):
-        month = self.kwargs['month']
-        year = self.kwargs['year']
-        qs = self.model.objects.filter(month=month, year=year, customer__group__isnull=True)
-        return qs
-
-    def get_success_url(self):
-        return reverse_lazy('customer-balance', kwargs=self.kwargs)
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        month = form.cleaned_data['month']
-        year = form.cleaned_data['year']
-        return redirect(reverse_lazy('customer-balance', kwargs={'month':month, 'year':year}))
-    
-    def form_invalid(self, form):
-        self.object_list = self.get_queryset()
-        messages.error(self.request, "এক পার্টির ব্যাল্যান্স মাসে একবারই লিপিবদ্ধ হয়!")
-        context = self.get_context_data(form=form)
-        return self.render_to_response(context)
-
-    def get_initial(self):
-        initial = super().get_initial()
-        initial.update(self.kwargs)
-        return initial
-    
+     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # মাসিক খতিয়ান এর parameter সেট করার জন্য, যেন পরবর্তী মাসে চলে যায়
         month = int(self.kwargs['month'])
         year = int(self.kwargs['year'])
-        date = datetime.datetime(year,month,1)
-        target_date = date + datetime.timedelta(days=31)
+        target_date = self.kwargs['target_date']
         context['month'] = target_date.month
         context['year'] = target_date.year
-        # target_date = self.kwargs['target_date']
-        # prev_date = target_date - datetime.timedelta(days=1)
-        # next_date = target_date + datetime.timedelta(days=31)
-        # context['prev'] = prev_date
-        # context['next'] = next_date
+        prev_date = target_date - datetime.timedelta(days=1)
+        next_date = target_date + datetime.timedelta(days=31)
+        context['prev'] = prev_date
+        context['next'] = next_date
         # Show storage date on heading
-        # context['date_form'] = DateFilterForm(self.kwargs or None)
-        context['due_month'] = month
-        context['due_year'] = year
-        qs = self.get_queryset()
-        if qs:
-            context['total'] = qs.aggregate(Sum('amount'))['amount__sum']
+        context['date_form'] = DateFilterForm(self.kwargs or None)
+        total_current_bal = 0
+        total_baddebt = 0
+
+        # First create balances with 0 amount if not exists
+        cust_balances = CustomerBalance.objects.filter(
+            month=month,year=year, customer__group__isnull=True)
+        cust_ids = cust_balances.values('customer_id').distinct()
+        unused_customers = Customer.objects.filter(group__isnull=True).exclude(id__in=cust_ids)
+        for customer in unused_customers:
+            obj = CustomerBalance.objects.create(month=month,year=year,customer=customer,amount=0)
+            obj.save()
+
+        # Group of Company - Current
+        goc_balances = GroupofCompanyBalance.objects.filter(month=month,year=year, bad_debt=False)
+        if goc_balances:
+            context['goc_balances'] = goc_balances
+            context['goc_balances_count'] = goc_balances.count()
+            goc_total = goc_balances.aggregate(Sum('amount'))['amount__sum']
+            total_current_bal += goc_total
+        else: context['goc_balances_count'] = 0
+        # Customer Balances - Current
+        cust_balances = CustomerBalance.objects.filter(
+            month=month,year=year, customer__group__isnull=True, bad_debt=False)
+        if cust_balances:
+            context['cust_balances'] = cust_balances
+            cust_bal_total = cust_balances.aggregate(Sum('amount'))['amount__sum']
+            total_current_bal += cust_bal_total
+
+        # Group of Company - Bad Debts
+        goc_baddebts = GroupofCompanyBalance.objects.filter(month=month,year=year, bad_debt=True)
+        if goc_baddebts:
+            context['goc_baddebts'] = goc_baddebts
+            context['goc_baddebts_count'] = goc_baddebts.count()
+            goc_baddebt_total = goc_baddebts.aggregate(Sum('amount'))['amount__sum']
+            total_baddebt += goc_baddebt_total
+        else: context['goc_baddebts_count'] = 0
+        # Customer Balances - Bad Debts
+        cust_bad_debts = CustomerBalance.objects.filter(
+            month=month, year=year, customer__group__isnull=True, bad_debt=True)
+        if cust_bad_debts:
+            context['cust_bad_debts'] = cust_bad_debts
+            total_cust_baddebt = cust_bad_debts.aggregate(Sum('amount'))['amount__sum']
+            total_baddebt += total_cust_baddebt
+        
+        # Totals
+        context['total_current_bal'] = total_current_bal
+        context['total_baddebt'] = total_baddebt
+        context['grand_total'] = total_current_bal + total_baddebt
+
+        context['can_change'] = True
         return context
 
-def deleteCustomerBalance(request, pk):
-    obj = CustomerBalance.objects.get(pk=pk)
-    obj.delete()
-    return redirect('customer-balance')
+@login_required
+def customerBalanceFormsetView(request,month,year):
+    # Group of Company Forms -----------------------------
+    goc_balances = GroupofCompanyBalance.objects.all()
+    unique_goc = goc_balances.values('customer').annotate(
+        total=Count('customer')).filter(total=1).values_list('customer', flat=True)
+    unique_goc_bals = goc_balances.filter(customer__in=unique_goc)
+    GocBalanceFormset = modelformset_factory(GroupofCompanyBalance, GroupofCompanyBalanceForm, extra=0)
+    goc_formset = GocBalanceFormset(request.POST or None, queryset=unique_goc_bals, prefix='goc')
+    # Customer Forms -------------------------------------
+    cust_balances = CustomerBalance.objects.filter(customer__group__isnull=True)
+    # শুধুমাত্র প্রাথমিক ব্যালেন্স পরিবর্তন করা যাবে, বাকি মাসের গুলো auto generate হবে
+    unique_customers = cust_balances.values('customer').annotate(
+        total=Count('customer')).filter(total=1).values_list('customer', flat=True)
+    unique_balances = cust_balances.filter(customer__in=unique_customers)
+    CustomerBalanceFormSet = modelformset_factory(CustomerBalance, CustomerBalanceForm, extra=0)
+    cust_formset = CustomerBalanceFormSet(request.POST or None, queryset=unique_balances, prefix='cust')
+    cust_formset.initial = [{
+        'customer':obj.customer,
+        'amount':obj.amount, 
+        'bad_debt': obj.bad_debt} for obj in unique_balances]
+    template = "Ledger/customer_balance_formset.html"
+    context = {
+        'goc_formset': goc_formset, 'cust_formset': cust_formset, 
+        'month': month, 'year':year
+        }
 
-# Group of company
-class GroupofCompanyBalanceView(CreateView, ListView):
-    model = GroupofCompanyBalance
-    fields = '__all__'
-    paginate_by = 30
-    template_name = 'Ledger/groupofcompany_balance.html'
+    if request.method == 'POST':
+        if cust_formset.errors or goc_formset.errors:
+            print(cust_formset.errors)
+            print(goc_formset.errors)
+        if cust_formset.is_valid() and goc_formset.is_valid():
+            goc_formset.save()
+            cust_formset.save()
+            return redirect('customer-balance', month=month, year=year)
+    return render(request,template,context)
 
-    def get_success_url(self):
-        return reverse_lazy('groupofcompany-balance', kwargs=self.kwargs)
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        month = form.cleaned_data['month']
-        year = form.cleaned_data['year']
-        return redirect(reverse_lazy('groupofcompany-balance', kwargs={'month':month, 'year':year}))
+@login_required
+def markBaddebt(requst,month,year,cust_pk,goc=False,unmark=False):
+    if goc:
+        objects = GroupofCompanyBalance.objects.filter(month__gte=month,year__gte=year,customer=cust_pk)
+    else:
+        objects = CustomerBalance.objects.filter(month__gte=month,year__gte=year,customer=cust_pk)
+    for obj in objects:
+        if not unmark:
+            obj.bad_debt = True
+        else: obj.bad_debt = False
+        obj.save()
+    return redirect('customer-balance',month=month,year=year)
     
-    def form_invalid(self, form):
-        self.object_list = self.get_queryset()
-        messages.error(self.request, "এক পার্টির ব্যাল্যান্স মাসে একবারই লিপিবদ্ধ হয়!")
-        context = self.get_context_data(form=form)
-        return self.render_to_response(context)
-
-    def get_initial(self):
-        initial = super().get_initial()
-        initial.update(self.kwargs)
-        return initial
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # মাসিক খতিয়ান এর parameter সেট করার জন্য, যেন পরবর্তী মাসে চলে যায়
-        if 'month' in self.kwargs and 'year' in self.kwargs:
-            month = int(self.kwargs['month'])
-            year = int(self.kwargs['year'])
-            date = datetime.datetime(year,month,1)
-            target_date = date + datetime.timedelta(days=31)
-            context['month'] = target_date.month
-            context['year'] = target_date.year
-        return context
-
-def deleteGroupofCompanyBalance(request, pk):
-    obj = CustomerBalance.objects.get(pk=pk)
-    obj.delete()
-    return redirect('groupofcompany-balance')
-
-class BadDebtView(CreateView, ListView):
-    model = BadDebt
-    form_class = BadDebtForm
-    template_name = 'Ledger/bad_debt.html'
-    
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        if response.status_code == 302:
-            customer = form.cleaned_data['customer']
-            # balances = CustomerBalance.objects.filter(customer=customer)
-            # if balances:
-            #     balance = balances.first()
-            #     balance.amount -= form.cleaned_data['amount']
-            #     balance.save()
-            disable_customer = form.cleaned_data['disable_customer']
-            if disable_customer:
-                customer.status = 'inactive'
-                customer.save()
-
-        return redirect(reverse_lazy('baddebt'))
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['total'] = self.model.objects.aggregate(Sum('amount'))['amount__sum']
-        return context
-
-def deleteBadDebt(request, pk):
-    obj = BadDebt.objects.get(pk=pk)
-    obj.delete()
-    return redirect('baddebt')

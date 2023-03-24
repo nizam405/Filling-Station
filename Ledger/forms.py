@@ -1,28 +1,53 @@
 from django import forms
 from .choices import MONTHS, YEAR
-# from Customer.choices import customerDueChoice
-from .models import CustomerBalance, GroupofCompanyBalance, Storage, BadDebt
+from .models import CustomerBalance, GroupofCompanyBalance, Storage
+from Customer.models import Customer, GroupofCompany
 from Core.widgets import SelectCustomer
-# from Customer.models import Customer
-# from django.db.models import Q
-
-# class FilterForm(forms.Form):
-#     qs = Customer.objects.filter(cust_type='Individual')
-#     customer = forms.ModelChoiceField(queryset=qs,label="পার্টি")
-#     month = forms.CharField(widget=forms.Select(choices=MONTHS), label="মাস")
-#     year = forms.CharField(widget=forms.Select(choices=YEAR), label="বছর")
 
 # Used in Customer Ledger
 class CustomerLedgerFilterForm(forms.ModelForm):
     class Meta:
         model = CustomerBalance
         fields = ['customer','month','year']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['customer'].queryset = Customer.objects.filter(
+            customerbalance__bad_debt=False, active=True
+        ).distinct()
 
 # Used in Group of company Ledger
 class GroupofCompanyLedgerFilterForm(forms.ModelForm):
     class Meta:
         model = GroupofCompanyBalance
         fields = ['customer','month','year']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['customer'].queryset = GroupofCompany.objects.filter(
+            groupofcompanybalance__bad_debt=False, active=True
+        ).distinct()
+
+class CustomerBalanceForm(forms.ModelForm):
+    class Meta:
+        model = CustomerBalance
+        fields = ['amount','bad_debt']
+    
+    def __init__(self, *args, **kwargs):
+        super(CustomerBalanceForm, self).__init__(*args, **kwargs)
+        customer = self.instance.customer
+        self.fields['customer'] = forms.CharField(label=customer.name, disabled=True, initial=customer.name)
+    
+class GroupofCompanyBalanceForm(forms.ModelForm):
+    class Meta:
+        model = GroupofCompanyBalance
+        fields = ['amount','bad_debt']
+    
+    def __init__(self, *args, **kwargs):
+        super(GroupofCompanyBalanceForm, self).__init__(*args, **kwargs)
+        print(self.instance)
+        customer = self.instance.customer
+        self.fields['customer'] = forms.CharField(label=customer.name, disabled=True, initial=customer.name)
 
 # Used on several pages to filter
 class DateFilterForm(forms.Form):
@@ -34,13 +59,3 @@ class StorageFilterForm(forms.ModelForm):
     class Meta:
         model = Storage
         fields = ['product','month','year']
-
-class BadDebtForm(forms.ModelForm):
-    disable_customer = forms.BooleanField(
-        required=False, label="পার্টি নিষ্ক্রিয় করুন",
-        widget=forms.CheckboxInput())
-    class Meta:
-        model = BadDebt
-        # fields = '__all__'
-        fields = ['month','year','customer','amount', 'disable_customer']
-        widgets = {'customer':SelectCustomer}

@@ -17,7 +17,7 @@ class ExpenditureGroup(models.Model):
 
 class Expenditure(models.Model):
     date = models.DateField(default=timezone.now, verbose_name="তারিখ")
-    group = models.ForeignKey(to=ExpenditureGroup, on_delete=models.SET_NULL, null=True, verbose_name="ব্যায়ের খাত")
+    group = models.ForeignKey(to=ExpenditureGroup, on_delete=models.SET_NULL, null=True, verbose_name="ব্যয়ের খাত")
     detail = models.CharField(max_length=255, blank=True, null=True, verbose_name="বিবরণ")
     amount = models.IntegerField(null=True, blank=False, verbose_name="টাকা")
 

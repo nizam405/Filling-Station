@@ -2,13 +2,13 @@
 {% block title %}Delete Group of Company{% endblock title %}
 {% block main %}
 
-<h4>Are you sure! You want to delete "{{object}}"</h4>
-<p>All entries related to this will also be deleted</p>
+<h4>আপনি নিশ্চিত? "{{object}}" নামক পার্টি'টি ডিলিট করা হচ্ছে।</h4>
+<p>উক্ত পার্টির সকল হিসাব ডিলিট হয়ে যাবে।</p>
 
 <form method="post">
     {% csrf_token %}
-    <a href="{% url 'groupofcompanies' %}" class="btn btn-primary">No. Go back</a>
-    <input type="submit" value="Yes, Delete" class="btn btn-danger">
+    <a href="{% url 'groupofcompanies' %}" class="btn btn-primary">না, ফেরত আসুন</a>
+    <input type="submit" value="হ্যা, ডিলিট করুন" class="btn btn-danger">
 </form>
 
 {% endblock main %}

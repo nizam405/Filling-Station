@@ -1,6 +1,7 @@
 from django import forms
 from datetime import date
 from .models import CashBalance
+from Core.choices import year_choices
 
 class DateForm(forms.Form):
     balance_date = CashBalance.objects.first()
@@ -15,9 +16,9 @@ class CashBalanceForm(forms.ModelForm):
     class Meta:
         model = CashBalance
         fields = '__all__'
-        # widgets = {
-        #     'date': forms.DateInput(attrs={'type':'date'})
-        # }
+        widgets = {
+            'date': forms.SelectDateWidget(years=year_choices())
+        }
 
 class CashBalanceForm2(forms.ModelForm):
     balance_form = forms.BooleanField(widget=forms.HiddenInput,initial=True)

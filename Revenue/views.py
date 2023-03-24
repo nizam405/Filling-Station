@@ -3,11 +3,14 @@ from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
 from .models import Revenue, RevenueGroup
 from .forms import RevenueForm
 
 # Revenue Group
-class RevenueGroupView(CreateView, ListView):
+class RevenueGroupView(LoginRequiredMixin,CreateView, ListView):
     model = RevenueGroup
     fields = '__all__'
     template_name = 'Revenue/revenue_group.html'
@@ -18,16 +21,17 @@ class RevenueGroupView(CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class RevenueGroupUpdateView(UpdateView, ListView):
+class RevenueGroupUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = RevenueGroup
     fields = '__all__'
     template_name = 'Revenue/revenue_group.html'
     success_url = reverse_lazy('revenue-group')
 
-class RevenueGroupDeleteView(DeleteView):
+class RevenueGroupDeleteView(LoginRequiredMixin,DeleteView):
     model = RevenueGroup
     success_url = reverse_lazy('revenue-group')
 
+@login_required
 def RevenueFormsetView(request, date):
     qs = Revenue.objects.filter(date=date)
     extra = 0 if qs.count() > 0 else 1

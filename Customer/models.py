@@ -2,12 +2,13 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from Product.models import Product
-from .choices import customer_type, customer_status
+from .choices import customer_type
+from Core.choices import status_choices
 
 class GroupofCompany(models.Model):
     name = models.CharField(max_length=255, verbose_name="নাম")
     # সক্রিয় করলে customer dropdown list এ দেখাবে
-    status = models.CharField(max_length=20, choices=customer_status, default=customer_status[0], verbose_name='অবস্থা')
+    active = models.BooleanField(default=True, verbose_name='সক্রিয়')
 
     class Meta:
         ordering = ['name']
@@ -26,10 +27,10 @@ class Customer(models.Model):
     mobile = models.CharField(max_length=11, null=True, blank=True, verbose_name="মোবাইল")
     serial = models.SmallIntegerField(default=100, verbose_name="ক্রম")
     # সক্রিয় করলে customer dropdown list এ দেখাবে
-    status = models.CharField(max_length=20, choices=customer_status, default=customer_status[0][0], verbose_name='অবস্থা')
+    active = models.BooleanField(default=True, verbose_name='সক্রিয়')
 
     class Meta:
-        ordering = ['status','cust_type','group','serial','name']
+        ordering = ['-active','cust_type','group','serial','name']
     
     def get_next_serial(self):
         max_serial = Customer.objects.aggregate(models.Max('serial'))['serial__max']
@@ -49,8 +50,10 @@ class Customer(models.Model):
 
 class DueSell(models.Model):
     date = models.DateField(default=timezone.now, verbose_name="তারিখ")
-    customer = models.ForeignKey(to=Customer, limit_choices_to={'status':'active'}, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
-    product = models.ForeignKey(to=Product, default=1, on_delete=models.SET_NULL, null=True, verbose_name="মাল")
+    customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা", 
+        limit_choices_to={'active':True})
+    product = models.ForeignKey(to=Product, default=1, on_delete=models.SET_NULL, null=True, verbose_name="মাল", 
+        limit_choices_to={'active':True})
     quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
     rate = models.FloatField(default=0.0, verbose_name="দর")
     amount = models.IntegerField(null=True, blank=False, verbose_name="মোট")
@@ -66,7 +69,8 @@ class DueSell(models.Model):
     
 class DueCollection(models.Model):
     date = models.DateField(default=timezone.now, verbose_name="তারিখ")
-    customer = models.ForeignKey(to=Customer, limit_choices_to={'status':'active'}, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা")
+    customer = models.ForeignKey(to=Customer, on_delete=models.SET_NULL, null=True, verbose_name="ক্রেতা", 
+        limit_choices_to={'active':True})
     amount = models.IntegerField(null=True, blank=False, verbose_name="টাকা")
 
     class Meta:

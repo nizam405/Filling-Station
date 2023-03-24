@@ -14,6 +14,7 @@ class Product(models.Model):
     capacity = models.PositiveSmallIntegerField(default=None, null=True, blank=True, verbose_name="পরিমান")
     purchase_rate = models.FloatField(default=None, verbose_name="একক প্রতি ক্রয়মুল্য")
     selling_rate = models.FloatField(default=None, verbose_name="একক প্রতি বিক্রয়মুল্য")
+    active = models.BooleanField(default=True, verbose_name='সক্রিয়')
 
     class Meta:
         ordering = ['type','name','capacity']
@@ -26,22 +27,10 @@ class Product(models.Model):
     def get_absolute_url(self):
         return reverse("products")
 
-# class Price(models.Model):
-#     date = models.DateField(default=timezone.now, verbose_name='তারিখ')
-#     product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল")
-#     purchase_rate = models.FloatField(default=None, verbose_name="একক প্রতি ক্রয়মুল্য")
-#     selling_rate = models.FloatField(default=None, verbose_name="একক প্রতি বিক্রয়মুল্য")
-
-#     class Meta:
-#         ordering = ['-date', 'product']
-#         constraints = [models.UniqueConstraint(fields=['date','product'],name='unique_price_date')]
-
-#     def __str__(self):
-#         return f"Date: {self.date}, Name: {self.product.name}, Rate: {self.purchase_rate}/{self.selling_rate}"
-
 class Purchase(models.Model):
     date = models.DateField(default=timezone.now)
-    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল")
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল", 
+        limit_choices_to={'active':True})
     quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
     rate = models.FloatField(default=0, verbose_name="দর")
     amount = models.IntegerField(null=True, blank=False, verbose_name="মোট")
@@ -57,7 +46,8 @@ class Purchase(models.Model):
 
 class Sell(models.Model):
     date = models.DateField(default=timezone.now)
-    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল")
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল", 
+        limit_choices_to={'active':True})
     quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
     rate = models.FloatField(default=0, verbose_name="দর")
     amount = models.IntegerField(null=True, blank=False, verbose_name="মোট")

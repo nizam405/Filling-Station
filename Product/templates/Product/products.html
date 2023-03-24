@@ -28,6 +28,7 @@
         <div class="col-md-6">{% bootstrap_field form.capacity       layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>লিটার</span>" %}</div>
         <div class="col-md-6">{% bootstrap_field form.purchase_rate  layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>টাকা</span>" %}</div>
         <div class="col-md-6">{% bootstrap_field form.selling_rate   layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>টাকা</span>" %}</div>
+        <div class="col-md-6">{% bootstrap_field form.active         layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
@@ -43,6 +44,7 @@
         <th>সংক্ষিপ্ত নাম</th>
         <th>ক্রয়মুল্য</th>
         <th>বিক্রয়মুল্য</th>
+        <th>অবস্থা</th>
         <th class='d-print-none'></th>
     </tr>
     {% if object_list %}
@@ -61,9 +63,19 @@
         <td {% if object.purchase_rate >= object.selling_rate %}class="text-danger"{% endif %}>
             {{object.selling_rate|floatformat:-2|e2b_digit}}
         </td>
+        <td class='icon-lg'>
+            <a href="{% url 'change-product-status' pk=object.pk %}" class="p-1">
+                {% if object.active %}
+                <i class="bi bi-toggle-on text-primary"></i>
+                {% else %}
+                <i class="bi bi-toggle-off text-secondary"></i>
+                {% endif %}
+            </a>
+        </td>
         <td class='d-print-none'>
-            <a href="{% url 'update-product' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
-            {% comment %} <a href="{% url 'delete-product' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a> {% endcomment %}
+            <a href="{% url 'update-product' pk=object.pk %}" class="p-1">
+                <i class="bi bi-pencil-square text-dark"></i>
+            </a>
         </td>
     </tr>
     {% endfor %}

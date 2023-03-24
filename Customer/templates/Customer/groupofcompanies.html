@@ -22,7 +22,7 @@
     <form method="post" class="row mb-3">
         {% csrf_token %}
         <div class="col-sm-6">{% bootstrap_field form.name  layout='horizontal' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.status  layout='horizontal' %}</div>
+        <div class="col-sm-6">{% bootstrap_field form.active  layout='horizontal' %}</div>
         <div class="col-sm-12 eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'groupofcompanies' %}" class="btn btn-secondary">Cancel</a>
@@ -34,13 +34,23 @@
     <tr>
         <th>#</th>
         <th>নাম</th>
+        <th>অবস্থা</th>
         <th></th>
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
-    <tr>
+    <tr {% if not object.active %}class="text-secondary"{% endif %}>
         <td>{{ sln|e2b_digit }}</td>
         <td class="text-left">{{object.name}}</td>
+        <td class="icon-lg">
+            <a href="{% url 'change-goc-status' pk=object.pk %}" class="p-1">
+                {% if object.active %}
+                <i class="bi bi-toggle-on text-primary"></i>
+                {% else %}
+                <i class="bi bi-toggle-off text-secondary"></i>
+                {% endif %}
+            </a>
+        </td>
         <td>
             <a href="{% url 'update-groupofcompany' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>
             <a href="{% url 'delete-groupofcompany' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>

@@ -7,55 +7,44 @@ from .choices import MONTHS, YEAR, currentMonth, prevMonth, currentYear
 from Core.choices import get_prev_month
 
 class CustomerBalance(models.Model):
-    month = models.CharField(max_length=20, choices=MONTHS, default=prevMonth, verbose_name="মাস")
+    month = models.IntegerField(choices=MONTHS, default=prevMonth, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="পার্টি",
-         limit_choices_to={'cust_type': customer_type[0][0],'status':'active'}
-         )
+        limit_choices_to={'cust_type': customer_type[0][0]})
     amount = models.IntegerField(null=True, blank=False, verbose_name="পরিমাণ")
+    bad_debt = models.BooleanField(default=False, verbose_name="অনিশ্চিত")
 
     class Meta:
         ordering = ['-year','-month','customer__serial']
 
     def __str__(self):
-        return f"{self.month}, {self.year} - {self.customer} - {self.amount}"
+        output = f"{self.month}, {self.year} - {self.customer} - {self.amount}"
+        if self.bad_debt: output += " অনিশ্চিত"
+        return output
     
     def get_absolute_url(self):
         return reverse("customer-ledger", kwargs={"pk": self.pk})
 
 class GroupofCompanyBalance(models.Model):
-    month = models.CharField(max_length=20, choices=MONTHS, verbose_name="মাস")
+    month = models.IntegerField(choices=MONTHS, default=prevMonth, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
     customer = models.ForeignKey(GroupofCompany, on_delete=models.CASCADE, verbose_name="পার্টি")
     amount = models.IntegerField(null=True, blank=False, verbose_name="পরিমাণ")
+    bad_debt = models.BooleanField(default=False, verbose_name="অনিশ্চিত")
 
     class Meta:
         ordering = ['-year','-month','customer']
 
     def __str__(self):
-        return f"{self.month}, {self.year} - {self.customer} - {self.amount}"
+        output = f"{self.month}, {self.year} - {self.customer} - {self.amount}"
+        if self.bad_debt: output += " অনিশ্চিত"
+        return output
     
     def get_absolute_url(self):
         return reverse("groupofcompany-balance")
 
-class BadDebt(models.Model):
-    month = models.CharField(max_length=20, choices=MONTHS, default=currentMonth, verbose_name="মাস")
-    year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
-    customer = models.ForeignKey(Customer, limit_choices_to={'status':'active'}, on_delete=models.CASCADE, verbose_name="পার্টি")
-    amount = models.IntegerField(null=True, blank=False, verbose_name="পরিমাণ")
-
-    class Meta:
-        ordering = ['-year','month','customer']
-        constraints = [models.UniqueConstraint(fields=['year','month','customer'], name='unique_baddebt')]
-
-    def __str__(self):
-        return f"{self.month}, {self.year} - {self.customer} - {self.amount}"
-    
-    def get_absolute_url(self):
-        return reverse("baddebt")
-
 class Storage(models.Model):
-    month = models.CharField(max_length=20, choices=MONTHS, verbose_name="মাস")
+    month = models.IntegerField(choices=MONTHS, default=prevMonth, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল")
     quantity = models.FloatField(default=0, verbose_name="পরিমাণ")
@@ -87,7 +76,7 @@ class Storage(models.Model):
         return reverse('product-topsheet')
 
 class Profit(models.Model):
-    month = models.CharField(max_length=20, choices=MONTHS, verbose_name="মাস")
+    month = models.IntegerField(choices=MONTHS, default=prevMonth, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
     amount = models.IntegerField(null=True, blank=False, verbose_name="পরিমাণ")
 

@@ -6,9 +6,7 @@ from .views.main import saveLedger, RevenueLedger, ExpenditureLedger, WithdrawLe
 from .views.customer_views import (
     CustomerTopSheet,
     CustomerLedger, GroupofCompanyLedger,
-    CustomerBalanceView, deleteCustomerBalance,
-    GroupofCompanyBalanceView, deleteGroupofCompanyBalance,
-    BadDebtView, deleteBadDebt,
+    CustomerBalanceView, customerBalanceFormsetView, markBaddebt,
 )
 from .views.product_views import StorageView, ProductLedger, ProductTopSheet
 from .views.incomestatement_view import IncomeStatementView
@@ -19,10 +17,6 @@ urlpatterns = [
             path('', CustomerTopSheet.as_view(), name='customer-topsheet'),
             path('<int:month>-<int:year>/', CustomerTopSheet.as_view(), name='customer-topsheet'),
         ])),
-        path('bad-debt/', include([
-            path('', BadDebtView.as_view(), name='baddebt'),
-            path('<int:pk>/delete', deleteBadDebt, name='delete-baddebt'),
-        ])),
         path('', include([
             path('', CustomerLedger.as_view(), name='customer-ledger'),
             path('<int:customer>/', CustomerLedger.as_view(), name='customer-ledger'),
@@ -30,9 +24,13 @@ urlpatterns = [
         ])),
         path('balance/', include([
             path('', CustomerBalanceView.as_view(), name='customer-balance'),
-            path('<int:cust_id>/', CustomerBalanceView.as_view(), name='customer-balance'),
             path('<int:month>-<int:year>/', CustomerBalanceView.as_view(), name='customer-balance'),
-            path('<int:pk>/delete/', deleteCustomerBalance, name='delete-customer-balance'),
+            path('update/<int:month>-<int:year>/', customerBalanceFormsetView, name='customer-balance-update'),
+            # Bad Debts
+            path('<int:month>-<int:year>/<int:cust_pk>/mark-baddebt/', markBaddebt, name='mark-baddebt'),
+            path('<int:month>-<int:year>/<int:goc>/<int:cust_pk>/mark-baddebt/', markBaddebt, name='mark-baddebt'),
+            path('<int:month>-<int:year>/<int:cust_pk>/<int:unmark>/unmark-baddebt/', markBaddebt, name='mark-baddebt'),
+            path('<int:month>-<int:year>/<int:goc>/<int:cust_pk>/<int:unmark>/unmark-baddebt/', markBaddebt, name='mark-baddebt'),
         ])),
     ])),
     path('groupofcompany/', include([
@@ -40,12 +38,6 @@ urlpatterns = [
             path('', GroupofCompanyLedger.as_view(), name='groupofcompany-ledger'),
             path('<int:customer>/', GroupofCompanyLedger.as_view(), name='groupofcompany-ledger'),
             path('<int:customer>/<int:month>-<int:year>/', GroupofCompanyLedger.as_view(), name='groupofcompany-ledger'),
-        ])),
-        path('balance/', include([
-            path('', GroupofCompanyBalanceView.as_view(), name='groupofcompany-balance'),
-            path('<int:cust_id>/', GroupofCompanyBalanceView.as_view(), name='groupofcompany-balance'),
-            path('<int:month>-<int:year>/', GroupofCompanyBalanceView.as_view(), name='groupofcompany-balance'),
-            path('<int:pk>/delete/', deleteGroupofCompanyBalance, name='delete-groupofcompany-balance'),
         ])),
     ])),
     path('product/', include([

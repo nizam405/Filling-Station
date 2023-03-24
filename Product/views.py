@@ -3,14 +3,15 @@ from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 from .models import Product, Purchase, Sell, StorageReading
 from .forms import SellForm, PurchaseForm, StorageReadingForm
 from datetime import timedelta
-from bootstrap_datepicker_plus.widgets import DatePickerInput
 
 # Product
-class ProductView(CreateView, ListView):
+class ProductView(LoginRequiredMixin,CreateView, ListView):
     model = Product
     fields = '__all__'
     template_name = 'Product/products.html'
@@ -21,18 +22,24 @@ class ProductView(CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class ProductUpdateView(UpdateView, ListView):
+def change_product_status(request, pk):
+    product = Product.objects.get(pk=pk)
+    product.active = not product.active
+    product.save()
+    return redirect('products')
+
+class ProductUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = Product
     fields = '__all__'
     template_name = 'Product/products.html'
     success_url = reverse_lazy('products')
 
-class ProductDeleteView(DeleteView):
+class ProductDeleteView(LoginRequiredMixin,DeleteView):
     model = Product
     success_url = reverse_lazy('products')
 
 # Storage Reading
-class StorageReadingView(CreateView, ListView):
+class StorageReadingView(LoginRequiredMixin,CreateView, ListView):
     model = StorageReading
     template_name = 'Product/storage.html'
     # fields = '__all__'
@@ -44,17 +51,6 @@ class StorageReadingView(CreateView, ListView):
         if 'date' in self.kwargs:
             url = reverse_lazy('daily-product-storage', kwargs={'date':self.kwargs['date']})
         return  url
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     if 'date' in self.kwargs:
-    #         date = self.kwargs['date']
-    #         queryset = queryset.filter(date=date)
-    #     return queryset
-    
-    # def get_form(self):
-    #     form = super().get_form()
-    #     form.fields['date'].widget = DatePickerInput()
-    #     return form
 
     def get_initial(self):
         initial = super().get_initial()
@@ -74,8 +70,7 @@ class StorageReadingView(CreateView, ListView):
             context["date"] = self.kwargs['date']
         return context
     
-
-class StorageReadingtUpdateView(UpdateView, ListView):
+class StorageReadingtUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = StorageReading
     template_name = 'Product/storage.html'
     success_url = reverse_lazy('daily-product-storage')
@@ -94,11 +89,12 @@ class StorageReadingtUpdateView(UpdateView, ListView):
             context["date"] = self.kwargs['date']
         return context
 
-class StorageReadingDeleteView(DeleteView):
+class StorageReadingDeleteView(LoginRequiredMixin,DeleteView):
     model = StorageReading
     success_url = reverse_lazy('daily-product-storage')
 
 # Purchase
+@login_required
 def PurchaseFormsetView(request, date):
     qs = Purchase.objects.filter(date=date)
     # No extra form for edit or delete
@@ -124,6 +120,7 @@ def PurchaseFormsetView(request, date):
     return render(request,template,context)
 
 # Sell
+@login_required
 def SellFormsetView(request, date):
     qs = Sell.objects.filter(date=date)
     extra = 0 if qs.count() > 0 else 1

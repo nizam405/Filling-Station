@@ -27,7 +27,7 @@
         <div class="col-md-6">{% bootstrap_field form.group  layout='horizontal' %}</div>
         <div class="col-md-6">{% bootstrap_field form.mobile  layout='horizontal' field_class='eng col-md-9' %}</div>
         <div class="col-md-6">{% bootstrap_field form.serial  layout='horizontal' field_class='eng col-md-9' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.status  layout='horizontal' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.active  layout='horizontal' %}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'customers' %}" class="btn btn-secondary">Cancel</a>
@@ -47,19 +47,20 @@
     </tr>
     {% if object_list %}
     {% for object,sln in object_list|zip %}
-    <tr {% if object.status == 'inactive' %}class='text-muted'{% endif %}>
+    <tr {% if not object.active %}class='text-muted'{% endif %}>
         <td>{{ sln|e2b_digit }}</td>
         <td class="text-left">{{object}}</td>
         <td class="text-left">{% if object.short_name %}{{object.short_name}}{% endif %}</td>
         <td>{% if object.mobile %}{{object.mobile}}{% else %}-{% endif %}</td>
         <td>{{object.serial|e2b_digit}}</td>
-        <td>
-            {% if object.status == 'active' %}
-            <i class="bi bi-check-circle-fill text-success float-left"></i>
-            {% else %}
-            <i class="bi bi-x-circle-fill text-warning float-left"></i>
-            {% endif %}
-            {{object.get_status_display}}
+        <td class='icon-lg'>
+            <a href="{% url 'change-cust-status' pk=object.pk %}" class="p-1">
+                {% if object.active %}
+                <i class="bi bi-toggle-on text-primary"></i>
+                {% else %}
+                <i class="bi bi-toggle-off text-secondary"></i>
+                {% endif %}
+            </a>
         </td>
         <td>
             <a href="{% url 'update-customer' pk=object.pk %}" class="p-1"><i class="bi bi-pencil-square text-dark"></i></a>

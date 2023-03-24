@@ -85,14 +85,7 @@
             </td>
         </tr>
         {% endfor %}
-        
-        {% if baddebt %}
-        <tr class='text-danger'>
-            <td></td>
-            <td colspan='3'>অনাদায়ী পাওনা</td>
-            <td class='text-right'>({{baddebt|floatformat:-2|e2b_digit|ezynumber}})</td>
-        </tr>
-        {% endif %}
+ 
         <tr class='text-right'>
             <th colspan='2'>মোটঃ</th>
             <th>{{total_sell|e2b_digit|ezynumber}}</th>

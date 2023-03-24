@@ -5,6 +5,8 @@
     #date-filter select, #date-filter button, #date-filter a {
         border-radius:0rem;
     }
+
+    .baddebt {display: none;}
 </style>
 {% endblock style %}
 {% load extra_tags %}
@@ -23,6 +25,10 @@
             <a href="{% url 'customer-topsheet' month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
             <a href="{% url 'customer-topsheet' month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
         </div>
+        <div class="p-2 ml-2">
+            <input type="checkbox" id="show_baddebt">
+            <label for="show_baddebt">অনিশ্চিত</label>
+        </div>
     </form>
 </div>
 
@@ -32,12 +38,13 @@
 <div class="text-center">
     <h4>টপশিটঃ {{month|e2b_month}},{{year|e2b_digit}}</h4>
     <h4><u>পার্টি হিসাব</u></h4>
+    {% if not status %}
+    <div class='text-danger'>({{to_date|e2b_date}} তারিখ পর্যন্ত)</div>
+    {% endif %}
 </div>
 
 <div class="pb-1 d-print-none">
-    <a href="{% url 'groupofcompany-balance' month=prev.month year=prev.year %}" class="btn btn-light">গ্রুপ অফ কোম্পানি ব্যালেন্স</a>
     <a href="{% url 'customer-balance' month=prev.month year=prev.year %}" class="btn btn-light">পার্টি ব্যালেন্স</a>
-    <a href="{% url 'baddebt' %}" class="btn btn-light">অনাদায়ী পাওনা</a>
 </div>
 
 <table class="table table-sm table-bordered table-striped">
@@ -50,9 +57,11 @@
         <th>বর্তমান পাওনা</th>
     </tr>
     {% for customer,sln in customers|zip %}
-    <tr>
+    <tr {% if customer.baddebt %}class="baddebt"{% endif %}>
         <td class='text-center'>{{sln|e2b_digit}}</td>
-        <td><a href="{% url customer.ledger_link customer=customer.pk month=month year=year %}" class="text-dark">{{customer.name}}</a></td>
+        <td>
+            <a href="{% url customer.ledger_link customer=customer.pk month=month year=year %}" class="{{customer.link_css}}">{{customer.name}}</a>
+        </td>
         <td class="text-right">
             {% if customer.prev_balance %}
             <div class="float-left">
@@ -60,11 +69,6 @@
                 {{customer.prev_balance.year|e2b_digit}})
             </div>
             {{customer.prev_balance.amount|floatformat:-2|e2b_digit|ezynumber}}
-            {% if customer.baddebt %}
-            <div class='text-danger'>
-                অনাদায়ীঃ ({{customer.baddebt|floatformat:-2|e2b_digit|ezynumber}})
-            </div>
-            {% endif %}
             {% endif %}
         </td>
         <td class="text-right">{{customer.duesell|floatformat:-2|e2b_digit|ezynumber}}</td>
@@ -78,12 +82,22 @@
     </tr>
     {% endfor %}
     <tr class="text-right font-weight-bold">
-        <td colspan='2'>মোটঃ</td>
+        <td colspan='2'>(অনিশ্চিত সহ) মোটঃ</td>
         <td>{{customers_total.total_prev_bal|floatformat:-2|e2b_digit|ezynumber}}</td>
         <td>{{customers_total.total_duesell|floatformat:-2|e2b_digit|ezynumber}}</td>
         <td>{{customers_total.total_collection|floatformat:-2|e2b_digit|ezynumber}}</td>
         <td>{{customers_total.total_bal|floatformat:-2|e2b_digit|ezynumber}}</td>
     </tr>
 </table>
+
+<script>
+    $("#show_baddebt").on('click', function(){
+        if ($(this).is(":checked")){
+            $('.baddebt').show('fast');
+        } else {
+            $('.baddebt').hide('fast');
+        }
+    })
+</script>
 
 {% endblock main %}

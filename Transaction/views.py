@@ -5,6 +5,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.db.models import Sum
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Product.models import Sell, Purchase, StorageReading
 from Customer.models import DueSell, DueCollection, Customer
@@ -15,7 +16,7 @@ from .forms import DateForm, CashBalanceForm, CashBalanceForm2
 from .models import CashBalance
 from Core.choices import last_day_of_month
 
-class DailyTransactionView(TemplateView):
+class DailyTransactionView(LoginRequiredMixin,TemplateView):
     template_name = "Transaction/daily_transactions.html"
 
     def post(self, request, *args, **kwargs):
@@ -203,14 +204,14 @@ class DailyTransactionView(TemplateView):
             initial={'date':date,'amount':context['balance_cf']})
         return context
 
-class CashBalanceListView(ListView):
+class CashBalanceListView(LoginRequiredMixin,ListView):
     model = CashBalance
     ordering = ['-date']
     paginate_by = 20
 
-class CashBalanceCreateView(CreateView):
+class CashBalanceCreateView(LoginRequiredMixin,CreateView):
     model = CashBalance
-    fields = '__all__'
+    form_class = CashBalanceForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -219,7 +220,7 @@ class CashBalanceCreateView(CreateView):
             context['form'].initial = {'date':context['date'] - datetime.timedelta(days=1)}
         return context
 
-class CashBalanceUpdateView(UpdateView):
+class CashBalanceUpdateView(LoginRequiredMixin,UpdateView):
     model = CashBalance
     form_class = CashBalanceForm
 
@@ -228,9 +229,8 @@ class CashBalanceUpdateView(UpdateView):
         context['date'] = context['form']['date'].initial + datetime.timedelta(days=1)
         return context
 
-class CashBalanceDeleteView(DeleteView):
+class CashBalanceDeleteView(LoginRequiredMixin,DeleteView):
     model = CashBalance
     success_url = reverse_lazy('cashbalance-list')
     
-    # def get_success_url(self):
-        # return reverse_lazy('daily-transactions', kwargs={'date':self.object.date})
+   

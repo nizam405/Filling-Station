@@ -2,14 +2,25 @@
 {% block title %}পার্টি ব্যালেন্স{% endblock title %}
 {% block style %}
 <style>
-    .hidden {
-        display: none;
+    #date-filter select, #date-filter button, #date-filter a {
+        border-radius:0rem;
     }
-    .zero-balance {
-        display: none;
+
+    #add-form {font-size: 2rem}
+
+    @media print{
+        .table td {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        #bad-debts .table {font-size: 11pt}
     }
-    #add-form {
-        font-size: 2rem;
+
+    .data-container .col:nth-child(odd){
+        padding-right: 0.25rem;
+    }
+    .data-container .col:nth-child(even){
+        padding-left: 0.25rem;
     }
 </style>
 {% endblock style %}
@@ -18,56 +29,133 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
-<h3 class='print-center'>পার্টি ব্যালেন্স - {{due_month|e2b_month}}, {{due_year|e2b_digit}}
-    <i class="bi bi-plus-circle btn p-0 d-print-none" id="add-form"></i>
-</h3>
-<div id="form-container" class="hidden d-print-none">
-    <form method="post" class="row mb-3">
-        {% csrf_token %}
-        <div class="col-sm-6">{% bootstrap_field form.month  layout='horizontal' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.year  layout='horizontal' %}</div>
-        <div class="col-sm-6">{% bootstrap_field form.customer  layout='horizontal' %} </div>
-        <div class="col-sm-6">{% bootstrap_field form.amount  layout='horizontal' addon_after="<span class='bangla'>টাকা</span>" field_class='eng col-md-9' %}</div>
-        <div class="col-12 nowrap text-center eng">
-            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
-            <a href="{% url 'customer-balance' %}" class="btn btn-secondary">Cancel</a>
+{% if date_form %}
+<div class="d-print-none">
+    <form method="get" class="d-flex" id="date-filter">
+        <div class="py-2 mr-2">হিসাবের মাস</div>
+        <div>{% bootstrap_field date_form.month layout='horizontal' show_label=False field_class="col-12" %}</div>
+        <div>{% bootstrap_field date_form.year layout='horizontal' show_label=False field_class="col-12" %}</div>
+        <div>
+            <button type="submit" class='btn' id='go-btn'>
+                <i class='bi bi-arrow-right-square-fill text-success'></i>
+            </button>
+            <a href="{% url 'customer-balance' month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
+            <a href="{% url 'customer-balance' month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
         </div>
     </form>
 </div>
+{% endif %}
+
+<h3 class='text-center'>
+    পার্টি ব্যালেন্স - {{month|e2b_month}}, {{year|e2b_digit}}
+    {% if can_change %}
+    <a href="{% url 'customer-balance-update' month=month year=year %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
+    {% endif %}
+    
+</h3>
 
 <div class="d-print-none">
-    <input type="checkbox" id="zero-balance-check">
+    <input type="checkbox" id="zero-balance-check" checked>
     <label for="zero-balance-check">শুন্য ব্যালেন্স</label>
 </div>
 
-<table class="table table-sm table-striped table-bordered text-center">
-    <tr>
-        <th>#</th>
-        <th>মাস ও বছর</th>
-        <th>পার্টি</th>
-        <th>পরিমাণ</th>
-        <th class='d-print-none'></th>
-    </tr>
-    {% if object_list %}
-    {% for object,sln in object_list|zip %}
-    <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
-        <td>{{sln|e2b_digit}}</td>
-        <td class="text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
-        <td class="text-left">{{object.customer}}</td>
-        <td class='text-right'>{% if object.amount %}{{object.amount|e2b_digit|ezynumber}}/={% endif %}</td>
-        <td class='d-print-none'>
-            <a href="{% url 'delete-customer-balance' pk=object.pk %}" class="p-1"><i class="bi bi-trash text-danger"></i></a>
-        </td>
-    </tr>
-    {% endfor %}
-    <tr class='text-right'>
-        <th colspan='3'>মোট বকেয়ার পরিমাণঃ</th>
-        <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
-    </tr>
-    {% else %}
-    <tr><td colspan="5" class="text-seocndary text-center">কোনো পার্টির ব্যালেন্স তালিকাভুক্ত করা হয়নি!</td><tr>
+<div class="row data-container">
+    <div class="col">
+        {% if goc_balances or cust_balances %}
+        <h4 class='text-center'>চলতি পার্টি বকেয়া</h4>
+        <table class="table table-sm table-striped table-bordered text-center">
+            <tr>
+                <th>#</th>
+                <th>পার্টি</th>
+                <th>পরিমাণ</th>
+                <th class='d-print-none'></th>
+            </tr>
+            {% if goc_balances %}
+            {% for object,sln in goc_balances|zip %}
+            <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
+                <td>{{ sln|e2b_digit }}</td>
+                <td class="text-left">{{object.customer}}</td>
+                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}/={% endif %}</td>
+                <td class='d-print-none'>
+                    <a href="{% url 'mark-baddebt' month=month year=year goc=1 cust_pk=object.customer.pk %}" class="p-1 nowrap">
+                        <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            {% if cust_balances %}
+            {% for object,sln in cust_balances|zip:goc_balances_count %}
+            <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
+                <td>{{ sln|e2b_digit }}</td>
+                <td class="text-left">{{object.customer}}</td>
+                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}/={% endif %}</td>
+                <td class='d-print-none'>
+                    <a href="{% url 'mark-baddebt' month=month year=year cust_pk=object.customer.pk %}" class="p-1 nowrap">
+                        <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            <tr class='text-right'>
+                <th colspan='2'>মোট চলতি বকেয়ার পরিমাণঃ</th>
+                <th>{{total_current_bal|e2b_digit|ezynumber}}/=</th>
+            </tr>
+            {% endif %}
+        </table>
+        {% endif %}
+        <h4>সর্বমোটঃ {{grand_total|e2b_digit|ezynumber}}/=</h4>
+    </div>
+    {% if goc_baddebts or cust_bad_debts %}
+    <div class="col" id="bad-debts">
+        <h4 class='text-center'>অনিশ্চিত হিসাব</h4>
+        <table class="table table-sm table-striped table-bordered text-center">
+            <tr>
+                <th>#</th>
+                <th>পার্টি</th>
+                <th>পরিমাণ</th>
+                <th class='d-print-none'></th>
+            </tr>
+
+            {% if goc_baddebts %}
+            {% for object,sln in goc_baddebts|zip %}
+            <tr>
+                <td>{{ sln|e2b_digit }}</td>
+                <td class="text-left">{{object.customer}}</td>
+                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}/={% endif %}</td>
+                <td class='d-print-none'>
+                    <a href="{% url 'mark-baddebt' month=month year=year goc=1 cust_pk=object.customer.pk unmark=1 %}" class="p-1 nowrap">
+                        <i class="bi bi-arrow-left-square text-info"></i> চলতি
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            {% if cust_bad_debts %}
+            {% for object,sln in cust_bad_debts|zip:goc_baddebts_count %}
+            <tr>
+                <td>{{ sln|e2b_digit }}</td>
+                <td class="text-left">{{object.customer}}</td>
+                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}/={% endif %}</td>
+                <td class='d-print-none'>
+                    <a href="{% url 'mark-baddebt' month=month year=year cust_pk=object.customer.pk unmark=1 %}" class="p-1 nowrap">
+                        <i class="bi bi-arrow-left-square text-info"></i> চলতি
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+            <tr class='text-right'>
+                <th colspan='2'>মোট অনিশ্চিত বকেয়ার পরিমাণঃ</th>
+                <th>{{total_baddebt|e2b_digit|ezynumber}}/=</th>
+            </tr>
+        </table>
+    </div>
     {% endif %}
-</table>
+</div>
+
 
 {% load static %}
 <script src="{% static 'form_list.js' %}"></script>

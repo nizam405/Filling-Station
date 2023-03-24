@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}আয়-ব্যায় বিবরণী{% endblock title %}
+{% block title %}আয়-ব্যয় বিবরণী{% endblock title %}
 {% block style %}
 <style>
     @media print{
@@ -49,7 +49,7 @@
 
 <div class="text-center" id="header">
     <h3 class='d-none d-print-block'>প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
-    <h3>মাসিক আয়-ব্যায় বিবরণী</h3>
+    <h3>মাসিক আয়-ব্যয় বিবরণী</h3>
     <h4>{{month|e2b_month}},{{year|e2b_digit}}</h4>
     {% if not status %}
     <div class='text-danger'>({{last_bal_date|e2b_date}} তারিখ পর্যন্ত)</div>
@@ -109,7 +109,7 @@
     <div class="col-sm-6 pl-1">
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
-                <th>ব্যায়সমূহ</th>
+                <th>ব্যয়সমূহ</th>
                 <th>টাকা</th>
             </tr>
             {% for expenditure in expenditures %}
@@ -260,27 +260,8 @@
     {% endfor %}
 </div>
 {% endif %}
-<a href="{% url 'ownersequity' %}">মূলধন হিস্টোরি দেখুন</a>
 
 <script>
-    $('.new-window').click(function(){
-        const content = $(this).parent()
-        const newWindow = $('html').clone()
-        newWindow.find('#full-ledger').html(content.html())
-        newWindow.find('.new-window').remove()
-        console.log(newWindow.html())
-
-        let winPrint = window.open('','',
-            'left=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
-        winPrint.document.write(newWindow.html())
-        winPrint.document.close()
-        winPrint.focus()
-        // $(winPrint).ready(function(){
-        //     winPrint.print()
-        //     winPrint.close()
-        // })
-    })
-
     $("#profit-dist-check").on('click', function(){
         $("#profit-dist").toggle('fast');
     });

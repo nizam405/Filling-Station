@@ -2,18 +2,20 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from django.db.models import Sum
 import datetime
-import calendar
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
 from Customer.models import Customer, GroupofCompany, DueSell, DueCollection
 from Product.models import Product, Purchase, Sell, StorageReading
 from Expenditure.models import ExpenditureGroup, Expenditure
 from Revenue.models import RevenueGroup, Revenue
 from Owner.models import Withdraw, Owner
-from Ledger.models import CustomerBalance, GroupofCompanyBalance, Storage, BadDebt
+from Ledger.models import CustomerBalance, GroupofCompanyBalance, Storage
 from Ledger.forms import DateFilterForm
 from Transaction.models import CashBalance
 from Core.choices import all_dates_in_month, last_day_of_month, get_prev_month
 
-class RevenueLedger(TemplateView):
+class RevenueLedger(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/revenue.html'
 
     def get(self, request, *args, **kwargs):
@@ -67,9 +69,18 @@ class RevenueLedger(TemplateView):
         }
         year = int(self.kwargs['year'])
         month = int(self.kwargs['month'])
+        from_date = datetime.date(year,month,1)
+        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
+        last_day = last_day_of_month(year,month)
+        context['status'] = last_day == to_date
+        context['to_date'] = to_date
+
+        revenues = Revenue.objects.filter(date__gte=from_date, date__lte=to_date)
+        dates = [obj['date'] for obj in revenues.values('date').distinct()]
+        dates = sorted(dates)
         
         data = []
-        dates = all_dates_in_month(year,month)
+        # dates = all_dates_in_month(year,month)
         revenue_groups = RevenueGroup.objects.all()
         context['revenue_groups'] = revenue_groups
         group_totals = {rg:0 for rg in revenue_groups}
@@ -78,9 +89,9 @@ class RevenueLedger(TemplateView):
             group_data = []
             day_total = 0
             for rg in revenue_groups:
-                revenues = Revenue.objects.filter(date=day,group=rg)
-                if revenues:
-                    amount = revenues.aggregate(Sum('amount'))['amount__sum']
+                revenues_today = revenues.filter(date=day,group=rg)
+                if revenues_today:
+                    amount = revenues_today.aggregate(Sum('amount'))['amount__sum']
                 else: amount = 0
                 group_data.append(amount)
                 day_total += amount
@@ -96,7 +107,7 @@ class RevenueLedger(TemplateView):
             
         return context
         
-class ExpenditureLedger(TemplateView):
+class ExpenditureLedger(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/expenditure.html'
 
     def get(self, request, *args, **kwargs):
@@ -150,9 +161,18 @@ class ExpenditureLedger(TemplateView):
         }
         year = int(self.kwargs['year'])
         month = int(self.kwargs['month'])
+        from_date = datetime.date(year,month,1)
+        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
+        last_day = last_day_of_month(year,month)
+        context['status'] = last_day == to_date
+        context['to_date'] = to_date
         
+        expenditures = Expenditure.objects.filter(date__gte=from_date, date__lte=to_date)
+        dates = [obj['date'] for obj in expenditures.values('date').distinct()]
+        dates = sorted(dates)
+
         data = []
-        dates = all_dates_in_month(year,month)
+        # dates = all_dates_in_month(year,month)
         expenditure_groups = ExpenditureGroup.objects.all()
         context['expenditure_groups'] = expenditure_groups
         group_totals = {rg:0 for rg in expenditure_groups}
@@ -161,9 +181,9 @@ class ExpenditureLedger(TemplateView):
             group_data = []
             day_total = 0
             for rg in expenditure_groups:
-                expenditures = Expenditure.objects.filter(date=day,group=rg)
-                if expenditures:
-                    amount = expenditures.aggregate(Sum('amount'))['amount__sum']
+                expenditures_today = expenditures.filter(date=day,group=rg)
+                if expenditures_today:
+                    amount = expenditures_today.aggregate(Sum('amount'))['amount__sum']
                 else: amount = 0
                 group_data.append(amount)
                 day_total += amount
@@ -179,7 +199,7 @@ class ExpenditureLedger(TemplateView):
             
         return context
   
-class WithdrawLedger(TemplateView):
+class WithdrawLedger(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/withdraw.html'
 
     def get(self, request, *args, **kwargs):
@@ -233,6 +253,15 @@ class WithdrawLedger(TemplateView):
         }
         year = int(self.kwargs['year'])
         month = int(self.kwargs['month'])
+        from_date = datetime.date(year,month,1)
+        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
+        last_day = last_day_of_month(year,month)
+        context['status'] = last_day == to_date
+        context['to_date'] = to_date
+        
+        withdraws = Withdraw.objects.filter(date__gte=from_date, date__lte=to_date)
+        dates = [obj['date'] for obj in withdraws.values('date').distinct()]
+        dates = sorted(dates)
         
         # Table heading
         owners = Owner.objects.all()
@@ -240,7 +269,7 @@ class WithdrawLedger(TemplateView):
         # data contains row of every day
         data = []
         totals = {owner.name:0 for owner in owners} # initial with 0
-        dates = all_dates_in_month(year,month)
+        # dates = all_dates_in_month(year,month)
         for day in dates:
             day_data = {'date':day}
             # owner_data contains per owner data on particular day
@@ -248,12 +277,12 @@ class WithdrawLedger(TemplateView):
             day_total = 0
             for owner in owners:
                 per_owner_data = {'withdraws':[]}
-                withdraws = Withdraw.objects.filter(date=day,owner=owner)
-                if withdraws:
+                withdraws_today = withdraws.filter(date=day,owner=owner)
+                if withdraws_today:
                     # an owner can withdraw multiple times in a single day
-                    for wd in withdraws:
+                    for wd in withdraws_today:
                         per_owner_data['withdraws'].append({'detail':wd.detail,'amount':wd.amount})
-                    amount = withdraws.aggregate(Sum('amount'))['amount__sum']
+                    amount = withdraws_today.aggregate(Sum('amount'))['amount__sum']
                 else: amount = 0
                 per_owner_data['amount'] = amount
                 owner_data.append(per_owner_data)
@@ -271,6 +300,7 @@ class WithdrawLedger(TemplateView):
             
         return context
 
+@login_required
 def saveLedger(request,date):
     month = date.month
     year = date.year
@@ -319,8 +349,8 @@ def saveLedger(request,date):
     # Group
     group_of_companies = GroupofCompany.objects.all()
     for goc in group_of_companies:
-        goc_bal_prev = GroupofCompanyBalance.objects.filter(month=prev_month,year=prev_month_year,customer=goc)
-        prev_bal = goc_bal_prev.first().amount if goc_bal_prev else 0
+        goc_bal_prev = GroupofCompanyBalance.objects.filter(month=prev_month,year=prev_month_year,customer=goc).order_by('year','month')
+        prev_bal = goc_bal_prev.last().amount if goc_bal_prev else 0
 
         duesells = DueSell.objects.filter(customer__group=goc, date__month=month, date__year=year)
         due = duesells.aggregate(Sum('amount'))['amount__sum'] if duesells else 0
@@ -328,17 +358,17 @@ def saveLedger(request,date):
         duecollections = DueCollection.objects.filter(customer__group=goc, date__month=month, date__year=year)
         collection = duecollections.aggregate(Sum('amount'))['amount__sum'] if duecollections else 0
         
-        baddebts = BadDebt.objects.filter(customer__group=goc, month=month, year=year)
-        baddebt = baddebts.aggregate(Sum('amount'))['amount__sum'] if baddebts else 0
-        
-        balance = prev_bal + due - collection - baddebt
-        GroupofCompanyBalance.objects.update_or_create(
+        balance = prev_bal + due - collection
+        instance, created = GroupofCompanyBalance.objects.update_or_create(
             month=month,year=year,customer=goc,defaults={'amount':balance})
+        if created and goc_bal_prev:
+            instance.bad_debt = goc_bal_prev.last().bad_debt
+            instance.save()
     # Individual Customer
     customers = Customer.objects.filter(group__isnull=True)
     for customer in customers:
-        cust_bal_prev = CustomerBalance.objects.filter(month=prev_month,year=prev_month_year,customer=customer)
-        prev_bal = cust_bal_prev.first().amount if cust_bal_prev else 0
+        cust_bal_prev = CustomerBalance.objects.filter(month=prev_month,year=prev_month_year,customer=customer).order_by('year','month')
+        prev_bal = cust_bal_prev.last().amount if cust_bal_prev else 0
 
         duesells = DueSell.objects.filter(customer=customer, date__month=month, date__year=year)
         due = duesells.aggregate(Sum('amount'))['amount__sum'] if duesells else 0
@@ -346,11 +376,11 @@ def saveLedger(request,date):
         duecollections = DueCollection.objects.filter(customer=customer, date__month=month, date__year=year)
         collection = duecollections.aggregate(Sum('amount'))['amount__sum'] if duecollections else 0
         
-        baddebts = BadDebt.objects.filter(customer=customer, month=month, year=year)
-        baddebt = baddebts.aggregate(Sum('amount'))['amount__sum'] if baddebts else 0
-        
-        balance = prev_bal + due - collection - baddebt
-        CustomerBalance.objects.update_or_create(
+        balance = prev_bal + due - collection
+        instance, created = CustomerBalance.objects.update_or_create(
             month=month,year=year,customer=customer,defaults={'amount':balance})
+        if created and cust_bal_prev:
+            instance.bad_debt = cust_bal_prev.last().bad_debt
+            instance.save()
     return redirect('incomestatement',month=month,year=year)
 

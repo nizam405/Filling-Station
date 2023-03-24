@@ -33,9 +33,9 @@ def price_separate(price):
     return rev
 
 @register.filter(name='zip')
-def zip_lists(object_list):
-    # print(object_list)
-    nums = [i for i in range(1,len(object_list)+1)]
+def zip_lists(object_list,last=0):
+    start=last+1
+    nums = [i for i in range(start,len(object_list)+start)]
     return zip(object_list,nums)
 
 @register.filter(name='formsetNumber')

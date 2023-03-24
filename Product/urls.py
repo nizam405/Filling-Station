@@ -3,7 +3,7 @@ from Core.converters import DateConverter
 register_converter(DateConverter, 'date')
 
 from .views import (
-    ProductView, ProductUpdateView, 
+    ProductView, ProductUpdateView, change_product_status,
     StorageReadingView, StorageReadingtUpdateView, StorageReadingDeleteView,
     SellFormsetView, PurchaseFormsetView
     )
@@ -11,6 +11,7 @@ from .views import (
 urlpatterns = [
     path('', ProductView.as_view(), name='products'),
     path('<int:pk>/update/', ProductUpdateView.as_view(), name="update-product"),
+    path('<int:pk>/status/', change_product_status, name="change-product-status"),
     path('purchase/<date:date>/', PurchaseFormsetView, name="purchase"),
     path('sell/<date:date>/', SellFormsetView, name="sell"),
     path('storage/', include([

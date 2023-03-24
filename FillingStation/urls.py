@@ -17,13 +17,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-import debug_toolbar
+# import debug_toolbar
 
 from .views import HomeView
-from Transaction.views import DailyTransactionView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('Account.urls')),
     path('', HomeView.as_view(), name="home"), # Currently redirects to 'daily-transactions'
     path('transactions/', include("Transaction.urls")),
     path('ledgers/', include("Ledger.urls")),
@@ -35,7 +35,7 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
+    # urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
     
     # Serving static files during development (automatically does this)
     # If you don’t have django.contrib.staticfiles in INSTALLED_APPS

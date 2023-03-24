@@ -13,7 +13,7 @@ class DueSellForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['customer'].queryset = Customer.objects.filter(status='active').order_by('cust_type','group','name')
+        self.fields['customer'].queryset = Customer.objects.filter(active=True).order_by('cust_type','group','name')
 
 class DueCollectionForm(forms.ModelForm):
     class Meta:
@@ -26,7 +26,7 @@ class DueCollectionForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['customer'].queryset = Customer.objects.filter(status='active').order_by('cust_type','group','name')
+        self.fields['customer'].queryset = Customer.objects.filter(active=True).order_by('cust_type','group','name')
 
 
 class CustomerForm(forms.ModelForm):

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.shortcuts import render, redirect
 from django.forms import modelformset_factory
 from django.urls import reverse_lazy
@@ -8,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 
 from .models import Product, Purchase, Sell, StorageReading
 from .forms import SellForm, PurchaseForm, StorageReadingForm
-from datetime import timedelta
+from Transaction.models import CashBalance
 
 # Product
 class ProductView(LoginRequiredMixin,CreateView, ListView):
@@ -63,13 +64,14 @@ class StorageReadingView(LoginRequiredMixin,CreateView, ListView):
             date = self.kwargs['date']
         initial.update({'date':date})
         return initial
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if 'date' in self.kwargs:
             context["date"] = self.kwargs['date']
+            context['last_bal_date'] = CashBalance.objects.order_by('date').last().date
         return context
-    
+
 class StorageReadingtUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = StorageReading
     template_name = 'Product/storage.html'

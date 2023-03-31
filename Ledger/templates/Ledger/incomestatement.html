@@ -132,7 +132,7 @@
             </tr>
         </table>
     </div>
-    <div class="col-12 mb-5">
+    <div class="col-12 mb-3">
         <h4>নিট লাভঃ {{net_profit|e2b_digit|ezynumber}}/=</h4>
     </div>
 </div>
@@ -168,6 +168,16 @@
                 <td>({{withdraws|e2b_digit|ezynumber}})</td>
                 <td>{{rem_profit|e2b_digit|ezynumber}}</td>
             </tr>
+            {% if diff %}
+            <tr>
+                <td colspan="3">&nbsp;</td>
+            </tr>
+            {% endif %}
+            {% if fixed_assets %}
+            <tr>
+                <td colspan="3">&nbsp;</td>
+            </tr>
+            {% endif %}
             <tr>
                 <th>{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
                 <th></th>

@@ -76,7 +76,7 @@
                 </a>
                 {% endif %}
                 {% csrf_token %}
-                {% if object.date == object_list.first.date %}
+                {% if object.date > last_bal_date %}
                 <button type="submit" class="btn"><i class="bi bi-trash text-danger"></i></button>
                 {% endif %}
             </form>

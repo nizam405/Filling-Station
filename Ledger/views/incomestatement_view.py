@@ -224,6 +224,7 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         if total_asset == total_oe:
             owners = Owner.objects.all()
             profit_dist = []
+            owner_profit = int(net_profit/2)
 
             for owner in owners:
                 owner_info = {'owner':owner}
@@ -231,9 +232,9 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
                 prev_oe = ownersequity.filter(owner=owner)
                 prev_oe_amount = prev_oe.last().amount if prev_oe else 0
                 owner_info['prev_oe'] = prev_oe_amount
-                prev_share = (prev_oe_amount*100)/capital_amount if prev_oe_amount else 0
-                owner_info['prev_share'] = prev_share
-                owner_profit = int((net_profit*prev_share)/100)
+                # prev_share = (prev_oe_amount*100)/capital_amount if prev_oe_amount else 0
+                # owner_info['prev_share'] = prev_share
+                # owner_profit = int((net_profit*prev_share)/100)
                 owner_info['profit'] = owner_profit
                 
                 # অতিরিক্ত মূলধন

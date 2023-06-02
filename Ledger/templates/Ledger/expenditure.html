@@ -60,11 +60,11 @@
         </tr>
         {% endfor %}
         <tr class="text-right">
-            <td>মোটঃ</td>
+            <th>মোটঃ</th>
             {% for total in totals.values %}
-            <td>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</td>
+            <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
             {% endfor %}
-            <td>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</td>
+            <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
         </tr>
     </table>
 </div>

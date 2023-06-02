@@ -59,7 +59,9 @@
     </nav>
 
     <div id="content" class="container-fluid d-flex">
+        {% if user.is_authenticated %}
         {% include 'navigation.html' %}
+        {% endif %}
         <div class='w-100'>
             {% block main %}
             {% endblock main %}

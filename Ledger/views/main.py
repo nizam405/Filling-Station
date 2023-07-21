@@ -318,8 +318,7 @@ def saveLedger(request,date):
         # they can differ from on paper calculation
         storage_readings = StorageReading.objects.filter(product=product,date=date)
         if product.need_rescale:
-            storage = storage_readings.first()
-            quantity = storage.tank_deep + storage.lorry_load
+            quantity = storage_readings.last().qnt
         else:
             # Mobil and other pack items need to calculate
             storages = Storage.objects.filter(product=product,month=prev_month,year=prev_month_year)
@@ -334,10 +333,6 @@ def saveLedger(request,date):
             if sells:
                 qnt = sells.aggregate(Sum('quantity'))['quantity__sum']
                 quantity -= qnt
-            # duesells = DueSell.objects.filter(product=product,date__month=month,date__year=year)
-            # if duesells:
-            #     qnt = duesells.aggregate(Sum('quantity'))['quantity__sum']
-            #     quantity -= qnt
             purchases = Purchase.objects.filter(product=product,date__month=month,date__year=year)
             if purchases:
                 qnt = purchases.aggregate(Sum('quantity'))['quantity__sum']

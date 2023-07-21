@@ -62,7 +62,7 @@
     {% endfor %}
     <tr class='text-right'>
         <th colspan='4'>মজুদপণ্যের মোট ক্রয়মূল্যঃ</th>
-        <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
+        <th>{% if total %}{{total|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</th>
     </tr>
     {% else %}
     <tr><td colspan="5" class="text-seocndary text-center">কোনো মজুদ মাল তালিকাভুক্ত করা হয়নি!</td><tr>

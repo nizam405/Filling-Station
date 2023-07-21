@@ -1,3 +1,12 @@
+2023-07
+----------
+>> Separate rate functionality from product
+    - User can create rates by date
+    - Ending storage amount will be based on date of rate <= accounting period
+    - User can update rate within purchase and selling formset
+>> fixed zero division issue on income_statement and product_ledger
+>> Solved diff_qnt issue
+
 2023-03-10
 ----------
 >> Fix: Added Ending Storage to Assets

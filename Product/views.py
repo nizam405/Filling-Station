@@ -1,13 +1,15 @@
-from datetime import timedelta
+import datetime
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
-from .models import Product, Purchase, Sell, StorageReading
+from .models import Product, Purchase, Sell, StorageReading, Rate
 from .forms import SellForm, PurchaseForm, StorageReadingForm
 from Transaction.models import CashBalance
 
@@ -39,6 +41,61 @@ class ProductDeleteView(LoginRequiredMixin,DeleteView):
     model = Product
     success_url = reverse_lazy('products')
 
+class RateCreateView(LoginRequiredMixin, CreateView, ListView):
+    model = Rate
+    template_name = 'Product/rate.html'
+    fields = ['date','purchase_rate','selling_rate']
+
+    def get_product(self):
+        product = Product.objects.get(pk=self.kwargs['product'])
+        return product
+    
+    def get_context_data(self, **kwargs):
+        self.object_list = self.get_queryset()
+        context = super().get_context_data(**kwargs)
+        context['product'] = self.get_product()
+        return context
+    
+    def get_queryset(self):
+        rates = Rate.objects.filter(product=self.get_product())
+        return rates
+    
+    def form_valid(self, form):
+        form.instance.product = self.get_product()
+        return super().form_valid(form)
+
+class RateUpdateView(LoginRequiredMixin, UpdateView, ListView):
+    model = Rate
+    template_name = 'Product/rate.html'
+    fields = ['date','purchase_rate','selling_rate']
+
+    def get_product(self):
+        product = Product.objects.get(pk=self.kwargs['product'])
+        return product
+    
+    def get_context_data(self, **kwargs):
+        self.object_list = self.get_queryset()
+        context = super().get_context_data(**kwargs)
+        context['product'] = self.get_product()
+        return context
+    
+    def get_queryset(self):
+        rates = Rate.objects.filter(product=self.get_product())
+        return rates
+
+class RateDeleteView(LoginRequiredMixin, DeleteView):
+    model = Rate
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        print(self.object)
+        self.object.delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        product = self.kwargs['product']
+        return reverse_lazy('rates',kwargs={'product':product})
+
 # Storage Reading
 class StorageReadingView(LoginRequiredMixin,CreateView, ListView):
     model = StorageReading
@@ -59,7 +116,7 @@ class StorageReadingView(LoginRequiredMixin,CreateView, ListView):
             date = self.model.objects.order_by('date').last().date
             qs = self.model.objects.filter(date=date)
             if qs.count() > 1:
-                date = date + timedelta(days=1)
+                date = date + datetime.timedelta(days=1)
         elif 'date' in self.kwargs:
             date = self.kwargs['date']
         initial.update({'date':date})
@@ -103,9 +160,9 @@ def PurchaseFormsetView(request, date):
     extra = 0 if qs.count() > 0 else 1
     PurchaseFormSet = modelformset_factory(Purchase, form=PurchaseForm, extra=extra, can_delete=True)
     formset = PurchaseFormSet(request.POST or None, queryset=qs)
-    formset.initial = [{'date':date} for i in range(0,extra)]
+    # formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
-    empty_form.initial = {'date':date}
+    # empty_form.initial = {'date':date}
     template = "Product/purchase_formset.html"
     context = {
         'formset': formset, 
@@ -114,9 +171,16 @@ def PurchaseFormsetView(request, date):
         }
 
     if request.method == 'POST':
-        if formset.errors:
+        if len(formset.errors)>0:
             print(formset.errors)
         if formset.is_valid():
+            for form in formset:
+                form.instance.date = date
+                if form.cleaned_data.get('update_rate'):
+                    rate = form.cleaned_data['rate']
+                    product = form.cleaned_data['product']
+                    rate, created = Rate.objects.update_or_create(
+                        date=date, product=product, defaults={'purchase_rate':rate})
             formset.save()
             return redirect('daily-transactions', date)
     return render(request,template,context)
@@ -128,9 +192,9 @@ def SellFormsetView(request, date):
     extra = 0 if qs.count() > 0 else 1
     SellFormSet = modelformset_factory(Sell, SellForm, extra=extra, can_delete=True)
     formset = SellFormSet(request.POST or None, queryset=qs)
-    formset.initial = [{'date':date} for i in range(0,extra)]
+    # formset.initial = [{'date':date} for i in range(0,extra)]
     empty_form = formset.empty_form
-    empty_form.initial = {'date':date}
+    # empty_form.initial = {'date':date}
     template = "Product/sell_formset.html"
     context = {
         'formset': formset, 
@@ -139,9 +203,16 @@ def SellFormsetView(request, date):
         }
 
     if request.method == 'POST':
-        if formset.errors:
+        if len(formset.errors)>0:
             print(formset.errors)
         if formset.is_valid():
+            for form in formset:
+                form.instance.date = date
+                if form.cleaned_data.get('update_rate'):
+                    rate = form.cleaned_data['rate']
+                    product = form.cleaned_data['product']
+                    rate, created = Rate.objects.update_or_create(
+                        date=date, product=product, defaults={'selling_rate':rate})
             formset.save()
             return redirect('daily-transactions', date)
     return render(request,template,context)

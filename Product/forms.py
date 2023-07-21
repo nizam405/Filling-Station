@@ -4,21 +4,23 @@ from Core.widgets import SelectProduct
 from Core.choices import year_choices
 
 class PurchaseForm(forms.ModelForm):
+    update_rate = forms.BooleanField(label="দর পরিবর্তন", required=False)
     class Meta:
         model = Purchase
-        fields = '__all__'
+        fields = ['product','quantity','rate','amount','update_rate']
         widgets = {
             'product': SelectProduct,
-            'date': forms.HiddenInput,
+            # 'date': forms.HiddenInput,
             }
 
 class SellForm(forms.ModelForm):
+    update_rate = forms.BooleanField(label="দর পরিবর্তন", required=False)
     class Meta:
         model = Sell
-        fields = '__all__'
+        fields = ['product','quantity','rate','amount','update_rate']
         widgets = {
             'product': SelectProduct,
-            'date': forms.HiddenInput,
+            # 'date': forms.HiddenInput,
             }
 
 class StorageReadingForm(forms.ModelForm):

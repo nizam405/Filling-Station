@@ -36,8 +36,8 @@
         <td class="text-left">
             <a href="{% url 'ownersequity-details' pk=obj.owner.pk month=obj.month year=obj.year %}">{{obj.owner.name}}</a>
         </td>
-        <td>{{obj.prev_oe|e2b_digit|ezynumber}}</td>
-        <td>{{obj.profit|e2b_digit|ezynumber}}</td>
+        <td>{{obj.prev_oe|floatformat:-2|e2b_digit|ezynumber}}</td>
+        <td>{{obj.profit|floatformat:-2|e2b_digit|ezynumber}}</td>
         <td>{{obj.withdraw|e2b_digit|ezynumber}}</td>
         <td>{{obj.investment|e2b_digit|ezynumber}}</td>
         <td>
@@ -48,7 +48,7 @@
                     {% endif %}">
                 </i>
             </div>
-            {{obj.current_oe|e2b_digit|ezynumber}}
+            {{obj.current_oe|floatformat:-2|e2b_digit|ezynumber}}
         </td>
         <td>
             {% if obj.prev_share %}

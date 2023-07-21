@@ -17,31 +17,35 @@
     {% csrf_token %}
     <div id="form-container">
         <div class="row text-center">
-            <div class="col-sm-3">মাল</div>
+            <div class="col-sm-2">মাল</div>
             <div class="col-sm-2">পরিমাণ</div>
             <div class="col-sm-3">দর</div>
             <div class="col-sm-3">মোট</div>
-            <div class="col-sm-1">বাতিল</div>
+            <div class="col-sm-1">
+                <input type='checkbox' id='rate-select-all'>
+                <label for='rate-select-all'>দর পরিবর্তন</label>
+            </div>
+            <div class="col-sm-1"><i class="bi bi-trash text-danger"></i></div>
         </div>
         {{formset.management_form}}
         {% for form in formset %}
         <div class="row forms text-center eng">
-            {{form.date}}
             {{form.id}}
-            <div class="col-sm-3 pr-0 bangla">{% bootstrap_field form.product show_label=False %}</div>
+            <div class="col-sm-2 pr-0 bangla">{% bootstrap_field form.product show_label=False %}</div>
             <div class="col-sm-2 p-0">{% bootstrap_field form.quantity show_label=False %}</div>
             <div class="col-sm-3 p-0">{% bootstrap_field form.rate show_label=False addon_before="&times;" addon_after="<span class='bangla'>টাকা</span>" %} </div>
             <div class="col-sm-3 p-0">{% bootstrap_field form.amount show_label=False addon_before="=" addon_after="<span class='bangla'>টাকা</span>" %}</div>
+            <div class="col-sm-1 p-2">{{form.update_rate}}</div>
             <div class="col-sm-1 p-2">{{form.DELETE}}</div>
         </div>
         {% endfor %}
     </div>
     <div id="empty-form" class="d-none eng">
-        {{empty_form.date}}
-        <div class="col-sm-3 pr-0 bangla">{% bootstrap_field empty_form.product show_label=False %}</div>
+        <div class="col-sm-2 pr-0 bangla">{% bootstrap_field empty_form.product show_label=False %}</div>
         <div class="col-sm-2 p-0">{% bootstrap_field empty_form.quantity show_label=False %}</div>
         <div class="col-sm-3 p-0">{% bootstrap_field empty_form.rate show_label=False addon_before="&times;" addon_after="<span class='bangla'>টাকা</span>" %} </div>
         <div class="col-sm-3 p-0">{% bootstrap_field empty_form.amount show_label=False addon_before="=" addon_after="<span class='bangla'>টাকা</span>" %}</div>
+        <div class="col-sm-1 p-2">{{empty_form.update_rate}}</div>
         <div class="col-sm-1 p-2">{{empty_form.DELETE}}</div>
     </div>
     {% include 'forms_buttons.html' %}

@@ -192,8 +192,8 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
                 context['need_update'] = True
 
         # Limit Editing features
-        # context['can_change'] = True
-        context['can_change'] = False
+        context['can_change'] = True
+        # context['can_change'] = False
         # same day / today
         next_date = balances.last().date + datetime.timedelta(days=1)
         if date == next_date:

@@ -56,15 +56,15 @@
             {% for rg in revenue.groups %}
             <td class="text-right">{% if rg > 0 %}{{rg|e2b_digit|ezynumber}}/={% endif %}</td>
             {% endfor %}
-            <td class="text-right">{{revenue.total|e2b_digit|ezynumber}}/=</td>
+            <td class="text-right">{{revenue.total|floatformat:-2|e2b_digit|ezynumber}}/=</td>
         </tr>
         {% endfor %}
         <tr class="text-right">
             <th>মোটঃ</th>
             {% for total in totals.values %}
-            <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
+            <th>{% if total %}{{total|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</th>
             {% endfor %}
-            <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
+            <th>{% if total %}{{total|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</th>
         </tr>
     </table>
 </div>

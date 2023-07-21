@@ -21,14 +21,14 @@
 <div id="form-container" class="{{container_class}} d-print-none">
     <form method="post" class="row mb-3">
         {% csrf_token %}
-        <div class="col-md-6">{% bootstrap_field form.name           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.short_name     layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.type           layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.need_rescale   layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.capacity       layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>লিটার</span>" %}</div>
-        <div class="col-md-6">{% bootstrap_field form.purchase_rate  layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>টাকা</span>" %}</div>
-        <div class="col-md-6">{% bootstrap_field form.selling_rate   layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>টাকা</span>" %}</div>
-        <div class="col-md-6">{% bootstrap_field form.active         layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.name layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.short_name layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.type layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">
+            {% bootstrap_field form.need_rescale layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}
+            {% bootstrap_field form.active layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}
+        </div>
+        <div class="col-md-6">{% bootstrap_field form.capacity layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>লিটার</span>" %}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
@@ -59,7 +59,9 @@
         </td>
         <td>{{object.get_type_display}}</td>
         <td {% if object.type == 'Pack' %}class="eng"{% endif %}>{{object.short_name}}</td>
-        <td>{{object.purchase_rate|floatformat:-2|e2b_digit}}</td>
+        <td {% if object.purchase_rate == 0 %}class="text-danger"{% endif %}>
+            {{object.purchase_rate|floatformat:-2|e2b_digit}}
+        </td>
         <td {% if object.purchase_rate >= object.selling_rate %}class="text-danger"{% endif %}>
             {{object.selling_rate|floatformat:-2|e2b_digit}}
         </td>
@@ -73,9 +75,10 @@
             </a>
         </td>
         <td class='d-print-none'>
-            <a href="{% url 'update-product' pk=object.pk %}" class="p-1">
-                <i class="bi bi-pencil-square text-dark"></i>
+            <a href="{% url 'update-product' pk=object.pk %}" class="btn btn-sm btn-light py-0">
+                <i class="bi bi-pencil-square"></i>
             </a>
+            <a href="{% url 'rates' product=object.pk %}" class="btn btn-sm btn-outline-info py-0">দর</a>
         </td>
     </tr>
     {% endfor %}

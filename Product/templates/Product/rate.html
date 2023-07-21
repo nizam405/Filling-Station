@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}পণ্যের মূল্য নির্ধারন{% endblock title %}
+
+
+{% block main %}
+{% load extra_tags %}
+{% load bootstrap4 %}
+<a href="{% url 'products' %}" class="btn btn-light">
+    <i class="bi bi-arrow-left-circle"></i> মালের তালিকা
+</a>
+<h3 class='print-center'>পণ্যের মূল্য নির্ধারন - {{product}}</h3>
+<div id="form-container">
+    <form method="post" class="row mb-3">
+        {% csrf_token %}
+        <div class="col-md-6">{% bootstrap_field form.date layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' %}</div>
+        <div class="col-md-6"></div>
+        <div class="col-md-6">{% bootstrap_field form.purchase_rate layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>টাকা</span>" %}</div>
+        <div class="col-md-6">{% bootstrap_field form.selling_rate layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>টাকা</span>" %}</div>
+        <div class="col-12 nowrap text-center eng">
+            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
+            <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% if object_list %}
+<div>
+    <h4>হিস্টোরি</h4>
+    <table class="table table-sm table-striped text-center">
+        <tr>
+            <th>#</th>
+            <th>মালের নাম</th>
+            <th>পরিবর্তনের তারিখ</th>
+            <th>ক্রয় দর</th>
+            <th>বিক্রয় দর</th>
+            <th></th>
+        </tr>
+        {% for object,sln in object_list|zip %}
+        <tr>
+            <td>{{sln|e2b_digit}}</td>
+            <td class='text-left'>
+                <a href="{% url 'product-ledger' pk=object.product.pk month=object.date.month year=object.date.year %}">
+                    {{object.product}}
+                </a>
+            </td>
+            <td>
+                <a href="{% url 'daily-transactions' object.date %}">
+                    {{object.date|e2b_date}}
+                </a>
+            </td>
+            <td>{{object.purchase_rate|e2b_digit|ezynumber}}</td>
+            <td>{{object.selling_rate|e2b_digit|ezynumber}}</td>
+            <td>
+                <a href="{% url 'update-rate' product=product.pk pk=object.pk %}">
+                    <i class="bi bi-pencil-square text-info"></i>
+                </a>
+                <a href="{% url 'delete-rate' product=product.pk pk=object.pk %}">
+                    <i class="bi bi-trash text-danger"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+{% endblock main %}

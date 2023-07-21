@@ -12,6 +12,7 @@ from Ledger.models import Storage
 from Transaction.models import CashBalance
 from Ledger.forms import StorageFilterForm, DateFilterForm
 from Core.choices import all_dates_in_month, last_day_of_month
+from .functions import get_products_info
 
 class ProductTopSheet(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/product_topsheet.html'
@@ -65,9 +66,6 @@ class ProductTopSheet(LoginRequiredMixin,TemplateView):
             'year': self.kwargs['next_date'].year
         }
         product_data = []
-        total_price = 0
-        total_diff_qnt = 0
-        total_diff_amount = 0
         month = int(self.kwargs['month'])
         year = int(self.kwargs['year'])
         prev_month = self.kwargs['prev_month']
@@ -77,64 +75,15 @@ class ProductTopSheet(LoginRequiredMixin,TemplateView):
         last_day = last_day_of_month(year,month)
         context['status'] = last_day == to_date
         context['to_date'] = to_date
-        products = Product.objects.all()
-        for product in products:
-            pre_storages = Storage.objects.filter(month=prev_month, year=prev_month_year, product=product)
-            data = {
-                'product': product,
-                'unit': "লিঃ" if product.type == "Loose" else "",
-                'pre_storage': 0,
-                'purchase': 0,
-                'sell': 0, # cash + due
-                'current_storage': 0, # pre_storage + purchase - sell
-                'price': 0, # quantity x purchase rate
-                'real_storage': 0,
-                'diff_qnt': 0, # current_storage - real_storage
-                'diff_amount': 0 # diff_qnt x 
-            }
-            rate = product.purchase_rate
-            if pre_storages:
-                pre_storage = pre_storages.last()
-                data.update({'pre_storage': pre_storage.quantity})
-                rate = pre_storage.price/pre_storage.quantity
-
-            purchases = Purchase.objects.filter(date__gte=from_date, date__lte=to_date, product=product).order_by('date')
-            sells = Sell.objects.filter(date__gte=from_date, date__lte=to_date, product=product)
-            if purchases:
-                purchase_amount = purchases.aggregate(Sum('quantity'))['quantity__sum']
-                data.update({'purchase': purchase_amount})
-                last_purchase = purchases.last()
-                rate = last_purchase.rate
-            if sells:
-                sell_amount = sells.aggregate(Sum('quantity'))['quantity__sum']
-                data.update({'sell': sell_amount})
-            # If no activity, skip product
-            if data['pre_storage']==0  and data['purchase']==0 and data['sell']==0:
-                continue
-
-            ending_storage = data['pre_storage'] + data['purchase'] - data['sell']
-            data['current_storage'] = ending_storage
-            
-            data['price'] = int(data['current_storage']*rate)
-
-            if product.need_rescale:
-                storage_readings = StorageReading.objects.filter(date=to_date,product=product)
-                if storage_readings:
-                    storage_last = storage_readings.order_by('date').last()
-                    data['real_storage'] = storage_last.tank_deep + storage_last.lorry_load
-                    data['diff_qnt'] = data['real_storage'] - data['current_storage']
-                    total_diff_qnt += data['diff_qnt']
-                    data['diff_amount'] = int(data['diff_qnt'] * rate)
-                    total_diff_amount += data['diff_amount']
-                    data['price'] = int(data['real_storage']*rate)
-            
-            total_price += data['price']   
-            product_data.append(data)
+        product_data, total_profit = get_products_info(from_date,to_date,prev_month,prev_month_year)
         context['products'] = product_data
-        context['products_total'] = {
-            'price': total_price,
-            # 'diff-qnt': total_diff_qnt,
-            'diff_amount': total_diff_amount
+        total_ending_storage_amount = sum(product['ending_storage_amount'] for product in product_data)
+        total_ending_storage_diff_amount = sum(product['ending_storage_diff_amount'] for product in product_data)
+        context['total'] = {
+            'ending_storage_amount': total_ending_storage_amount,
+            'diff_amount': total_ending_storage_diff_amount,
+            'actual_price': total_ending_storage_amount + total_ending_storage_diff_amount,
+            'total_profit': total_profit
         }
         return context
 
@@ -253,7 +202,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
             if pre_storages:
                 pre_storage_qnt += pre_storages.last().quantity
                 pre_storage_price += pre_storages.last().price
-                purchase_rate = pre_storage_price/pre_storage_qnt
+                # purchase_rate = pre_storage_price/pre_storage_qnt
             if pre_sells:
                 pre_storage_qnt -= pre_sells.aggregate(Sum('quantity'))['quantity__sum']
                 pre_storage_price -= pre_sells.aggregate(Sum('amount'))['amount__sum']
@@ -279,7 +228,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
                 todays_data['purchase_amount'] = purchase_amount
                 total_purchase_amount += purchase_amount
 
-                purchase_rate = purchases.last().rate
+                # purchase_rate = purchases.last().rate
             # 4. বিক্রয়
             sell_qnt = 0
             sell_amount = 0
@@ -294,7 +243,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
             # 5. অবশিষ্ট মজুদ
             remaining_storage = pre_storage_qnt + purchase_qnt - sell_qnt
             todays_data['remaining_storage_qnt'] = remaining_storage
-            todays_data['remaining_storage_amount'] = int(remaining_storage * purchase_rate)
+            todays_data['remaining_storage_amount'] = remaining_storage * purchase_rate
             # 6-7. ট্যাংক ডিপ + লোড
             tank_deep = 0
             lorry_load = 0
@@ -309,7 +258,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
             todays_data['lorry_load'] = lorry_load
             storage_qnt = tank_deep + lorry_load
             todays_data['storage_qnt'] = storage_qnt
-            storage_amount = int(product.purchase_rate * storage_qnt)
+            storage_amount = product.purchase_rate * storage_qnt
             todays_data['storage_amount'] = storage_amount
             # 8. ব্যবধান
             diff_qnt = storage_qnt - remaining_storage
@@ -318,7 +267,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
             diff_qnt_today = diff_qnt
 
             todays_data['diff_qnt'] = diff_qnt
-            todays_data['diff_amount'] = int(diff_qnt * purchase_rate)
+            todays_data['diff_amount'] = diff_qnt * purchase_rate
             if sell_qnt != 0 or purchase_qnt != 0:
                 data.append(todays_data)
         context['qs'] = data

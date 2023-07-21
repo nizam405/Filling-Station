@@ -16,10 +16,10 @@
         text-align: left
     }
 
-    #owners-equity, #profit-dist > div.col-sm-6:nth-child(even) {
+    #owners-equity, #profit-dist > div.col-md-6:nth-child(even) {
         padding-right: 0.25rem;
     }
-    #financial-statement, #profit-dist > div.col-sm-6:nth-child(odd) {
+    #financial-statement, #profit-dist > div.col-md-6:nth-child(odd) {
         padding-left: 0.25rem;
     }
 </style>
@@ -41,7 +41,7 @@
             <a href="{% url 'incomestatement' month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
         </div>
         <div class="p-2 ml-3">
-            <input type="checkbox" id="profit-dist-check" checked>
+            <input type="checkbox" id="profit-dist-check">
             <label for="profit-dist-check">মুনাফা বন্টন</label>
         </div>
     </form>
@@ -57,56 +57,54 @@
 </div>
 
 <div class="row" id="incomestatement">
-    <div class="col-sm-6 pr-1">
+    <div class="col-md-6 pr-1">
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
-                <th>আয়সমূহ</th>
+                <th>বিবরণ</th>
+                <th>পরিমাণ</th>
+                <th>দর (মুনাফা)</th>
                 <th>টাকা</th>
-                <th>টাকা</th>
             </tr>
+            {% for product in loose_products %}
             <tr>
-                <td colspan='2'>নিট বিক্রয়</td>
-                <td>{{sell_amount|e2b_digit|ezynumber}}</td>
+                <td>{{product.product.name}}</td>
+                <td>{{product.sell_qnt|floatformat:2|e2b_digit|ezynumber}}</td>
+                <td>{{product.profit_rate|floatformat:4|e2b_digit|ezynumber}}</td>
+                <td>{{product.profit|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
+            {% endfor %}
+            {% for product in ex_products %}
+            {% if product.ending_storage_diff > 0 %}
             <tr>
-                <td colspan='2'>বাদঃ বিক্রিত পন্যের ব্যয়ঃ</td>
-                <td rowspan='4' class='align-bottom'>({{product_sell_expense|e2b_digit|ezynumber}})</td>
+                <td><b>অতিরিক্ত {{product.product.name}} হতে লাভ</b></td>
+                <td>{{product.ending_storage_diff|floatformat:2|e2b_digit|ezynumber}}</td>
+                <td>{{product.purchase_rate|floatformat:2|e2b_digit|ezynumber}}</td>
+                <td>{{product.ending_storage_diff_amount|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
+            {% endif %}
+            {% endfor %}
             <tr>
-                <td class='pl-4'>প্রারম্ভিক মজুদ পণ্য</td>
-                <td>{{initial_storage_amount|e2b_digit|ezynumber}}</td>
+                <td>মবিল ক্যান</td>
+                <td>{{pack_product.qnt|floatformat:0|e2b_digit|ezynumber}}</td>
+                <td></td>
+                <td>{{pack_product.profit|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
-            <tr>
-                <td class='pl-4'>ক্রয়</td>
-                <td>{{purchase_amount|e2b_digit|ezynumber}}</td>
-            </tr>
-            <tr>
-                <td class='pl-4'>বাদঃ সমাপনী মজুদ পণ্য</td>
-                <td>({{ending_storage_amount|e2b_digit|ezynumber}})</td>
-            </tr>
-            <tr class='text-right'>
-                <th colspan='2'>মোট মুনাফাঃ</th>
-                <th>{{total_profit|e2b_digit|ezynumber}}</th>
-            </tr>
-            <tr>
-                <th colspan='2'>অন্যান্য আয়ঃ</th>
-                <td rowspan="{{revenues.count|add:1}}" class='align-bottom'>
-                    {{revenue_amount|e2b_digit|ezynumber}}
-                </td>
+            <tr class="text-left">
+                <th colspan="4">অন্যান্য আয়ঃ</th>
             </tr>
             {% for revenue in revenues %}
             <tr>
-                <td>{{revenue.group__name}}</td>
-                <td>{{revenue.rev_amount|e2b_digit|ezynumber}}</td>
+                <td colspan='3'>{{revenue.group__name}}</td>
+                <td>{{revenue.rev_amount|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endfor %}
             <tr class='text-right'>
-                <th colspan='2'>মোট আয়ঃ</th>
-                <th>{{total_income|e2b_digit|ezynumber}}</th>
+                <th colspan='3'>মোট আয়ঃ</th>
+                <th>{{total_income|floatformat:2|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
     </div>
-    <div class="col-sm-6 pl-1">
+    <div class="col-md-6 pl-1">
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
                 <th>ব্যয়সমূহ</th>
@@ -115,30 +113,38 @@
             {% for expenditure in expenditures %}
             <tr>
                 <td>{{expenditure.group__name}}</td>
-                <td>{{expenditure.exp_amount|e2b_digit|ezynumber}}</td>
+                <td>{{expenditure.exp_amount|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endfor %}
             {% if baddebt %}
             <tr>
                 <td>অনাদায়ী পাওনা</td>
-                <td>{{baddebt|e2b_digit|ezynumber}}</td>
+                <td>{{baddebt|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
+            {% for product in ex_products %}
+            {% if product.ending_storage_diff < 0 %}
+            <tr>
+                <td><b>ঘাটতি {{product.product.name}} হতে লোকসান ({{product.ending_storage_diff|absolute|floatformat:2|e2b_digit|ezynumber}} লিঃ x {{product.purchase_rate|floatformat:2|e2b_digit|ezynumber}})</b></td>
+                <td>{{product.ending_storage_diff_amount|absolute|floatformat:2|e2b_digit|ezynumber}}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
             <tr class='text-right'>
                 <th>মোট খরচঃ</th>
                 <td rowspan="{{expenditures.count|add:1}}" class='align-bottom'>
-                    {{expenditure_amount|e2b_digit|ezynumber}}
+                    {{expenditure_amount|floatformat:2|e2b_digit|ezynumber}}
                 </td>
             </tr>
         </table>
     </div>
     <div class="col-12 mb-3">
-        <h4>নিট লাভঃ {{net_profit|e2b_digit|ezynumber}}/=</h4>
+        <h4>নিট লাভঃ {{net_profit|floatformat:2|e2b_digit|ezynumber}}/=</h4>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-sm-6" id="owners-equity">
+    <div class="col-md-6" id="owners-equity">
         <h3 class="text-center">মালিকানা স্বত্ব বিবরণী</h3>
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
@@ -149,24 +155,24 @@
             <tr>
                 <td>প্রারম্ভিক মূলধন</td>
                 <td></td>
-                <td>{{capital|e2b_digit|ezynumber}}</td>
+                <td>{{capital|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% if investment_amount %}
             <tr>
                 <td>অতিরিক্ত মূলধন</td>
                 <td></td>
-                <td>{{investment_amount|e2b_digit|ezynumber}}</td>
+                <td>{{investment_amount|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
             <tr>
                 <td>নীট মূনাফা</td>
-                <td>{{net_profit|e2b_digit|ezynumber}}</td>
+                <td>{{net_profit|floatformat:2|e2b_digit|ezynumber}}</td>
                 <td></td>
             </tr>
             <tr>
                 <td class="pl-3">বাদঃ উত্তোলন</td>
-                <td>({{withdraws|e2b_digit|ezynumber}})</td>
-                <td>{{rem_profit|e2b_digit|ezynumber}}</td>
+                <td>({{withdraws|floatformat:2|e2b_digit|ezynumber}})</td>
+                <td>{{rem_profit|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% if diff %}
             <tr>
@@ -181,11 +187,11 @@
             <tr>
                 <th>{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
                 <th></th>
-                <th>{{total_oe|e2b_digit|ezynumber}}</th>
+                <th>{{total_oe|floatformat:2|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
     </div>
-    <div class="col-sm-6" id="financial-statement">
+    <div class="col-md-6" id="financial-statement">
         <h3 class="text-center">আর্থিক অবস্থার বিবরণী</h3>
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
@@ -194,44 +200,44 @@
             </tr>
             <tr>
                 <td>হাতে নগদ/ব্যাংক উদ্বৃত্ত</td>
-                <td>{{cash|e2b_digit|ezynumber}}</td>
+                <td>{{cash|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             <tr>
                 <td>দেনাদার/পার্টি ব্যালেন্স</td>
-                <td>{{dues|e2b_digit|ezynumber}}</td>
+                <td>{{dues|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             <tr>
                 <td>সমাপনী মজুদ পণ্য</td>
-                <td>{{ending_storage_amount|e2b_digit|ezynumber}}</td>
+                <td>{{ending_storage_amount|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% if fixed_assets %}
             <tr>
                 <td>স্থায়ী সম্পত্তি</td>
-                <td>{{fixed_assets|e2b_digit|ezynumber}}</td>
+                <td>{{fixed_assets|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
             {% if diff %}
             <tr>
                 <td>ব্যবধান</td>
-                <td>{{diff|e2b_digit|ezynumber}}</td>
+                <td>{{diff|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
             <tr>
                 <th>{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
-                <th>{{total_asset|e2b_digit|ezynumber}}</th>
+                <th>{{total_asset|floatformat:2|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
     </div>
 </div>
 
 {% if profit_distribution %}
-<div class="row" id="profit-dist">
+<div class="row d-none" id="profit-dist">
     <div class="col-12">
         <h3 class="text-center">মুনাফা বন্টন</h3>
     </div>
 
     {% for op in profit_distribution %}
-    <div class="col-sm-6">
+    <div class="col-md-6">
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
                 <th>{{op.owner.name}}</th>
@@ -241,29 +247,29 @@
             <tr>
                 <td>প্রারম্ভিক মূলধন</td>
                 <td></td>
-                <td>{{op.prev_oe|e2b_digit|ezynumber}}</td>
+                <td>{{op.prev_oe|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% if investment in op %}
             <tr>
                 <td>অতিরিক্ত মূলধন</td>
                 <td></td>
-                <td>{{op.investment|e2b_digit|ezynumber}}</td>
+                <td>{{op.investment|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
             <tr>
                 <td>মূনাফা</td>
-                <td>{{op.profit|e2b_digit|ezynumber}}</td>
+                <td>{{op.profit|floatformat:2|e2b_digit|ezynumber}}</td>
                 <td></td>
             </tr>
             <tr>
                 <td class="pl-3">বাদঃ উত্তোলন</td>
-                <td>({{op.withdraw|e2b_digit|ezynumber}})</td>
-                <td>{{op.rem_profit|e2b_digit|ezynumber}}</td>
+                <td>({{op.withdraw|floatformat:2|e2b_digit|ezynumber}})</td>
+                <td>{{op.rem_profit|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             <tr>
                 <th>মোটঃ</th>
                 <th></th>
-                <th>{{op.current_oe|e2b_digit|ezynumber}}</th>
+                <th>{{op.current_oe|floatformat:2|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
     </div>
@@ -273,7 +279,7 @@
 
 <script>
     $("#profit-dist-check").on('click', function(){
-        $("#profit-dist").toggle('fast');
+        $("#profit-dist").toggleClass('d-none');
     });
 </script>
 {% endblock main %}

@@ -12,6 +12,7 @@ from Ledger.forms import DateFilterForm
 from Transaction.models import CashBalance
 from Customer.models import DueSell, DueCollection
 from Owner.models import Withdraw, OwnersEquity, Owner, Investment, FixedAsset
+from .functions import get_products_info
 
 class IncomeStatementView(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/incomestatement.html'
@@ -86,58 +87,23 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         from_date = self.kwargs['target_date']
         to_date = self.kwargs['to_date']
 
-        sells = Sell.objects.filter(date__gte=from_date,date__lte=to_date)
-        purchases = Purchase.objects.filter(date__gte=from_date,date__lte=to_date).order_by('date')
-        initial_storages = Storage.objects.filter(month=prev_month, year=prev_month_year)
-
-        sells_amount = 0
-        if sells:
-            sells_amount = sells.aggregate(Sum('amount'))['amount__sum']
-        purchase_amount = 0
-        if purchases:
-            purchase_amount = purchases.aggregate(Sum('amount'))['amount__sum']
-        initial_storage_amount = 0    
-        if initial_storages:
-            initial_storage_amount = initial_storages.aggregate(Sum('price'))['price__sum']
-        ending_storage_amount = 0
-        # ending_storages = Storage.objects.filter(month=month, year=year)
-        # if ending_storages:
-        #     ending_storage_amount = ending_storages.aggregate(Sum('price'))['price__sum']
-        # else:
-        products = Product.objects.all()
-        for product in products:
-            storage = initial_storages.filter(product=product)
-            initial_qnt = storage.last().quantity if storage else 0
-            purchase = purchases.filter(product=product)
-            # Rate
-            rate = 0
-            if purchase:
-                rate = purchase.last().rate
-            elif storage:
-                rate = storage.last().price/initial_qnt
-            else: rate = product.purchase_rate
-            # Ending Storage
-            if product.need_rescale:
-                ending_storage = StorageReading.objects.filter(product=product,date=to_date).order_by('date')
-                if ending_storage:
-                    obj = ending_storage.last()
-                    ending_qnt = obj.tank_deep + obj.lorry_load
-                    ending_storage_amount += int(ending_qnt*rate)
-            else:
-                # initial+purchase-sell
-                sell = sells.filter(product=product)
-                sell_qnt = sell.aggregate(Sum('quantity'))['quantity__sum'] if sell else 0
-                purchase_qnt = purchase.aggregate(Sum('quantity'))['quantity__sum'] if purchase else 0
-                ending_qnt = initial_qnt + purchase_qnt - sell_qnt
-                ending_storage_amount += int(ending_qnt*rate)
-        context['sell_amount'] = sells_amount
-        context['purchase_amount'] = purchase_amount
-        context['initial_storage_amount'] = initial_storage_amount
-        context['ending_storage_amount'] = ending_storage_amount
-
-        product_sell_expense = initial_storage_amount+purchase_amount - ending_storage_amount
-        context['product_sell_expense'] = product_sell_expense
-        context['total_profit'] = sells_amount - product_sell_expense
+        # Products Info
+        product_info, total_profit = get_products_info(from_date, to_date, prev_month, prev_month_year)
+        context['total_profit'] = total_profit
+        loose_products = [product for product in product_info if product['product'].type == 'Loose']
+        context['loose_products'] = loose_products
+        pack_products = [product for product in product_info if product['product'].type == 'Pack']
+        pack_qnt = sum(product['sell_qnt'] for product in pack_products)
+        pack_profit = sum(product['profit'] for product in pack_products)
+        context['pack_product'] = {
+            'qnt': pack_qnt,
+            # 'profit_rate': pack_profit/pack_qnt,
+            'profit': pack_profit,
+        }
+        ex_products = [product for product in product_info if product['ending_storage_diff'] != 0]
+        ex_revenue = sum(product['ending_storage_diff_amount'] for product in ex_products if product['ending_storage_diff']>0)
+        ex_loss = sum(product['ending_storage_diff_amount'] for product in ex_products if product['ending_storage_diff']<0)
+        context['ex_products'] = ex_products
         
         # Revenues
         revenues = Revenue.objects.filter(date__gte=from_date,date__lte=to_date).order_by('group')
@@ -145,13 +111,14 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         revenue_amount = revenues.aggregate(Sum('amount'))['amount__sum'] if revenues else 0
         context['revenues'] = rev_groups
         context['revenue_amount'] = revenue_amount
-        total_income = context['total_profit'] + revenue_amount
+        total_income = context['total_profit'] + revenue_amount + ex_revenue
         context['total_income'] = total_income
 
         # Expenditures
         expenditures = Expenditure.objects.filter(date__gte=from_date,date__lte=to_date).order_by('group')
         exp_groups = expenditures.values('group__name').annotate(exp_amount=Sum('amount'))
         expenditure_amount = expenditures.aggregate(Sum('amount'))['amount__sum'] if expenditures else 0
+        expenditure_amount += abs(ex_loss)
         context['expenditures'] = exp_groups
         context['expenditure_amount'] = expenditure_amount
 
@@ -183,7 +150,6 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         prev_goc_balances = GroupofCompanyBalance.objects.filter(month=prev_month, year=prev_month_year)
         prev_goc_balances_amount = prev_goc_balances.aggregate(Sum('amount'))['amount__sum'] if prev_goc_balances else 0
         dues += prev_goc_balances_amount
-        # print(prev_cust_balances_amount, prev_goc_balances_amount, dues)
         # Due sells
         due_sells = DueSell.objects.filter(date__gte=from_date,date__lte=to_date)
         dues += due_sells.aggregate(Sum('amount'))['amount__sum'] if due_sells else 0
@@ -195,6 +161,13 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         fixed_assets = FixedAsset.objects.all()
         fixed_assets_amount = fixed_assets.aggregate(Sum('price'))['price__sum'] if fixed_assets else 0
         context['fixed_assets'] = fixed_assets_amount
+        # সমাপনী মজুদ
+        ending_storage_amount = 0
+        ending_storage_amount = sum(product['ending_storage_amount'] for product in product_info)
+        # print('ending storage amount', ending_storage_amount)
+        ending_storage_amount += ex_revenue + ex_loss
+        context['ending_storage_amount'] = ending_storage_amount
+        
         total_asset = cash + dues + ending_storage_amount + fixed_assets_amount
 
         # প্রারম্ভিক মূলধন
@@ -216,7 +189,8 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         context['total_oe'] = total_oe
 
         diff = total_asset-total_oe
-        context['diff'] = diff
+        print(diff)
+        context['diff'] = int(diff)
         total_asset -= diff
         context['total_asset'] = total_asset
 
@@ -224,7 +198,7 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         if total_asset == total_oe:
             owners = Owner.objects.all()
             profit_dist = []
-            owner_profit = int(net_profit/2)
+            owner_profit = net_profit/2
 
             for owner in owners:
                 owner_info = {'owner':owner}
@@ -232,9 +206,6 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
                 prev_oe = ownersequity.filter(owner=owner)
                 prev_oe_amount = prev_oe.last().amount if prev_oe else 0
                 owner_info['prev_oe'] = prev_oe_amount
-                # prev_share = (prev_oe_amount*100)/capital_amount if prev_oe_amount else 0
-                # owner_info['prev_share'] = prev_share
-                # owner_profit = int((net_profit*prev_share)/100)
                 owner_info['profit'] = owner_profit
                 
                 # অতিরিক্ত মূলধন

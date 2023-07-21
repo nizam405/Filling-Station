@@ -61,8 +61,8 @@ class OwnersEquity(models.Model):
     month = models.IntegerField(choices=MONTHS, default=currentMonth, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
     owner = models.ForeignKey(to=Owner, on_delete=models.SET_NULL, null=True, verbose_name='মালিক')
-    profit = models.IntegerField(default=0, verbose_name="মুনাফা")
-    amount = models.IntegerField(null=True, blank=False, verbose_name="পরিমাণ")
+    profit = models.FloatField(default=0, verbose_name="মুনাফা")
+    amount = models.FloatField(null=True, blank=False, verbose_name="পরিমাণ")
     share = models.FloatField(default=0, verbose_name="শতাংশ")
 
     class Meta:

@@ -27,4 +27,15 @@ function markDelete(e){
     }
 }
 
-$('input[id$="-DELETE"]').click(markDelete)
+$(document).ready(function(){
+    $('input[id$="-DELETE"]').click(markDelete)
+
+    // Update all rate
+    // When "Mark All" checkbox is changed
+    $("#rate-select-all").change(function() {
+        var isChecked = $(this).prop("checked");
+        
+        // Set all item checkboxes to the same state as "Mark All" checkbox
+        $("input[id$='-update_rate']").prop("checked", isChecked);
+    });
+});

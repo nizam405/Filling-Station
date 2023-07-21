@@ -62,3 +62,7 @@ def convert_date_ban(date,short=False):
     if short:
         return f"{d}/{ms}/{y[2:]}"
     return f"{m}-{d}, {y}"
+
+@register.filter(name='absolute')
+def absolute(value):
+    return abs(value)

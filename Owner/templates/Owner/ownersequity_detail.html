@@ -50,12 +50,12 @@
     <tr>
         <td>১ {{prev_oe.month|e2b_month}}, {{prev_oe.year|e2b_digit}}</td>
         <td colspan="2">প্রারম্ভিক মূলধন</td>
-        <td>{{prev_oe.amount|e2b_digit|ezynumber}}/=</td>
+        <td>{{prev_oe.amount|floatformat:-2|e2b_digit|ezynumber}}/=</td>
     </tr>
     <tr>
         <td></td>
         <td colspan="2">মুনাফা</td>
-        <td>{{current_oe.profit|e2b_digit|ezynumber}}/=</td>
+        <td>{{current_oe.profit|floatformat:-2|e2b_digit|ezynumber}}/=</td>
     </tr>
     {% if investments %}
     {% for investment in investments %}
@@ -93,7 +93,7 @@
     {% endfor %}
     <tr>
         <th colspan="3">বর্তমান মালিকানা স্বত্বঃ</th>
-        <th>{{current_oe.amount|e2b_digit|ezynumber}}/=</th>
+        <th>{{current_oe.amount|floatformat:-2|e2b_digit|ezynumber}}/=</th>
     </tr>
 </table>
 

@@ -52,11 +52,11 @@
         <th>প্রারম্ভিক মজুদ</th>
         <th>ক্রয়</th>
         <th>বিক্রয়</th>
-        <th>অবশিষ্ট মজুদ</th>
-        <th>সমাপনী মজুদ<br>(ট্যাংক ডিপ+লোড)</th>
-        <th>মজুদপণ্যের ক্রয়মুল্য</th>
-        <th>ব্যবধান (পরিমাণ)</th>
-        <th>ব্যবধান (টাকা)</th>
+        <th>সমাপনী মজুদ</th>
+        <th>সমাপনী মজুদের ক্রয়মুল্য</th>
+        <th>মুনাফা</th>
+        <th>ট্যাংক ডিপ+লোড</th>
+        <th>ব্যবধান</th>
     </tr>
     {% for row,sln in products|zip %}
     <tr class="text-right">
@@ -66,45 +66,43 @@
             <span class="eng">{{row.product.name}}</span> {{row.product.capacity|e2b_digit}} লিঃ
             {% else %}{{row.product}}{% endif %}
         </a></td>
-        <td>{{row.pre_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>{{row.purchase|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>{{row.sell|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        
-        {% if row.product.need_rescale %}
-        <td>{{row.current_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>{{row.real_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>{{row.price|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td>
-            {{row.diff_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}
-            <i class="bi 
-            {% if row.diff_qnt < 0 %} bi-caret-down-fill text-danger
-            {% elif row.diff_qnt > 0 %} bi-caret-up-fill text-success
-            {% endif %}"></i>
+        <td>{{row.initial_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+        <td>{{row.purchase_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+        <td>{{row.sell_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+        <!-- অবশিষ্ট  মজুদ -->
+        <td>{{row.ending_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+        <td>{{row.ending_storage_amount|floatformat:-2|e2b_digit|ezynumber}}</td>
+        <td {% if row.profit < 0 %}class='text-danger'{% endif %}>
+            {{row.profit|floatformat:-2|e2b_digit|ezynumber}}
         </td>
+        {% if row.product.need_rescale %}
+        <td>{{row.ending_storage_reading_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
         <td>
-            {{row.diff_amount|floatformat:-2|e2b_digit|ezynumber}} টাকা
+            {{row.ending_storage_diff|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}
             <i class="bi 
-            {% if row.diff_amount < 0 %} bi-caret-down-fill text-danger
-            {% elif row.diff_amount > 0 %} bi-caret-up-fill text-success
+            {% if row.ending_storage_diff < 0 %} bi-caret-down-fill text-danger
+            {% elif row.ending_storage_diff > 0 %} bi-caret-up-fill text-success
             {% endif %}"></i>
         </td>
         {% else %}
-        <td colspan="2">{{row.current_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>{{row.price|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td colspan=2></td>
+        <td colspan="2"></td>
         {% endif %}
     </tr>
     {% endfor %}
     <tr class="text-right font-weight-bold">
-        <td colspan="7">মোটঃ</td>
-        <td>{{products_total.price|floatformat:-2|e2b_digit|ezynumber}}</td>
+        <td colspan="7">মোট সমাপনী মজুদের মূল্যঃ</td>
+        <td>{{total.ending_storage_amount|floatformat:-2|e2b_digit|ezynumber}}</td>
         <td colspan="2">
-            {{products_total.diff_amount|floatformat:-2|e2b_digit|ezynumber}}
+            {{total.diff_amount|floatformat:-2|e2b_digit|ezynumber}}
             <i class="bi 
-            {% if products_total.diff_amount < 0 %} bi-caret-down-fill text-danger
-            {% elif products_total.diff_amount > 0 %} bi-caret-up-fill text-success
+            {% if total.diff_amount < 0 %} bi-caret-down-fill text-danger
+            {% elif total.diff_amount > 0 %} bi-caret-up-fill text-success
             {% endif %}"></i>
         </td>
+    </tr>
+    <tr class="text-right font-weight-bold">
+        <td colspan='7'>(ব্যবধান সমন্বয় করে) মোট সমাপনী মজুদের মূল্যঃ</td>
+        <td>{{total.actual_price|floatformat:-2|e2b_digit|ezynumber}}</td>
     </tr>
 </table>
 {% endblock main %}

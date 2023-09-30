@@ -4,10 +4,11 @@ from .models import CashBalance
 from Core.choices import year_choices
 
 class DateForm(forms.Form):
-    balance_date = CashBalance.objects.first()
-    if not balance_date:
+    first_balance = CashBalance.objects.first()
+    if first_balance:
+        balance_date = first_balance.date
+    else:
         balance_date = date.today()
-    else: balance_date = balance_date.date
     date = forms.DateField(widget=forms.SelectDateWidget(
         years=range(balance_date.year, date.today().year+1)))
 

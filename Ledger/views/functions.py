@@ -75,6 +75,8 @@ def get_products_info(from_date:date, to_date:date, prev_month:date.month, prev_
         total_profit += profit
         profit_rate = profit / sell_qnt if sell_qnt > 0 else 0
         data['profit_rate'] = profit_rate
+        if initial_storage_amount==0 and purchase_amount==0 and sell_amount==0 and ending_storage_amount==0:
+            continue
         product_info.append(data)
     # print('sell', total_sell_amount)
     # print('initial_storage', total_initial_storage_amount)

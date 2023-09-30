@@ -12,6 +12,7 @@ from Customer.models import DueSell, DueCollection, Customer
 from Expenditure.models import Expenditure
 from Revenue.models import Revenue
 from Owner.models import Withdraw, Owner, Investment
+from Product.models import Product
 from .forms import DateForm, CashBalanceForm, CashBalanceForm2
 from .models import CashBalance
 from Core.choices import last_day_of_month
@@ -121,8 +122,6 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
                     'owner_total': owner_wds.aggregate(Sum('amount'))['amount__sum']
                 })
 
-        storages = StorageReading.objects.filter(date=date)
-
         context['sells'] = sells
         context['total_sell'] = sells.aggregate(Sum('amount'))['amount__sum']
         context['duecollections'] = duecollections
@@ -140,7 +139,6 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         context['total_expenditures'] = expenditures.aggregate(Sum('amount'))['amount__sum']
         context['withdraws'] = withdraw_data
         context['total_withdraws'] = withdraws.aggregate(Sum('amount'))['amount__sum']
-        context['storages'] = storages
         
         # Balance B/F
         balances = CashBalance.objects.order_by('date').all()
@@ -202,6 +200,15 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         context['balance_form'] = CashBalanceForm2(
             self.request.POST or None, 
             initial={'date':date,'amount':context['balance_cf']})
+        
+        storage_readings = StorageReading.objects.filter(date=date)
+        count_rescale_products = Product.objects.filter(need_rescale=True).count()
+        context['storage_readings'] = storage_readings
+        context['need_rescale'] = bool(count_rescale_products)
+        context['can_save'] = False
+        if count_rescale_products == storage_readings.count():
+            context['can_save'] = True
+
         return context
 
 class CashBalanceListView(LoginRequiredMixin,ListView):

@@ -39,6 +39,9 @@ class RevenueLedger(LoginRequiredMixin,TemplateView):
         year = self.kwargs['year']
         
         target_date = datetime.date(year,month,1)
+        # For very first time
+        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
+            target_date = last_bal_date
         # Dont let go future
         if target_date > last_bal_date:
             return redirect('revenue-ledger', month=last_bal_date.month, year=last_bal_date.year)
@@ -131,6 +134,9 @@ class ExpenditureLedger(LoginRequiredMixin,TemplateView):
         year = self.kwargs['year']
         
         target_date = datetime.date(year,month,1)
+        # For very first time
+        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
+            target_date = last_bal_date
         # Dont let go future
         if target_date > last_bal_date:
             return redirect('expenditure-ledger', month=last_bal_date.month, year=last_bal_date.year)
@@ -223,6 +229,9 @@ class WithdrawLedger(LoginRequiredMixin,TemplateView):
         year = self.kwargs['year']
         
         target_date = datetime.date(year,month,1)
+        # For very first time
+        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
+            target_date = last_bal_date
         # Dont let go future
         if target_date > last_bal_date:
             return redirect('withdraw-ledger', month=last_bal_date.month, year=last_bal_date.year)

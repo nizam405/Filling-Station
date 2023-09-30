@@ -52,16 +52,11 @@
         <td colspan="2">প্রারম্ভিক মূলধন</td>
         <td>{{prev_oe.amount|floatformat:-2|e2b_digit|ezynumber}}/=</td>
     </tr>
-    <tr>
-        <td></td>
-        <td colspan="2">মুনাফা</td>
-        <td>{{current_oe.profit|floatformat:-2|e2b_digit|ezynumber}}/=</td>
-    </tr>
     {% if investments %}
     {% for investment in investments %}
     <tr>
-        <td>{{investment|e2b_date}}</td>
-        <td>অতিরিক্ত মূলধন - {{investment.detail}}</td>
+        <td>{{investment.date|e2b_date}}</td>
+        <td>মূলধন - {{investment.detail}}</td>
         <td>{{investment.amount|e2b_digit|ezynumber}}</td>
         {% if forloop.first %}
         <td rowspan="{{investments.count}}">{{total_investment|e2b_digit|ezynumber}}/=</td>
@@ -70,6 +65,11 @@
     {% endfor %}
     {% endif %}
 
+    <tr>
+        <td></td>
+        <td colspan="2">মুনাফা</td>
+        <td>{{current_oe.profit|floatformat:-2|e2b_digit|ezynumber}}/=</td>
+    </tr>
     <tr>
         <th colspan="4" class="text-left">বাদঃ উত্তোলনসমূহ</th>
     </tr>

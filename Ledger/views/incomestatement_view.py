@@ -38,6 +38,11 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         year = self.kwargs['year']
         
         target_date = datetime.date(year,month,1)
+        prev_month_date = target_date - datetime.timedelta(days=1)
+        # For very first time
+        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
+            target_date = first_bal_date + datetime.timedelta(days=1)
+            prev_month_date = first_bal_date - datetime.timedelta(days=first_bal_date.day)
         self.kwargs['target_date'] = target_date
         # Dont let go future
         if target_date > last_bal_date:
@@ -45,7 +50,6 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         elif target_date <= first_bal_date:
             return redirect('incomestatement', month=first_date.month, year=first_date.year)
 
-        prev_month_date = target_date - datetime.timedelta(days=1)
         self.kwargs['prev_month'] = prev_month_date.month
         self.kwargs['prev_month_year'] = prev_month_date.year
         # here num_days+7 to make sure it goes to next month

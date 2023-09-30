@@ -63,29 +63,32 @@ class OwnersEquityView(LoginRequiredMixin,ListView):
             prev_qs = queryset.filter(month=prev_month,year=prev_month_year,owner=qs.owner)
             if prev_qs:
                 prev_oe = prev_qs.last()
+            # else: create a fake object
+            else:
+                prev_oe = OwnersEquity(amount=0, share=0)
 
-                cashbalances = CashBalance.objects.filter(date__month=month,date__year=year)
-                if cashbalances:
-                    from_date = datetime.date(year,month,1)
-                    to_date = cashbalances.order_by('date').last().date
-                    
-                    withdraws = Withdraw.objects.filter(owner=qs.owner, date__gte=from_date, date__lte=to_date)
-                    withdraw_amount = withdraws.aggregate(Sum('amount'))['amount__sum']
-                    investments = Investment.objects.filter(owner=qs.owner, date__gte=from_date, date__lte=to_date)
-                    investment_amount = investments.aggregate(Sum('amount'))['amount__sum']
-                    obj = {
-                        'month': qs.month, 
-                        'year': qs.year, 
-                        'owner': qs.owner,
-                        'prev_oe': prev_oe.amount or 0,
-                        'profit': qs.profit or 0,
-                        'withdraw': withdraw_amount or 0,
-                        'investment': investment_amount or 0,
-                        'current_oe': qs.amount or 0,
-                        'share': qs.share,
-                        'prev_share': prev_oe.share
-                    }
-                    object_list.insert(0,obj)
+            cashbalances = CashBalance.objects.filter(date__month=month,date__year=year)
+            if cashbalances:
+                from_date = datetime.date(year,month,1)
+                to_date = cashbalances.order_by('date').last().date
+                
+                withdraws = Withdraw.objects.filter(owner=qs.owner, date__gte=from_date, date__lte=to_date)
+                withdraw_amount = withdraws.aggregate(Sum('amount'))['amount__sum']
+                investments = Investment.objects.filter(owner=qs.owner, date__gte=from_date, date__lte=to_date)
+                investment_amount = investments.aggregate(Sum('amount'))['amount__sum']
+                obj = {
+                    'month': qs.month, 
+                    'year': qs.year, 
+                    'owner': qs.owner,
+                    'prev_oe': prev_oe.amount or 0,
+                    'profit': qs.profit or 0,
+                    'withdraw': withdraw_amount or 0,
+                    'investment': investment_amount or 0,
+                    'current_oe': qs.amount or 0,
+                    'share': qs.share,
+                    'prev_share': prev_oe.share
+                }
+                object_list.insert(0,obj)
         return object_list
 
 class OwnersEquityDetailView(LoginRequiredMixin,TemplateView):
@@ -126,20 +129,20 @@ class OwnersEquityDetailView(LoginRequiredMixin,TemplateView):
 
         first_oe_date = datetime.date(int(first_oe.year),int(first_oe.month),1)
         last_oe_date = datetime.date(int(last_oe.year),int(last_oe.month),1)
-        next_to_first = first_oe_date + datetime.timedelta(days=31)
+        # next_to_first = first_oe_date + datetime.timedelta(days=31)
         # next_to_last = last_oe_date + datetime.timedelta(days=31)
-        # print(next_to_first, next_to_last)
+        # print(first_oe_date, next_to_last)
         
         if target_date > last_oe_date:
             return redirect('ownersequity-details', 
                 pk = self.kwargs['pk'], 
                 month = last_oe_date.month, 
                 year = last_oe_date.year)
-        elif target_date < next_to_first:
+        elif target_date < first_oe_date:
             return redirect('ownersequity-details', 
                 pk = self.kwargs['pk'], 
-                month = next_to_first.month, 
-                year = next_to_first.year)
+                month = first_oe_date.month, 
+                year = first_oe_date.year)
         
         return super().get(request, *args, **kwargs)
 
@@ -160,7 +163,14 @@ class OwnersEquityDetailView(LoginRequiredMixin,TemplateView):
         context['year'] = year
         context["filter_form"] = OwnersEquityForm(self.kwargs or None)
 
-        prev_oe = OwnersEquity.objects.get(owner=owner,month=prev_date.month,year=prev_date.year)
+        prev_oes = OwnersEquity.objects.filter(owner=owner,month=prev_date.month,year=prev_date.year)
+        if prev_oes.count() > 0:
+            prev_oe = prev_oes.last()
+        else: 
+            prev_month_year, prev_month = get_prev_month(year,month)
+            prev_oe = OwnersEquity(
+                month = prev_month, year=prev_month_year, amount=0
+            )
         context['prev_oe'] = prev_oe
         current_oe = OwnersEquity.objects.filter(owner=owner,month=month,year=year)
         context['current_oe'] = current_oe.last()

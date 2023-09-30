@@ -52,16 +52,18 @@
     <h5 class="d-none d-print-block">তারিখ: {{date|e2b_date}}</h5>
 </div>
 
+{% if need_rescale %}
 <div>
     <i class="text-info">মজুদ মালের পরিমানঃ</i>
-    {% if storages.count == 0 %}<span class="text-danger">তালিকাভুক্ত হয়নি</span>{% endif %}
-    {% for store in storages %}
+    {% if storage_readings.count == 0 %}<span class="text-danger">তালিকাভুক্ত হয়নি</span>{% endif %}
+    {% for store in storage_readings %}
     {{store.product}}: {{store.tank_deep|floatformat:-2|e2b_digit|ezynumber}} + 
     {{store.lorry_load|floatformat:-2|e2b_digit|ezynumber}} লিঃ
     {% if not forloop.last %}, {% endif %}
     {% endfor %}
     <a href="{% url 'daily-product-storage' date %}"><i class="bi bi-pencil-square text-info"></i></a>
 </div>
+{% endif %}
 
 <div class="row" id="transaction-table">
     {% if active_accounts %}

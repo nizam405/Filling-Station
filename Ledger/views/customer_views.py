@@ -37,6 +37,9 @@ class CustomerTopSheet(LoginRequiredMixin,TemplateView):
         year = self.kwargs['year']
         
         target_date = datetime.date(year,month,1)
+        # For very first time
+        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
+            target_date = last_bal_date
         # Dont let go future
         if target_date > last_bal_date:
             return redirect('customer-topsheet', month=last_bal_date.month, year=last_bal_date.year)
@@ -121,9 +124,13 @@ class CustomerTopSheet(LoginRequiredMixin,TemplateView):
                 data.update({ 'duecollection': collection})
 
             bal = 0
-            bal += data['prev_balance'].amount if data['prev_balance'] else 0
+            last_bal = data['prev_balance'].amount if data['prev_balance'] else 0
+            bal += last_bal
             bal += data['duesell'] - data['duecollection']
             data.update({'balance': bal})
+            # কোনো কার্যকলাপ না থাকলে টপশিটে আসবে না
+            if last_bal == 0 and due_amount == 0 and collection == 0:
+                continue
             total_bal += bal
             customers.append(data)
         # Individual Customers

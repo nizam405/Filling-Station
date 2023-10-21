@@ -13,6 +13,7 @@ from Expenditure.models import Expenditure
 from Revenue.models import Revenue
 from Owner.models import Withdraw, Owner, Investment
 from Product.models import Product
+from Loan.models import BorrowLoan, LendLoan, RefundLendedLoan, RefundBorrowedLoan
 from .forms import DateForm, CashBalanceForm, CashBalanceForm2
 from .models import CashBalance
 from Core.choices import last_day_of_month
@@ -29,8 +30,10 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
                 last_date = last_day_of_month(date.year,date.month)
                 if date == last_date:
                     return redirect(reverse_lazy('save-ledger',kwargs={'date':date}))
+                else:
+                    date += datetime.timedelta(days=1)
 
-            return redirect('.', date)
+            return redirect('daily-transactions', date)
         return super(TemplateView, self).render_to_response(context)
     
     def get(self,request, *args, **kwargs):
@@ -94,6 +97,10 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         duecollections = DueCollection.objects.filter(date=date).order_by('id')
         revenues = Revenue.objects.filter(date=date)
         investments = Investment.objects.filter(date=date)
+        # হাওলাদ গ্রহণ
+        borrowed_loans = BorrowLoan.objects.filter(date=date)
+        # প্রদত্ত হাওলাদ ফেরত
+        refund_lended_loans = RefundLendedLoan.objects.filter(date=date)
 
         purchases = Purchase.objects.filter(date=date)
         # Duesell
@@ -121,6 +128,11 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
                     'owner': owner, 'withdraws': owner_wds,
                     'owner_total': owner_wds.aggregate(Sum('amount'))['amount__sum']
                 })
+        
+        # হাওলাদ প্রদান
+        lended_loans = LendLoan.objects.filter(date=date)
+        # গৃহীত হাওলাদ পরিশোধ
+        refund_borrowed_loans = RefundBorrowedLoan.objects.filter(date=date)
 
         context['sells'] = sells
         context['total_sell'] = sells.aggregate(Sum('amount'))['amount__sum']
@@ -130,6 +142,10 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         context['total_revenues'] = revenues.aggregate(Sum('amount'))['amount__sum']
         context['investments'] = investments
         context['total_investments'] = investments.aggregate(Sum('amount'))['amount__sum']
+        context['borrowed_loans'] = borrowed_loans
+        context['total_borrowed_loan'] = borrowed_loans.aggregate(Sum('amount'))['amount__sum']
+        context['refund_lended_loans'] = refund_lended_loans
+        context['total_refund_lended_loan'] = refund_lended_loans.aggregate(Sum('amount'))['amount__sum']
 
         context['purchases'] = purchases
         context['total_purchase'] = purchases.aggregate(Sum('amount'))['amount__sum']
@@ -139,6 +155,11 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         context['total_expenditures'] = expenditures.aggregate(Sum('amount'))['amount__sum']
         context['withdraws'] = withdraw_data
         context['total_withdraws'] = withdraws.aggregate(Sum('amount'))['amount__sum']
+        context['lended_loans'] = lended_loans
+        context['total_lended_loan'] = lended_loans.aggregate(Sum('amount'))['amount__sum']
+        context['refund_borrowed_loans'] = refund_borrowed_loans
+        context['total_refund_borrowed_loan'] = refund_borrowed_loans.aggregate(Sum('amount'))['amount__sum']
+
         
         # Balance B/F
         balances = CashBalance.objects.order_by('date').all()
@@ -158,23 +179,20 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
             total_debit += context['balance_bf']
         else: total_credit += context['balance_bf']
         
-        if context['total_sell']:
-            total_debit += context['total_sell']
-        if context['total_duecollections']:
-            total_debit += context['total_duecollections']
-        if context['total_revenues']:
-            total_debit += context['total_revenues']
+        if context['total_sell']: total_debit += context['total_sell']
+        if context['total_duecollections']: total_debit += context['total_duecollections']
+        if context['total_revenues']: total_debit += context['total_revenues']
         if investments: total_debit += context['total_investments']
+        if borrowed_loans: total_debit += context['total_borrowed_loan']
+        if refund_lended_loans: total_debit += context['total_refund_lended_loan']
         context['total_debit'] = total_debit
 
-        if context['total_purchase']:
-            total_credit += context['total_purchase']
-        if context['total_duesells']:
-            total_credit += context['total_duesells']
-        if context['total_expenditures']:
-            total_credit += context['total_expenditures']
-        if context['total_withdraws']:
-            total_credit += context['total_withdraws']
+        if context['total_purchase']: total_credit += context['total_purchase']
+        if context['total_duesells']: total_credit += context['total_duesells']
+        if context['total_expenditures']: total_credit += context['total_expenditures']
+        if context['total_withdraws']: total_credit += context['total_withdraws']
+        if lended_loans: total_credit += context['total_lended_loan']
+        if refund_borrowed_loans: total_credit += context['total_refund_borrowed_loan']
         context['total_credit'] = total_credit
 
         context['balance_cf'] = total_debit - total_credit

@@ -1,0 +1,283 @@
+import datetime
+from typing import Any
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views.generic import ListView, TemplateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q, Sum
+
+from .models import (Lender, Borrower, BorrowLoan, RefundBorrowedLoan, LendLoan, RefundLendedLoan)
+from Transaction.functions import (
+    last_balance_date, next_to_last_balance_date, 
+    get_next_month, get_current_month, 
+    CashBalance
+    )
+
+# হাওলাদ দাতা
+class LenderView(LoginRequiredMixin, CreateView, ListView):
+    model = Lender
+    fields = '__all__'
+    template_name = 'Loan/lender.html'
+    success_url = '.'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['container_class'] = 'hidden'
+        return context
+
+class LenderUpdateView(LoginRequiredMixin, UpdateView, ListView):
+    model = Lender
+    fields = '__all__'
+    template_name = 'Loan/lender.html'
+    success_url = reverse_lazy('lender')
+
+# হাওলাদ গ্রহীতা
+class BorrowerView(LoginRequiredMixin, CreateView, ListView):
+    model = Borrower
+    fields = '__all__'
+    template_name = 'Loan/borrower.html'
+    success_url = '.'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['container_class'] = 'hidden'
+        return context
+
+class BorrowerUpdateView(LoginRequiredMixin, UpdateView, ListView):
+    model = Borrower
+    fields = '__all__'
+    template_name = 'Loan/borrower.html'
+    success_url = reverse_lazy('borrower')
+
+# হাওলাদ (ড্যাসবোর্ড)
+class LoanView(LoginRequiredMixin, TemplateView):
+    template_name = "Loan/loan_dashboard.html"  
+
+    def get(self, request, *args, **kwargs):
+        if not CashBalance.objects.exists():
+            return redirect("daily-transactions")
+        return super().get(request, *args, **kwargs)  
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_month = get_current_month()
+        next_month = get_next_month()
+
+        # হাওলাদ গ্রহণ (চলতি মাস ও চলতি লেনদেন)
+        borrowed_loans = BorrowLoan.objects.filter(
+            Q(is_finished=False) |
+            (
+                Q(refunds__date__gte=current_month) &
+                Q(refunds__date__lt=next_month) &
+                Q(is_finished=True)
+            )
+        ).distinct()
+        if borrowed_loans:
+            borrowed_loans.order_by("-date")
+            result_set = []
+            total_borrowed_loan_refund = 0
+            for loan in borrowed_loans:
+                refunds = RefundBorrowedLoan.objects.filter(loan=loan)
+                total_borrowed_loan_refund += refunds.aggregate(Sum('amount'))['amount__sum'] or 0
+                loan_dict = {'loan':loan,'refunds':refunds}
+                result_set.append(loan_dict)
+
+            context['borrowed_loans'] = result_set
+            total_borrowed_loan = borrowed_loans.aggregate(Sum('amount'))['amount__sum']
+            context['total_borrowed_loan'] = total_borrowed_loan
+            context['total_borrowed_loan_refund'] = total_borrowed_loan_refund
+            context['total_borrowed_loan_remaining'] = total_borrowed_loan - total_borrowed_loan_refund
+        
+        # হাওলাদ প্রদান (চলতি মাস ও চলতি লেনদেন)
+        lended_loans = LendLoan.objects.filter(
+            Q(is_finished=False) |
+            (
+                Q(refunds__date__gte=current_month) &
+                Q(refunds__date__lt=next_month) &
+                Q(is_finished=True)
+            )
+        ).distinct()
+        if lended_loans:
+            lended_loans.order_by("-date")
+            result_set = []
+            total_lended_loan_refund = 0
+            for loan in lended_loans:
+                refunds = RefundLendedLoan.objects.filter(loan=loan)
+                total_lended_loan_refund += refunds.aggregate(Sum('amount'))['amount__sum'] or 0
+                loan_dict = {'loan':loan,'refunds':refunds}
+                result_set.append(loan_dict)
+
+            context['lended_loans'] = result_set
+            total_lended_loan = lended_loans.aggregate(Sum('amount'))['amount__sum']
+            context['total_lended_loan'] = total_lended_loan
+            context['total_lended_loan_refund'] = total_lended_loan_refund
+            context['total_lended_loan_remaining'] = total_lended_loan - total_lended_loan_refund
+
+            context['lended_loans'] = result_set
+
+        return context
+
+# হাওলাদ গ্রহণ
+class BorrowLoanCreateView(LoginRequiredMixin, CreateView):
+    model = BorrowLoan
+    template_name = "Loan/loan_form.html"
+    fields = ['date','lender','amount']
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get(self, request, *args, **kwargs):
+        if not CashBalance.objects.exists():
+            return redirect("daily-transactions")
+        return super().get(request, *args, **kwargs) 
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "হাওলাদ গ্রহণ"
+        return context
+    
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['date'] = next_to_last_balance_date()
+        return initial
+
+class BorrowLoanUpdateView(LoginRequiredMixin, UpdateView):
+    model = BorrowLoan
+    template_name = "Loan/loan_form.html"
+    fields = ['date','lender','amount']
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get_object(self, queryset=None):
+        return self.model.objects.get(pk=self.kwargs['loan_pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "হাওলাদ গ্রহণ (পরিবর্তন)"
+        return context
+
+class BorrowLoanDeleteView(LoginRequiredMixin, DeleteView):
+    model = BorrowLoan
+    template_name = "Loan/loan_confirm_delete.html"
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get_object(self, queryset=None):
+        return self.model.objects.get(pk=self.kwargs['loan_pk'])
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'হাওলাদ গ্রহণ - বাতিল'
+        return context
+
+class RefundBorrowedLoanCreateView(LoginRequiredMixin, CreateView):
+    model = RefundBorrowedLoan
+    template_name = "Loan/refund_loan_form.html"
+    fields = ['date','loan','amount']
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        loan = BorrowLoan.objects.get(pk=self.kwargs['loan_pk'])
+        initial['loan'] = loan
+        initial['date'] = next_to_last_balance_date()
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "গৃহীত হাওলাদ পরিশোধ"
+        return context
+
+class RefundBorrowedLoanUpdateView(LoginRequiredMixin, UpdateView):
+    model = RefundBorrowedLoan
+    template_name = "Loan/refund_loan_form.html"
+    fields = ['date','loan','amount']
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "গৃহীত হাওলাদ পরিশোধ (পরিবর্তন)"
+        return context
+
+class RefundBorrowedLoanDeleteView(LoginRequiredMixin,DeleteView):
+    model = RefundBorrowedLoan
+    success_url = reverse_lazy('loan-dashboard')
+
+#  হাওলাদ প্রদান
+class LendLoanCreateView(LoginRequiredMixin, CreateView):
+    model = LendLoan
+    template_name = "Loan/loan_form.html"
+    fields = ['date','borrower','amount']
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get(self, request, *args, **kwargs):
+        if not CashBalance.objects.exists():
+            return redirect("daily-transactions")
+        return super().get(request, *args, **kwargs) 
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "হাওলাদ প্রদান"
+        return context
+    
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['date'] = next_to_last_balance_date()
+        return initial
+
+class LendLoanUpdateView(LoginRequiredMixin, UpdateView):
+    model = LendLoan
+    template_name = "Loan/loan_form.html"
+    fields = ['date','borrower','amount']
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get_object(self, queryset=None):
+        return self.model.objects.get(pk=self.kwargs['loan_pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "হাওলাদ প্রদান (পরিবর্তন)"
+        return context
+
+class LendLoanDeleteView(LoginRequiredMixin, DeleteView):
+    model = LendLoan
+    template_name = "Loan/loan_confirm_delete.html"
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get_object(self, queryset=None):
+        return self.model.objects.get(pk=self.kwargs['loan_pk'])
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'হাওলাদ প্রদান - বাতিল'
+        return context
+
+class RefundLendedLoanCreateView(LoginRequiredMixin, CreateView):
+    model = RefundLendedLoan
+    template_name = "Loan/refund_loan_form.html"
+    fields = ['date','loan','amount']
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        loan = LendLoan.objects.get(pk=self.kwargs['loan_pk'])
+        initial['loan'] = loan
+        initial['date'] = next_to_last_balance_date()
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "প্রদত্ত হাওলাদ ফেরত"
+        return context
+
+class RefundLendedLoanUpdateView(LoginRequiredMixin, UpdateView):
+    model = RefundLendedLoan
+    template_name = "Loan/refund_loan_form.html"
+    fields = ['date','loan','amount']
+    success_url = reverse_lazy('loan-dashboard')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "প্রদত্ত হাওলাদ ফেরত (পরিবর্তন)"
+        return context
+
+class RefundLendedLoanDeleteView(LoginRequiredMixin, DeleteView):
+    model = RefundLendedLoan
+    success_url = reverse_lazy('loan-dashboard')

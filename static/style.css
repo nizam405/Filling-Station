@@ -193,3 +193,8 @@
     background-color: white;
     z-index: 999;
 }
+
+
+.hidden {
+    display: none;
+}

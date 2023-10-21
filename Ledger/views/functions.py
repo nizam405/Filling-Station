@@ -26,6 +26,7 @@ def get_products_info(from_date:date, to_date:date, prev_month:date.month, prev_
         
         # Initial storage - প্রারম্ভিক মজুদ
         storage = initial_storages.filter(product=product)
+        # print(storage.last())
         initial_qnt = storage.last().quantity if storage else 0
         data['initial_storage'] = initial_qnt
         initial_storage_amount = storage.last().price if storage else 0

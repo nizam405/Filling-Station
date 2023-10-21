@@ -1,4 +1,4 @@
-import datetime
+import datetime 
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.forms import modelformset_factory
@@ -14,7 +14,7 @@ from .forms import SellForm, PurchaseForm, StorageReadingForm
 from Transaction.models import CashBalance
 
 # Product
-class ProductView(LoginRequiredMixin,CreateView, ListView):
+class ProductView(LoginRequiredMixin, CreateView, ListView):
     model = Product
     fields = '__all__'
     template_name = 'Product/products.html'
@@ -31,7 +31,7 @@ def change_product_status(request, pk):
     product.save()
     return redirect('products')
 
-class ProductUpdateView(LoginRequiredMixin,UpdateView, ListView):
+class ProductUpdateView(LoginRequiredMixin, UpdateView, ListView):
     model = Product
     fields = '__all__'
     template_name = 'Product/products.html'

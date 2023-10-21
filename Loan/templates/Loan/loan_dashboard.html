@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}আয়-ব্যয় বিবরণী{% endblock title %}
+
+{% block style %}
+<style>
+    .create-button {
+        font-size: 2rem;
+    }
+</style>
+{% endblock style %}
+
+{% load extra_tags %}
+{% load bootstrap4 %}
+{% block main %}
+
+<h3 class="d-none d-print-block text-center">প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
+
+<h3>হাওলাদ গ্রহণ <a href="{% url 'create-borrowed-loan' %}">
+    <i class="bi bi-plus-circle btn p-0 d-print-none create-button"></i></a>
+</h3>
+<div class="d-print-none"><a href="{% url "lender" %}">হাওলাদ দাতার তালিকা</a></div>
+{% if borrowed_loans %}
+<table class="table table-sm table-bordered">
+    <tr class="text-center">
+        <th>তারিখ</th>
+        <th>হাওলাদ দাতা</th>
+        <th>পরিমাণ</th>
+        <th>পরিশোধিত</th>
+        <th>অবশিষ্ট</th>
+        <th class="d-print-none">পরিবর্তন</th>
+    </tr>
+    {% for loan_data in borrowed_loans %}
+    <tr>
+        <td><a href="{% url 'daily-transactions' date=loan_data.loan.date %}">
+            {{loan_data.loan.date|e2b_date}}</a>
+        </td>
+        <td>{{loan_data.loan.lender.name}}</td>
+        <td class="text-right">{{loan_data.loan.amount|e2b_digit|ezynumber}}</td>
+        <td class="text-right">({{loan_data.loan.refund_amount|e2b_digit|ezynumber}})</td>
+        <td class="text-right" rowspan="{{loan_data.refunds|length|add:1}}">
+            {{loan_data.loan.remaining|e2b_digit|ezynumber}}<br>
+            {% if loan_data.loan.remaining == 0 %} (সম্পূর্ন পরিশোধিত)
+            {% else %}
+            <a href="{% url 'create-refund-borrowed-loan' loan_pk=loan_data.loan.pk %}" class="btn btn-primary btn-sm d-print-none">
+                পরিশোধ করুন
+            </a>
+            {% endif %}
+        </td>
+        <td class='d-print-none text-center'>
+            {% if loan_data.loan.can_edit %}
+            <a href="{% url 'update-borrowed-loan' loan_pk=loan_data.loan.pk %}" class="btn btn-sm btn-light py-0">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="{% url 'delete-borrowed-loan' loan_pk=loan_data.loan.pk %}" class="btn btn-sm btn-light py-0 text-danger">
+                <i class="bi bi-trash"></i>
+            </a>
+            {% endif %}
+        </td>
+    </tr>
+    {% for refund in loan_data.refunds %}
+    <tr>
+        <td class='text-right'><a href="{% url 'daily-transactions' date=refund.date %}">
+            {{refund.date|e2b_date}} (পরিশোধ)</a>
+        </td>
+        <td colspan='2'>{{refund.loan.lender.name}}</td>
+        <td class="text-right">{{refund.amount|e2b_digit|ezynumber}}</td>
+        <td class='d-print-none text-center'>
+            {% if refund.can_edit %}
+            <a href="{% url 'update-refund-borrowed-loan' loan_pk=loan_data.loan.pk pk=refund.pk %}" class="btn btn-sm btn-light py-0">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+            <form method='POST' action="{% url 'delete-refund-borrowed-loan' loan_pk=loan_data.loan.pk pk=refund.pk %}" class='d-inline'>
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-light py-0"><i class="bi bi-trash text-danger"></i></button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    {% endfor %}
+    <tr class='text-right'>
+        <th colspan='2'>মোটঃ</th>
+        <th>{{total_borrowed_loan|e2b_digit|ezynumber}}</th>
+        <th>{{total_borrowed_loan_refund|e2b_digit|ezynumber}}</th>
+        <th>{{total_borrowed_loan_remaining|e2b_digit|ezynumber}}</th>
+        <th class="d-print-none"></th>
+    </tr>
+</table>
+{% endif %}
+
+<h3>হাওলাদ প্রদান <a href="{% url 'create-lended-loan' %}">
+    <i class="bi bi-plus-circle btn p-0 d-print-none create-button"></i></a>
+</h3>
+<div class="d-print-none"><a href="{% url "borrower" %}">হাওলাদ গ্রহীতার তালিকা</a></div>
+{% if lended_loans %}
+<table class="table table-sm table-bordered">
+    <tr class="text-center">
+        <th>তারিখ</th>
+        <th>হাওলাদ গ্রহীতা</th>
+        <th>পরিমাণ</th>
+        <th>গৃহীত</th>
+        <th>অবশিষ্ট</th>
+        <th class="d-print-none">পরিবর্তন</th>
+    </tr>
+    {% for loan_data in lended_loans %}
+    <tr>
+        <td><a href="{% url 'daily-transactions' date=loan_data.loan.date %}">
+            {{loan_data.loan.date|e2b_date}}</a>
+        </td>
+        <td>{{loan_data.loan.borrower.name}}</td>
+        <td class="text-right">{{loan_data.loan.amount|e2b_digit|ezynumber}}</td>
+        <td class="text-right">({{loan_data.loan.refund_amount|e2b_digit|ezynumber}})</td>
+        <td class="text-right" rowspan="{{loan_data.refunds|length|add:1}}">
+            {{loan_data.loan.remaining|e2b_digit|ezynumber}}<br>
+            {% if loan_data.loan.remaining == 0 %} (সম্পূর্ন গৃহীত)
+            {% else %}
+            <a href="{% url 'create-refund-lended-loan' loan_pk=loan_data.loan.pk %}" class="btn btn-primary btn-sm d-print-none">
+                গ্রহণ করুন
+            </a>
+            {% endif %}
+        </td>
+        <td class='d-print-none text-center'>
+            {% if loan_data.loan.can_edit %}
+            <a href="{% url 'update-lended-loan' loan_pk=loan_data.loan.pk %}" class="btn btn-sm btn-light py-0">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+            <a href="{% url 'delete-lended-loan' loan_pk=loan_data.loan.pk %}" class="btn btn-sm btn-light py-0 text-danger">
+                <i class="bi bi-trash"></i>
+            </a>
+            {% endif %}
+        </td>
+    </tr>
+    {% for refund in loan_data.refunds %}
+    <tr>
+        <td class='text-right'><a href="{% url 'daily-transactions' date=refund.date %}">
+            {{refund.date|e2b_date}} (গ্রহণ)</a>
+        </td>
+        <td colspan='2'>{{refund.loan.borrower.name}}</td>
+        <td class="text-right">{{refund.amount|e2b_digit|ezynumber}}</td>
+        <td class='d-print-none text-center'>
+            {% if refund.can_edit %}
+            <a href="{% url 'update-refund-lended-loan' loan_pk=loan_data.loan.pk pk=refund.pk %}" class="btn btn-sm btn-light py-0">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+            <form method='POST' action="{% url 'delete-refund-lended-loan' loan_pk=loan_data.loan.pk pk=refund.pk %}" class='d-inline'>
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-light py-0"><i class="bi bi-trash text-danger"></i></button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    {% endfor %}
+    <tr class='text-right'>
+        <th colspan='2'>মোটঃ</th>
+        <th>{{total_lended_loan|e2b_digit|ezynumber}}</th>
+        <th>{{total_lended_loan_refund|e2b_digit|ezynumber}}</th>
+        <th>{{total_lended_loan_remaining|e2b_digit|ezynumber}}</th>
+        <th class="d-print-none"></th>
+    </tr>
+</table>
+{% endif %}
+
+{% endblock main %}

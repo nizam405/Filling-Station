@@ -48,8 +48,8 @@
                     {{object.date|e2b_date}}
                 </a>
             </td>
-            <td>{{object.purchase_rate|e2b_digit|ezynumber}}</td>
-            <td>{{object.selling_rate|e2b_digit|ezynumber}}</td>
+            <td>{{object.purchase_rate|floatformat:4|e2b_digit|ezynumber}}</td>
+            <td>{{object.selling_rate|floatformat:4|e2b_digit|ezynumber}}</td>
             <td>
                 <a href="{% url 'update-rate' product=product.pk pk=object.pk %}">
                     <i class="bi bi-pencil-square text-info"></i>

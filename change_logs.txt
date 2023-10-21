@@ -1,3 +1,12 @@
+2023-10-21
+-----------
+>> Added Loan Module
+>> Added Rate functionality in Daily transactions
+>> Added Last Rate Update in Product Limits
+>> Fixed difference in Income Statement
+>> Daily transactions "Save" is now "Save and next"
+>> Others minor changes
+
 2023-07
 ----------
 >> Separate rate functionality from product

@@ -40,6 +40,7 @@
         <th>মাস ও বছর</th>
         <th>মাল</th>
         <th>পরিমাণ</th>
+        <th>দর</th>
         <th>মুল্য</th>
     </tr>
     {% if object_list %}
@@ -52,16 +53,18 @@
             <span class="eng">{{object.product.name}}</span> {{object.product.capacity|e2b_digit}} লিঃ
         </td>
         <td>{{object.quantity|floatformat:-2|e2b_digit|ezynumber}} টি</td>
+        <td class='text-right'>{{object.get_purchase_rate|floatformat:-2|e2b_digit|ezynumber}}/=</td>
         <td class='text-right'>{% if object.price %}{{object.price|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</td>
         {% else %}
         <td>{{object.product}}</td>
         <td>{{object.quantity|floatformat:-2|e2b_digit|ezynumber}} লিটার</td>
+        <td class='text-right'>{{object.get_purchase_rate|floatformat:-2|e2b_digit|ezynumber}}/=</td>
         <td class='text-right'>{% if object.price %}{{object.price|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</td>
         {% endif %}
     </tr>
     {% endfor %}
     <tr class='text-right'>
-        <th colspan='4'>মজুদপণ্যের মোট ক্রয়মূল্যঃ</th>
+        <th colspan='5'>মজুদপণ্যের মোট ক্রয়মূল্যঃ</th>
         <th>{% if total %}{{total|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</th>
     </tr>
     {% else %}

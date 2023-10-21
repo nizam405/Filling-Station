@@ -67,7 +67,7 @@
         <td class='p-0 d-print-none'>
             <form method="POST" action="{% url 'delete-daily-product-storage' pk=object.pk %}">
                 {% if date %}
-                <a href="{% url 'update-daily-product-storage' pk=object.pk date=date %}" class="p-1">
+                <a href="{% url 'update-daily-product-storage' pk=object.pk date=object.date %}" class="p-1">
                     <i class="bi bi-pencil-square text-dark"></i>
                 </a>
                 {% else %}

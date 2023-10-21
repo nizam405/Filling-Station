@@ -27,6 +27,7 @@ urlpatterns = [
     path('', HomeView.as_view(), name="home"), # Currently redirects to 'daily-transactions'
     path('transactions/', include("Transaction.urls")),
     path('ledgers/', include("Ledger.urls")),
+    path('loan/', include("Loan.urls")),
     path('customer/', include("Customer.urls")),
     path('expenditure/', include("Expenditure.urls")),
     path('owner/', include("Owner.urls")),

@@ -83,7 +83,8 @@
             {% if obj.purchase_qnt > 0 %}
             <div>
                 {{obj.purchase_qnt|floatformat:-2|e2b_digit|ezynumber}}
-                {% if product.type == 'Loose' %}লিঃ{% endif %}
+                {% if product.type == 'Loose' %}লিঃ{% endif %} 
+                <span class='price'>(দর : {{obj.purchase_rate|floatformat:-2|e2b_digit|ezynumber}})</span>
             </div>
             <div class="price">{{obj.purchase_amount|e2b_digit|ezynumber}}/=</div>
             {% endif %}

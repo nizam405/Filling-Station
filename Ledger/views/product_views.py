@@ -231,7 +231,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
                 todays_data['purchase_amount'] = purchase_amount
                 total_purchase_amount += purchase_amount
 
-                # purchase_rate = purchases.last().rate
+                todays_data['purchase_rate'] = purchase_amount/purchase_qnt
             # 4. বিক্রয়
             sell_qnt = 0
             sell_amount = 0

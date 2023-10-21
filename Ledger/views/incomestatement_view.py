@@ -12,6 +12,7 @@ from Ledger.forms import DateFilterForm
 from Transaction.models import CashBalance
 from Customer.models import DueSell, DueCollection
 from Owner.models import Withdraw, OwnersEquity, Owner, Investment, FixedAsset
+from Loan.models import BorrowLoan, LendLoan
 from .functions import get_products_info
 
 class IncomeStatementView(LoginRequiredMixin,TemplateView):
@@ -159,8 +160,12 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         dues += due_sells.aggregate(Sum('amount'))['amount__sum'] if due_sells else 0
         # Due collections
         due_collections = DueCollection.objects.filter(date__gte=from_date,date__lte=to_date)
-        dues -= due_collections.aggregate(Sum('amount'))['amount__sum'] if due_sells else 0
+        dues -= due_collections.aggregate(Sum('amount'))['amount__sum'] if due_collections else 0
         context['dues'] = dues
+        # দেনাদার - প্রদত্ত হাওলাদ এর বকেয়া
+        lended_loans = LendLoan.objects.filter(date__gte=from_date,date__lte=to_date)
+        remaining_lended_loan = sum([loan.remaining for loan in lended_loans])
+        context['remaining_lended_loan'] = remaining_lended_loan
         # স্থায়ী সম্পত্তি
         fixed_assets = FixedAsset.objects.all()
         fixed_assets_amount = fixed_assets.aggregate(Sum('price'))['price__sum'] if fixed_assets else 0
@@ -172,7 +177,7 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         ending_storage_amount += ex_revenue + ex_loss
         context['ending_storage_amount'] = ending_storage_amount
         
-        total_asset = cash + dues + ending_storage_amount + fixed_assets_amount
+        total_asset = cash + dues + remaining_lended_loan + ending_storage_amount + fixed_assets_amount
 
         # প্রারম্ভিক মূলধন
         capital_amount = 0
@@ -188,12 +193,16 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         withdraw_amount = withdraws.aggregate(Sum('amount'))['amount__sum'] if withdraws else 0
         context['withdraws'] = withdraw_amount
         context['rem_profit'] = net_profit - withdraw_amount
-        amount_before_profit = capital_amount + investment_amount - withdraw_amount
+        # পাওনাদার - পাপ্ত হাওলাদ এর বকেয়া
+        borrowed_loans = BorrowLoan.objects.filter(date__gte=from_date,date__lte=to_date)
+        remaining_borrowed_loan = sum([loan.remaining for loan in borrowed_loans])
+        context['remaining_borrowed_loan'] = remaining_borrowed_loan
+
+        amount_before_profit = capital_amount + remaining_borrowed_loan + investment_amount - withdraw_amount
         total_oe = amount_before_profit + net_profit
         context['total_oe'] = total_oe
 
         diff = total_asset-total_oe
-        print(diff)
         context['diff'] = int(diff)
         total_asset -= diff
         context['total_asset'] = total_asset

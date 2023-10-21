@@ -53,25 +53,20 @@ class Storage(models.Model):
     class Meta:
         ordering = ['-year','-month','product']
         constraints = [models.UniqueConstraint(fields=['year','month','product'], name='unique_storage')]
-
-    def save(self, *args, **kwargs):
-        # purchases = Purchase.objects.filter(date__year=self.year, date__month=self.month, product=self.product).order_by('date')
-        # prev_month_year, prev_month = get_prev_month(self.year,self.month)
-        # prev_storages = Storage.objects.filter(product=self.product,month=prev_month,year=prev_month_year)
-        
-        # if purchases:
-        #     rate = purchases.last().rate
-        # elif prev_storages:
-        #     prev_storage = prev_storages.last()
-        #     rate = prev_storage.price / prev_storage.quantity
-        # else:
+    
+    @property
+    def get_purchase_rate(self):
         date = last_day_of_month(year=self.year,month=self.month)
         rate = self.product.get_purchase_rate(date=date)
-        self.price = rate * self.quantity
+        return rate
+
+    def save(self, *args, **kwargs):
+        self.price = self.get_purchase_rate * self.quantity
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.month}, {self.year} - {self.product} - {self.quantity}x{self.price/self.quantity} = {self.price}/="
+        rate = self.get_purchase_rate
+        return f"{self.month}, {self.year} - {self.product} - {self.quantity}x{rate} = {self.price}/="
     
     def get_absolute_url(self):
         return reverse('product-topsheet')

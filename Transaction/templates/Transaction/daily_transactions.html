@@ -73,6 +73,7 @@
             <tr class="text-center">
                 <th>বিবরন</th>
                 <th>পরিমান</th>
+                <th>দর</th>
                 <th>টাকা</th>
                 <th class="subtotal">মোট</th>
             </tr>
@@ -83,9 +84,9 @@
             </tr>
             {% endif %}
 
-            
+            <!-- বিক্রয় -->  
             <tr {% if sells.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">মাল বিক্রয়
+                <th colspan="5" class="group-label">মাল বিক্রয়
                     {% if can_change %}
                     <a href="{% url 'sell' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
                     {% endif %}
@@ -101,6 +102,7 @@
                 <td class="eng">{{obj.product.name}}</td>
                 <td class="text-right">{{obj.product.capacity|floatformat:-2|e2b_digit|ezynumber}} লিঃ &times; {{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} </td>
                 {% endif %}
+                <td class="text-right">{{obj.rate|floatformat:-2|e2b_digit|ezynumber}}</td>
                 <td class="text-right">{{obj.amount|floatformat:-2|e2b_digit|ezynumber}}</td>
                 {% if forloop.first %}
                 <td rowspan="{{sells.count}}" class="subtotal text-right align-bottom">{{total_sell|e2b_digit|ezynumber}}</td>
@@ -109,8 +111,9 @@
             {% endfor %}
             {% endif %}
 
+            <!-- আয় -->  
             <tr {% if revenues.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">আয়
+                <th colspan="5" class="group-label">আয়
                     {% if can_change %}
                     <a href="{% url 'revenue' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
                     {% endif %}
@@ -119,7 +122,7 @@
             {% if revenues %}
             {% for revenue in revenues %}
             <tr class="transaction-entry">
-                <td colspan="2">{{revenue.group.name}}
+                <td colspan="3">{{revenue.group.name}}
                     {% if revenue.detail %}-{{revenue.detail}}{% endif %}
                 </td>
                 <td class="text-right">{{revenue.amount|e2b_digit|ezynumber}}</td>
@@ -131,8 +134,10 @@
             </tr>
             {% endfor %}
             {% endif %}
+
+            <!-- বকেয়া আদায় --> 
             <tr {% if duecollections.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">বকেয়া আদায়
+                <th colspan="5" class="group-label">বকেয়া আদায়
                     {% if can_change %}
                     <a href="{% url 'duecollection' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
                     {% endif %}
@@ -142,7 +147,7 @@
             {% if duecollections %}
             {% for duecollection in duecollections %}
             <tr class="transaction-entry">
-                <td colspan="2">{{duecollection.customer}}</td>
+                <td colspan="3">{{duecollection.customer}}</td>
                 <td class="text-right">{{duecollection.amount|e2b_digit|ezynumber}}</td>
                 {% if forloop.first %}
                 <td rowspan="{{duecollections.count}}" class="subtotal text-right align-bottom">{{total_duecollections|e2b_digit|ezynumber}}</td>
@@ -151,13 +156,14 @@
             {% endfor %}
             {% endif %}
             
+            <!-- অতিরিক্ত মূলধন --> 
             {% if investments %}
             <tr {% if investments.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">অতিরিক্ত মূলধন</th>
+                <th colspan="5" class="group-label">অতিরিক্ত মূলধন</th>
             </tr>
             {% for investment in investments %}
             <tr class="transaction-entry">
-                <td colspan="2">
+                <td colspan="3">
                     {{investment.owner.name}}
                     {% if investment.detail %}-{{investment.detail}}{% endif %}
                     {% if can_change %}
@@ -168,14 +174,39 @@
                 </td>
                 <td class="text-right">{{investment.amount|e2b_digit|ezynumber}}</td>
                 {% if forloop.first %}
-                <td class="subtotal text-right align-bottom">{{total_investments|e2b_digit|ezynumber}}</td>
+                <td rowspan="{{investments.count}}" class="subtotal text-right align-bottom">{{total_investments|e2b_digit|ezynumber}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% endif %}
+
+            <!-- হাওলাদ -->
+            {% if borrowed_loans or refund_lended_loans %}
+            <tr {% if borrowed_loans.count == 0 and refund_lended_loans == 0 %}class="d-print-none"{% endif %}>
+                <th colspan="5" class="group-label">হাওলাদ</th>
+            </tr>
+            {% for loan in borrowed_loans %}
+            <tr class="transaction-entry">
+                <td colspan="3">হাওলাদ গ্রহণ - {{loan.lender.name}}</td>
+                <td class="text-right">{{loan.amount|e2b_digit|ezynumber}}</td>
+                {% if forloop.first %}
+                <td rowspan="{{borrowed_loans.count}}" class="subtotal text-right align-bottom">{{total_borrowed_loan|e2b_digit|ezynumber}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% for refund in refund_lended_loans %}
+            <tr class="transaction-entry">
+                <td colspan="3">প্রদত্ত হাওলাদ ফেরত - {{refund.loan.borrower.name}}</td>
+                <td class="text-right">{{refund.amount|e2b_digit|ezynumber}}</td>
+                {% if forloop.first %}
+                <td rowspan="{{refund_lended_loans.count}}" class="subtotal text-right align-bottom">{{total_refund_lended_loan|e2b_digit|ezynumber}}</td>
                 {% endif %}
             </tr>
             {% endfor %}
             {% endif %}
 
             <tr>
-                <th colspan="3" class="cp-3 text-right">সর্বমোটঃ</th>
+                <th colspan="4" class="cp-3 text-right">সর্বমোটঃ</th>
                 <th class="text-right">{{total_debit|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
@@ -187,6 +218,7 @@
             <tr class="text-center">
                 <th>বিবরন</th>
                 <th>পরিমান</th>
+                <th>দর</th>
                 <th>টাকা</th>
                 <th class="subtotal">মোট</th>
             </tr>
@@ -198,8 +230,9 @@
             </tr>
             {% endif %}
 
+            <!-- মাল ক্রয় -->
             <tr {% if purchases.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">মাল ক্রয়
+                <th colspan="5" class="group-label">মাল ক্রয়
                     {% if can_change %}
                     <a href="{% url 'purchase' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
                     {% endif %}
@@ -215,7 +248,17 @@
                 <td>{{obj.product.name}}</td>
                 <td class="text-right">{{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} লিঃ</td>
                 {% endif %}
-                <td class="text-right">{{obj.amount|e2b_digit|ezynumber}}</td>
+                <td class="text-right">
+                    <span class='d-print-none'>
+                        {% if obj.rate_status == 'up' %}({{obj.last_rate|floatformat:-2|e2b_digit|ezynumber}})
+                        <i class='bi bi-caret-up-fill text-warning'></i>
+                        {% elif obj.rate_status == 'down' %}({{obj.last_rate|floatformat:-2|e2b_digit|ezynumber}})
+                        <i class='bi bi-caret-down-fill text-warning'></i>
+                        {% endif %}
+                        {{obj.rate|floatformat:-2|e2b_digit|ezynumber}}
+                    </span>
+                </td>
+                <td class="text-right">{{obj.amount|floatformat:-2|e2b_digit|ezynumber}}</td>
                 {% if forloop.first %}
                 <td rowspan="{{purchases.count}}" class="subtotal text-right align-bottom">{{total_purchase|e2b_digit|ezynumber}}</td>
                 {% endif %}
@@ -223,8 +266,9 @@
             {% endfor %}
             {% endif %}
 
+            <!-- ব্যয় -->
             <tr {% if expenditures.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">ব্যয়
+                <th colspan="5" class="group-label">ব্যয়
                     {% if can_change %}
                     <a href="{% url 'expenditure' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
                     {% endif %}
@@ -233,7 +277,7 @@
             {% if expenditures %}
             {% for expenditure in expenditures %}
             <tr class="transaction-entry">
-                <td colspan="2">{{expenditure.group.name}}
+                <td colspan="3">{{expenditure.group.name}}
                     {% if expenditure.detail %}- {{expenditure.detail}}{% endif %}
                 </td>
                 <td class="text-right">{{expenditure.amount|e2b_digit|ezynumber}}</td>
@@ -244,8 +288,9 @@
             {% endfor %}
             {% endif %}
             
+            <!-- উত্তোলন -->
             <tr {% if withdraws.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">উত্তোলন
+                <th colspan="5" class="group-label">উত্তোলন
                     {% if can_change %}
                     <a href="{% url 'withdraw' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
                     {% endif %}
@@ -254,7 +299,7 @@
             {% if withdraws %}
             {% for obj in withdraws %}
             <tr class="transaction-entry">
-                <td colspan='3'>
+                <td colspan='4'>
                     <div class='row'>
                         <div class="col-12"><u>{{obj.owner.name}}:</u></div>
                         {% for withdraw in obj.withdraws %}
@@ -270,13 +315,14 @@
             </tr>
             {% endfor %}
             <tr class="subtotal">
-                <td colspan="3" class="cp-3 text-right">মোটঃ</td>
+                <td colspan="4" class="cp-3 text-right">মোটঃ</td>
                 <td class="text-right">{{total_withdraws|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
 
+            <!-- বাকি বিক্রয় -->
             <tr {% if duesells.count == 0 %}class="d-print-none"{% endif %}>
-                <th colspan="4" class="group-label">বাকি বিক্রয়
+                <th colspan="5" class="group-label">বাকি বিক্রয়
                     {% if can_change %}
                     <a href="{% url 'duesell' date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
                     {% endif %}
@@ -285,7 +331,7 @@
             {% if duesells %}
             {% for obj in duesells %}
             <tr class="transaction-entry">
-                <td colspan="2">
+                <td colspan="3">
                     {{obj.customer}} - 
                     {% for duesell in obj.due_sells %}
                     {% if duesell.product.type == 'Pack' %}
@@ -302,8 +348,34 @@
             </tr>
             {% endfor %}
             {% endif %}
+
+            <!-- হাওলাদ -->
+            {% if lended_loans or refund_borrowed_loans %}
+            <tr {% if lended_loans.count == 0 and refund_borrowed_loans == 0 %}class="d-print-none"{% endif %}>
+                <th colspan="5" class="group-label">হাওলাদ</th>
+            </tr>
+            {% for loan in lended_loans %}
+            <tr class="transaction-entry">
+                <td colspan="3">হাওলাদ প্রদান - {{loan.borrower.name}}</td>
+                <td class="text-right">{{loan.amount|e2b_digit|ezynumber}}</td>
+                {% if forloop.first %}
+                <td rowspan="{{lended_loans.count}}" class="subtotal text-right align-bottom">{{total_lended_loan|e2b_digit|ezynumber}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% for refund in refund_borrowed_loans %}
+            <tr class="transaction-entry">
+                <td colspan="3">গৃহীত হাওলাদ পরিশোধ - {{refund.loan.lender.name}}</td>
+                <td class="text-right">{{refund.amount|e2b_digit|ezynumber}}</td>
+                {% if forloop.first %}
+                <td rowspan="{{refund_borrowed_loans.count}}" class="subtotal text-right align-bottom">{{total_refund_borrowed_loan|e2b_digit|ezynumber}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% endif %}
+
             <tr>
-                <th colspan="3" class="cp-3 text-right">সর্বমোটঃ</th>
+                <th colspan="4" class="cp-3 text-right">সর্বমোটঃ</th>
                 <th class="text-right">{{total_credit|e2b_digit|ezynumber}}</th>
             </tr>
         </table>

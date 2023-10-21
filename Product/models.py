@@ -1,8 +1,8 @@
-from typing import Iterable, Optional
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 import datetime
+from Transaction.functions import last_balance_date
 
 class Product(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name="মালের নাম")
@@ -20,6 +20,11 @@ class Product(models.Model):
 
     class Meta:
         ordering = ['type','name','capacity']
+    
+    @property
+    def last_rate(self):
+        rates = Rate.objects.filter(product=self.pk).order_by('date')
+        if rates: return rates.last()
     
     def get_purchase_rate(self,date=datetime.date.today()):
         rates = Rate.objects.filter(product=self.pk, date__lte=date).order_by('date')
@@ -97,6 +102,19 @@ class Purchase(models.Model):
 
     class Meta:
         ordering = ['-date']
+
+    @property
+    def last_rate(self):
+        rates = Rate.objects.order_by('-date').filter(product=self.product, date__lte=self.date)
+        last_rate = rates.first().purchase_rate if rates else 0
+        return last_rate
+
+    @property
+    def rate_status(self):
+        status = 'same'
+        if self.last_rate < self.rate: status = 'up'
+        elif self.last_rate > self.rate: status = 'down'
+        return status
 
     def __str__(self):
         return f"Date: {self.date}, Name: {self.product.name}, Amount: {self.amount}"

@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'Revenue',
     'Transaction',
     'Ledger',
+    'Loan',
 ]
 
 MIDDLEWARE = [

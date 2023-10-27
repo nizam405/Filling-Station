@@ -41,6 +41,9 @@
         <td>{{ sln|e2b_digit }}</td>
         <td class='text-left'>{{object.name}}</td>
         <td class='d-print-none'>
+            <a href="{% url 'lended-loan-detail' pk=object.pk %}" class="btn btn-sm btn-light py-0">
+                <i class="bi bi-eye"></i>
+            </a>
             <a href="{% url 'update-borrower' pk=object.pk %}" class="btn btn-sm btn-light py-0">
                 <i class="bi bi-pencil-square"></i>
             </a>

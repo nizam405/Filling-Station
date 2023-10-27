@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Multi Add/Delete Balance{% endblock title %}
+ 
+{% block style %}
+<style>
+    .bootstrap4-multi-input div.col-4 {
+        padding: 0;
+    }
+
+    select, #buttons button, #buttons a {
+        border-radius:0rem;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load bootstrap4 %}
+{% if date %}
+<a href="{% url 'daily-transactions' date %}" class="btn btn-info mb-3 eng">
+    <i class="bi bi-chevron-left pr-2"></i>List
+</a>
+{% else %}
+<a href="{% url 'cashbalance-list' %}" class="btn btn-info mb-3 eng">
+    <i class="bi bi-chevron-left pr-2"></i>List
+</a>
+{% endif %}
+<h3>ব্যালেন্স নিয়ন্ত্রন করুন</h3>
+<form action="" method="post" class="row">
+    {% csrf_token %}
+    <div class="col-8">
+        {% bootstrap_field form.from_date layout='horizontal' field_class='eng col-md-9' %}
+    </div>
+    <div class="col-4 eng">
+        {% bootstrap_field form.action layout='horizontal' %}
+    </div>
+    <div class="col-8">
+        {% bootstrap_field form.to_date layout='horizontal' field_class='eng col-md-9' %}
+    </div>
+    <div class="col-4">
+        {% bootstrap_button "Go" button_type="submit" button_class="btn-primary btn-block eng" %}
+    </div>
+</form>
+
+{% endblock main %}

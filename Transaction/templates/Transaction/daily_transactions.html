@@ -102,7 +102,16 @@
                 <td class="eng">{{obj.product.name}}</td>
                 <td class="text-right">{{obj.product.capacity|floatformat:-2|e2b_digit|ezynumber}} লিঃ &times; {{obj.quantity|floatformat:-2|e2b_digit|ezynumber}} </td>
                 {% endif %}
-                <td class="text-right">{{obj.rate|floatformat:-2|e2b_digit|ezynumber}}</td>
+                <td class="text-right">
+                    <span class='d-print-none'>
+                        {% if obj.rate_status == 'up' %}({{obj.prev_rate|floatformat:-2|e2b_digit|ezynumber}})
+                        <i class='bi bi-caret-up-fill text-warning'></i>
+                        {% elif obj.rate_status == 'down' %}({{obj.prev_rate|floatformat:-2|e2b_digit|ezynumber}})
+                        <i class='bi bi-caret-down-fill text-warning'></i>
+                        {% endif %}
+                    </span>
+                    {{obj.rate|floatformat:-2|e2b_digit|ezynumber}}
+                </td>
                 <td class="text-right">{{obj.amount|floatformat:-2|e2b_digit|ezynumber}}</td>
                 {% if forloop.first %}
                 <td rowspan="{{sells.count}}" class="subtotal text-right align-bottom">{{total_sell|e2b_digit|ezynumber}}</td>
@@ -250,13 +259,13 @@
                 {% endif %}
                 <td class="text-right">
                     <span class='d-print-none'>
-                        {% if obj.rate_status == 'up' %}({{obj.last_rate|floatformat:-2|e2b_digit|ezynumber}})
+                        {% if obj.rate_status == 'up' %}({{obj.prev_rate|floatformat:-2|e2b_digit|ezynumber}})
                         <i class='bi bi-caret-up-fill text-warning'></i>
-                        {% elif obj.rate_status == 'down' %}({{obj.last_rate|floatformat:-2|e2b_digit|ezynumber}})
+                        {% elif obj.rate_status == 'down' %}({{obj.prev_rate|floatformat:-2|e2b_digit|ezynumber}})
                         <i class='bi bi-caret-down-fill text-warning'></i>
                         {% endif %}
-                        {{obj.rate|floatformat:-2|e2b_digit|ezynumber}}
                     </span>
+                    {{obj.rate|floatformat:-2|e2b_digit|ezynumber}}
                 </td>
                 <td class="text-right">{{obj.amount|floatformat:-2|e2b_digit|ezynumber}}</td>
                 {% if forloop.first %}

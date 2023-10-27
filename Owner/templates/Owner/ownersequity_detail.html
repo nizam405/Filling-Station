@@ -2,7 +2,6 @@
 {% block title %}{{owner.name}} এর মালিকানা স্বত্ব{% endblock title %}
 {% block style %}
 <style>
-    .full-details {display: none;}
     #filter select, #buttons button, #buttons a {
         border-radius:0rem;
     }
@@ -50,16 +49,16 @@
     <tr>
         <td>১ {{prev_oe.month|e2b_month}}, {{prev_oe.year|e2b_digit}}</td>
         <td colspan="2">প্রারম্ভিক মূলধন</td>
-        <td>{{prev_oe.amount|floatformat:-2|e2b_digit|ezynumber}}/=</td>
+        <td>{{prev_oe.amount|floatformat:-2|e2b_digit|ezynumber}}</td>
     </tr>
     {% if investments %}
     {% for investment in investments %}
     <tr>
         <td>{{investment.date|e2b_date}}</td>
-        <td>মূলধন - {{investment.detail}}</td>
+        <td>অরিরিক্ত মূলধন{% if investment.detail %} - {{investment.detail}}{% endif %}</td>
         <td>{{investment.amount|e2b_digit|ezynumber}}</td>
         {% if forloop.first %}
-        <td rowspan="{{investments.count}}">{{total_investment|e2b_digit|ezynumber}}/=</td>
+        <td rowspan="{{investments.count}}">{{total_investment|e2b_digit|ezynumber}}</td>
         {% endif %}
     </tr>
     {% endfor %}
@@ -68,7 +67,7 @@
     <tr>
         <td></td>
         <td colspan="2">মুনাফা</td>
-        <td>{{current_oe.profit|floatformat:-2|e2b_digit|ezynumber}}/=</td>
+        <td>{{current_oe.profit|floatformat:-2|e2b_digit|ezynumber}}</td>
     </tr>
     <tr>
         <th colspan="4" class="text-left">বাদঃ উত্তোলনসমূহ</th>
@@ -79,21 +78,21 @@
         <td>
             {% for item in row.wds %}
                 <div class="float-left">{% if item.detail %}{{item.detail}}{% endif %}</div>
-                <div class="float-right">{% if item.amount %}{{item.amount|e2b_digit|ezynumber}}/={% endif %}</div>
+                <div class="float-right">{% if item.amount %}{{item.amount|e2b_digit|ezynumber}}{% endif %}</div>
                 <div class="clearfix"></div>
             {% endfor %}
         </td>
-        <td class="align-bottom">{% if row.total %}{{row.total|e2b_digit|ezynumber}}/={% endif %}</td>
+        <td class="align-bottom">{% if row.total %}{{row.total|e2b_digit|ezynumber}}{% endif %}</td>
         {% if forloop.first %}
         <td class="align-bottom" rowspan="{{wd_rowspan}}">
-            ({% if total_withdraw %}{{total_withdraw|e2b_digit|ezynumber}}{% endif %}/=)
+            ({% if total_withdraw %}{{total_withdraw|e2b_digit|ezynumber}}{% endif %})
         </td>
         {% endif %}
     </tr>
     {% endfor %}
     <tr>
         <th colspan="3">বর্তমান মালিকানা স্বত্বঃ</th>
-        <th>{{current_oe.amount|floatformat:-2|e2b_digit|ezynumber}}/=</th>
+        <th>{{current_oe.amount|floatformat:-2|e2b_digit|ezynumber}}</th>
     </tr>
 </table>
 

@@ -176,7 +176,7 @@
             </tr>
             {% if remaining_borrowed_loan %}
             <tr>
-                <td>পাওনাদার - হাওলাদ</td>
+                <td>পাওনাদার - গৃহীত হাওলাদ</td>
                 <td>{{remaining_borrowed_loan|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
@@ -214,7 +214,7 @@
             </tr>
             {% if remaining_lended_loan %}
             <tr>
-                <td>দেনাদার - হাওলাদ</td>
+                <td>দেনাদার - প্রদত্ত হাওলাদ</td>
                 <td>{{remaining_lended_loan|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}

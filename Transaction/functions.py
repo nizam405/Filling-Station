@@ -1,13 +1,22 @@
+import datetime
+from django.db.models import Sum
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+
 from .models import CashBalance
-from datetime import timedelta
+from Core.choices import last_day_of_month
+
+def first_balance_date():
+    obj = CashBalance.objects.order_by('date').first()
+    return obj.date
 
 def last_balance_date():
-    obj = CashBalance.objects.order_by('-date').first()
+    obj = CashBalance.objects.order_by('date').last()
     return obj.date
 
 def next_to_last_balance_date():
     last = last_balance_date()
-    return last + timedelta(days=1)
+    return last + datetime.timedelta(days=1)
 
 def get_current_month():
     date = last_balance_date()
@@ -16,12 +25,52 @@ def get_current_month():
 
 def get_prev_month():
     current = get_current_month()
-    prev_month = current - timedelta(days=1)
+    prev_month = current - datetime.timedelta(days=1)
     prev_month.replace(day=1)
     return prev_month
 
 def get_next_month():
     demo = get_current_month().replace(day=25)
-    demo = demo + timedelta(days=10)
+    demo = demo + datetime.timedelta(days=10)
     next_month = demo.replace(day=1)
     return next_month
+
+def save_cashbalance(date:datetime.date):
+    from Product.models import Sell, Purchase
+    from Revenue.models import Revenue
+    from Expenditure.models import Expenditure
+    from Customer.models import DueCollection, DueSell
+    from Owner.models import Investment, Withdraw
+    from Loan.models import BorrowLoan, LendLoan, RefundBorrowedLoan, RefundLendedLoan
+    
+    prev_date = date - datetime.timedelta(days=1)
+    prev_balance = None
+    try:
+        prev_balance = CashBalance.objects.get(date=prev_date)
+    except: pass
+    if prev_balance:
+        # Debit
+        sell = Sell.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        revenue = Revenue.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        due_collection = DueCollection.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        investment = Investment.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        borrowed_loan = BorrowLoan.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        refund_lended_loan = RefundLendedLoan.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        # Credit
+        purchase = Purchase.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        expenditure = Expenditure.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        withdraw = Withdraw.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        due_sell = DueSell.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        lended_loan = LendLoan.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        refund_borrowed_loan = RefundBorrowedLoan.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        # Balance
+        balance = prev_balance.amount
+        balance += sell + revenue + due_collection + investment + borrowed_loan + refund_lended_loan
+        balance -= purchase + expenditure + withdraw + due_sell + lended_loan + refund_borrowed_loan
+        obj, created = CashBalance.objects.update_or_create(
+            date=date, defaults={'amount':balance}
+            )
+
+        if date == last_day_of_month(date.year, date.month):
+            return redirect(reverse_lazy('save-ledger',kwargs={'date':date}))
+

@@ -34,7 +34,9 @@
         <td><a href="{% url 'daily-transactions' date=loan_data.loan.date %}">
             {{loan_data.loan.date|e2b_date}}</a>
         </td>
-        <td>{{loan_data.loan.lender.name}}</td>
+        <td><a href="{% url 'borrowed-loan-detail' pk=loan_data.loan.lender.pk %}">
+            {{loan_data.loan.lender.name}}</a>
+        </td>
         <td class="text-right">{{loan_data.loan.amount|e2b_digit|ezynumber}}</td>
         <td class="text-right">({{loan_data.loan.refund_amount|e2b_digit|ezynumber}})</td>
         <td class="text-right" rowspan="{{loan_data.refunds|length|add:1}}">
@@ -107,7 +109,8 @@
         <td><a href="{% url 'daily-transactions' date=loan_data.loan.date %}">
             {{loan_data.loan.date|e2b_date}}</a>
         </td>
-        <td>{{loan_data.loan.borrower.name}}</td>
+        <td><a href="{% url 'lended-loan-detail' pk=loan_data.loan.borrower.pk %}">
+            {{loan_data.loan.borrower.name}}</td></a>
         <td class="text-right">{{loan_data.loan.amount|e2b_digit|ezynumber}}</td>
         <td class="text-right">({{loan_data.loan.refund_amount|e2b_digit|ezynumber}})</td>
         <td class="text-right" rowspan="{{loan_data.refunds|length|add:1}}">

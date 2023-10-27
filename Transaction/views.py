@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-import datetime, calendar
+import datetime
 from django.views.generic.base import TemplateView
 from django.views.generic import ListView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
 from django.db.models import Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -14,8 +14,9 @@ from Revenue.models import Revenue
 from Owner.models import Withdraw, Owner, Investment
 from Product.models import Product
 from Loan.models import BorrowLoan, LendLoan, RefundLendedLoan, RefundBorrowedLoan
-from .forms import DateForm, CashBalanceForm, CashBalanceForm2
+from .forms import DateForm, CashBalanceForm, CashBalanceForm2, CashBalanceControlForm
 from .models import CashBalance
+from .functions import save_cashbalance, last_balance_date
 from Core.choices import last_day_of_month
 
 class DailyTransactionView(LoginRequiredMixin,TemplateView):
@@ -159,7 +160,6 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         context['total_lended_loan'] = lended_loans.aggregate(Sum('amount'))['amount__sum']
         context['refund_borrowed_loans'] = refund_borrowed_loans
         context['total_refund_borrowed_loan'] = refund_borrowed_loans.aggregate(Sum('amount'))['amount__sum']
-
         
         # Balance B/F
         balances = CashBalance.objects.order_by('date').all()
@@ -232,7 +232,7 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
 class CashBalanceListView(LoginRequiredMixin,ListView):
     model = CashBalance
     ordering = ['-date']
-    paginate_by = 20
+    paginate_by = 30
 
 class CashBalanceCreateView(LoginRequiredMixin,CreateView):
     model = CashBalance
@@ -258,4 +258,30 @@ class CashBalanceDeleteView(LoginRequiredMixin,DeleteView):
     model = CashBalance
     success_url = reverse_lazy('cashbalance-list')
     
-   
+class CashBalanceControlView(LoginRequiredMixin, FormView):
+    form_class = CashBalanceControlForm
+    template_name = 'Transaction/cashbalance_control_form.html'
+    success_url = reverse_lazy('daily-transactions')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        date = last_balance_date
+        kwargs['initial'] = {'from_date':date, 'to_date':date}
+        return kwargs
+
+    def form_valid(self, form):
+        from_date = form.cleaned_data['from_date']
+        to_date = form.cleaned_data['to_date']
+        action = form.cleaned_data['action']
+        date = from_date
+        if action == 'save':
+            while date <= to_date:
+                save_cashbalance(date)
+                date += datetime.timedelta(days=1)
+        elif action == 'delete':
+            queryset = CashBalance.objects.filter(date__gte=from_date, date__lte=to_date).order_by('-date')
+            for obj in queryset:
+                obj.delete()
+
+        return super().form_valid(form)
+    

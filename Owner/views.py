@@ -1,16 +1,18 @@
+from typing import Any
 from django.shortcuts import render, redirect
 from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView
-from django.views.generic.edit import CreateView, DeleteView
+from django.views.generic.edit import CreateView, DeleteView, FormView
 from django.db.models import Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 
 from .models import Owner, Withdraw, Investment, OwnersEquity, FixedAsset
-from .forms import WithdrawForm, InvestmentForm, OwnersEquityForm, FixedAssetForm
+from .forms import WithdrawForm, InvestmentForm, OwnersEquityForm, FixedAssetForm, OwnersEquityFilter
 import datetime
 from Core.choices import get_prev_month, last_day_of_month, all_dates_in_month
+from Ledger.choices import currentYear
 from Transaction.models import CashBalance
     
 # Withdraw
@@ -42,20 +44,37 @@ def WithdrawFormsetView(request, date):
     return render(request,template,context)
     
 # Owners Equity
-class OwnersEquityView(LoginRequiredMixin,ListView):
+class OwnersEquityView(LoginRequiredMixin, TemplateView):
     model = OwnersEquity
     template_name = 'Owner/ownersequity.html'
-    paginate_by = 24
+    # paginate_by = 24
 
     def get(self, request, *args, **kwargs):
         if not CashBalance.objects.exists():
             return redirect('create-cashbalance')
         
         return super().get(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs: Any):
+        context = super().get_context_data(**kwargs)
+        context['filter_form'] = OwnersEquityFilter(self.request.GET or None)
 
-    def get_queryset(self):
         queryset = self.model.objects.all().order_by('year','month')
+        if 'owner' in self.request.GET:
+            owner = self.request.GET['owner']
+            if owner: queryset = queryset.filter(owner=owner)
+        year = currentYear
+        if 'year' in self.request.GET:
+            if self.request.GET['year']: year = self.request.GET['year']
+        queryset = queryset.filter(year=year)
+        context['year'] = year
+
         object_list = []
+        total = {
+                'profit': 0,
+                'withdraw': 0,
+                'investment': 0
+            }
         for qs in queryset:
             month = int(qs.month)
             year = int(qs.year)
@@ -73,23 +92,29 @@ class OwnersEquityView(LoginRequiredMixin,ListView):
                 to_date = cashbalances.order_by('date').last().date
                 
                 withdraws = Withdraw.objects.filter(owner=qs.owner, date__gte=from_date, date__lte=to_date)
-                withdraw_amount = withdraws.aggregate(Sum('amount'))['amount__sum']
+                withdraw_amount = withdraws.aggregate(Sum('amount'))['amount__sum'] or 0
                 investments = Investment.objects.filter(owner=qs.owner, date__gte=from_date, date__lte=to_date)
-                investment_amount = investments.aggregate(Sum('amount'))['amount__sum']
+                investment_amount = investments.aggregate(Sum('amount'))['amount__sum'] or 0
                 obj = {
                     'month': qs.month, 
                     'year': qs.year, 
                     'owner': qs.owner,
                     'prev_oe': prev_oe.amount or 0,
                     'profit': qs.profit or 0,
-                    'withdraw': withdraw_amount or 0,
-                    'investment': investment_amount or 0,
+                    'withdraw': withdraw_amount,
+                    'investment': investment_amount,
                     'current_oe': qs.amount or 0,
                     'share': qs.share,
                     'prev_share': prev_oe.share
                 }
                 object_list.insert(0,obj)
-        return object_list
+                total['profit'] += qs.profit or 0
+                total['withdraw'] += withdraw_amount
+                total['investment'] += investment_amount
+        context['object_list'] = object_list
+        total['remaining'] = total['profit']+total['investment']-total['withdraw']
+        context['total'] = total
+        return context
 
 class OwnersEquityDetailView(LoginRequiredMixin,TemplateView):
     template_name = 'Owner/ownersequity_detail.html'

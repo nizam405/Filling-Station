@@ -1,20 +1,45 @@
 {% extends 'base.html' %}
 {% block title %}মূলধন হিস্টোরি{% endblock title %}
+{% block style %}
+<style>
+    .flex-evenly {
+        display: flex;
+        justify-content: space-between;
+    }
+    .flex-evenly .right {margin-left: auto}
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap4 %}
 {% block main %}
 
-{% load extra_tags %}
 
 <div class="text-center">
     <h3 class="d-none d-print-block">প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
-    <h3>মূলধন হিস্টোরি</h3>
+    <h3>বাৎসরিক মালিকানা স্বত্ব - {{year|e2b_digit}}</h3>
 </div>
-<div class="text-info d-print-none">চলতি মাসের তথ্য আপডেট করার জন্য 
-    <a href="{% url 'incomestatement' %}">আয়-ব্যয় বিবরণীতে যান।</a>
+<div class="d-print-none">
+    {% if filter_form %}
+    <form method="get" class="row" id="filter_form">
+        <div class="col-md-6 col-lg-4">{% bootstrap_field filter_form.owner layout='horizontal' %}</div>
+        <div class="col-md-3">{% bootstrap_field filter_form.year layout='horizontal' %}</div>
+        <div class="col-md-3" id="buttons">
+            <button type="submit" class='btn btn-success text-light'>ফলাফল দেখুন
+                <i class='bi bi-eye'></i>
+            </button>
+        </div>
+    </form>
+    {% endif %}
 </div>
-<div class="text-right d-print-none">
-    <a href="{% url 'create-investment' %}" class="mb-2 text-success">
-        <i class="bi bi-plus-circle btn p-0 d-print-none"></i> মূলধন যুক্ত করুন
-    </a>
+<div class='flex-evenly'>
+    <div class="text-info d-print-none">চলতি মাসের তথ্য আপডেট করার জন্য 
+        <a href="{% url 'incomestatement' %}">আয়-ব্যয় বিবরণীতে যান।</a>
+    </div>
+    <div class="right d-print-none">
+        <a href="{% url 'create-investment' %}" class="mb-2 text-success">
+            <i class="bi bi-plus-circle btn p-0 d-print-none"></i> মূলধন যুক্ত করুন
+        </a>
+    </div>
 </div>
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
@@ -32,7 +57,7 @@
     {% for obj,sln in object_list|zip %}
     <tr>
         <td>{{ sln|e2b_digit }}</td>
-        <td>{{obj.month|e2b_month}}, {{obj.year|e2b_digit}}</td>
+        <td class='text-right'>{{obj.month|e2b_month}}, {{obj.year|e2b_digit}}</td>
         <td class="text-left">
             <a href="{% url 'ownersequity-details' pk=obj.owner.pk month=obj.month year=obj.year %}">{{obj.owner.name}}</a>
         </td>
@@ -64,12 +89,19 @@
         </td>
     </tr>
     {% endfor %}
+    <tr>
+        <th colspan='4' class='text-right'>মোটঃ</th>
+        <th>{{total.profit|floatformat:-2|e2b_digit|ezynumber}}</th>
+        <th>{{total.withdraw|floatformat:-2|e2b_digit|ezynumber}}</th>
+        <th>{{total.investment|floatformat:-2|e2b_digit|ezynumber}}</th>
+        <th colspan='2'>উক্ত বছরে অবশিষ্টঃ {{total.remaining|floatformat:-2|e2b_digit|ezynumber}}</th>
+    </tr>
     {% else %}
     <tr><td colspan="5" class="text-seocndary text-center">কোনো মূলধন তালিকাভুক্ত করা হয়নি!</td><tr>
     {% endif %}
 </table>
 
-<nav>
+{% comment %} <nav>
     <ul class="pagination eng">
         {% if page_obj.has_previous %}
         <li class="page-item">
@@ -95,6 +127,6 @@
             </li>
         {% endif %}
     </ul>
-</nav>
+</nav> {% endcomment %}
 
 {% endblock main %}

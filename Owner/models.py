@@ -60,7 +60,7 @@ class Investment(models.Model):
 class OwnersEquity(models.Model):
     month = models.IntegerField(choices=MONTHS, default=currentMonth, verbose_name="মাস")
     year = models.IntegerField(choices=YEAR, default=currentYear, verbose_name="বছর")
-    owner = models.ForeignKey(to=Owner, on_delete=models.SET_NULL, null=True, verbose_name='মালিক')
+    owner = models.ForeignKey(to=Owner, on_delete=models.CASCADE, verbose_name='অংশীদারের নাম')
     profit = models.FloatField(default=0, verbose_name="মুনাফা")
     amount = models.FloatField(null=True, blank=False, verbose_name="পরিমাণ")
     share = models.FloatField(default=0, verbose_name="শতাংশ")
@@ -71,15 +71,6 @@ class OwnersEquity(models.Model):
 
     def __str__(self):
         return f"{self.month}, {self.year} - {self.owner} - {self.amount}"
-    
-    # def save(self, *args, **kwargs):
-    #     if self.share == 0:
-    #         profit = Profit.objects.get(month=self.month, year=self.year)
-    #         withdraw = Withdraw.objects.filter(date__month=self.month, date__year=self.year, owner=self.owner)
-    #         investment = Investment.objects.filter(date__month=self.month, date__year=self.year, owner=self.owner)
-    #         pre_month_year, pre_month = get_prev_month(self.year,self.month)
-    #         pre_oe = OwnersEquity.objects.filter(month=pre_month, year=pre_month_year, owner=self.owner)
-    #     super().save(*args, **kwargs)
 
 class FixedAsset(models.Model):
     date = models.DateField(default=timezone.now, verbose_name='তারিখ')

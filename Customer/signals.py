@@ -19,3 +19,4 @@ def create_customer_balance(sender, instance, created, **kwargs):
         cashbalance = CashBalance.objects.order_by('date').last()
         year, month = get_prev_month(cashbalance.date.year,cashbalance.date.month)
         GroupofCompanyBalance.objects.create(month=month, year=year, customer=instance, amount=0)
+        

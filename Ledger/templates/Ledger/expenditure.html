@@ -15,11 +15,11 @@
 
 <div class="d-print-none">
     {% if filter_form %}
-    <form method="get" class="row" id="filter">
-        <div class="p-2 ml-2">হিসাবের মাস</div>
-        <div class="col-md-3 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
-        <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
-        <div class="col-md-3 p-0" id="buttons">
+    <form method="get" class="d-flex" id="filter">
+        <div class="py-2 mr-2">হিসাবের মাস</div>
+        <div>{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div>{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div id="buttons">
             <button type="submit" class='btn' id='go-btn'>
                 <i class='bi bi-arrow-right-square-fill text-success'></i>
             </button>
@@ -33,8 +33,7 @@
 <div>
     <div class="text-center">
         <h3 class="d-none d-print-block">প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
-        <h3>ব্যয়সমূহ</h3>
-        <h4>{% if month %}{{month|e2b_month}}, {{year|e2b_digit}} এর {% endif %}খতিয়ান</h4>
+        <h3>ব্যয়সমূহ - {{month|e2b_month}}, {{year|e2b_digit}}</h3>
         {% if not status %}
         <div class='text-danger'>({{to_date|e2b_date}} তারিখ পর্যন্ত)</div>
         {% endif %}
@@ -51,20 +50,20 @@
         {% for expenditure in data %}
         <tr>
             <td>
-                <a href="{% url 'daily-transactions' date=expenditure.date %}">{{expenditure.date|e2b_date}}</a>
+                <a class='nowrap' href="{% url 'daily-transactions' date=expenditure.date %}">{{expenditure.date|e2b_date}}</a>
             </td>
             {% for rg in expenditure.groups %}
-            <td class="text-right">{% if rg > 0 %}{{rg|e2b_digit|ezynumber}}/={% endif %}</td>
+            <td class="text-right">{% if rg > 0 %}{{rg|e2b_digit|ezynumber}}{% endif %}</td>
             {% endfor %}
-            <td class="text-right">{{expenditure.total|e2b_digit|ezynumber}}/=</td>
+            <td class="text-right">{{expenditure.total|e2b_digit|ezynumber}}</td>
         </tr>
         {% endfor %}
         <tr class="text-right">
             <th>মোটঃ</th>
             {% for total in totals.values %}
-            <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
+            <th>{% if total %}{{total|e2b_digit|ezynumber}}{% endif %}</th>
             {% endfor %}
-            <th>{% if total %}{{total|e2b_digit|ezynumber}}/={% endif %}</th>
+            <th>{% if total %}{{total|e2b_digit|ezynumber}}{% endif %}</th>
         </tr>
     </table>
 </div>

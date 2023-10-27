@@ -1,11 +1,10 @@
-import datetime
 from typing import Any
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Prefetch
 
 from .models import (Lender, Borrower, BorrowLoan, RefundBorrowedLoan, LendLoan, RefundLendedLoan)
 from Transaction.functions import (
@@ -74,10 +73,9 @@ class LoanView(LoginRequiredMixin, TemplateView):
             )
         ).distinct()
         if borrowed_loans:
-            borrowed_loans.order_by("-date")
             result_set = []
             total_borrowed_loan_refund = 0
-            for loan in borrowed_loans:
+            for loan in borrowed_loans.order_by("-date"):
                 refunds = RefundBorrowedLoan.objects.filter(loan=loan)
                 total_borrowed_loan_refund += refunds.aggregate(Sum('amount'))['amount__sum'] or 0
                 loan_dict = {'loan':loan,'refunds':refunds}
@@ -99,10 +97,9 @@ class LoanView(LoginRequiredMixin, TemplateView):
             )
         ).distinct()
         if lended_loans:
-            lended_loans.order_by("-date")
             result_set = []
             total_lended_loan_refund = 0
-            for loan in lended_loans:
+            for loan in lended_loans.order_by("-date"):
                 refunds = RefundLendedLoan.objects.filter(loan=loan)
                 total_lended_loan_refund += refunds.aggregate(Sum('amount'))['amount__sum'] or 0
                 loan_dict = {'loan':loan,'refunds':refunds}
@@ -117,6 +114,72 @@ class LoanView(LoginRequiredMixin, TemplateView):
             context['lended_loans'] = result_set
 
         return context
+
+class BorrowedLoanDetailView(LoginRequiredMixin, TemplateView):
+    model = Lender
+    loan_model = BorrowLoan
+    refund_model = RefundBorrowedLoan
+    template_name = "Loan/borrowed_loan_details.html" 
+
+    def get(self, request, *args, **kwargs):
+        if not CashBalance.objects.exists():
+            return redirect("daily-transactions")
+        return super().get(request, *args, **kwargs) 
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        lender = self.model.objects.get(pk=self.kwargs['pk'])
+        context['lender'] = lender
+        loans = self.loan_model.objects.filter(lender=lender)
+        if loans:
+            result_set = []
+            total_loan_refund = 0
+            for loan in loans.order_by("-date"):
+                refunds = self.refund_model.objects.filter(loan=loan)
+                total_loan_refund += refunds.aggregate(Sum('amount'))['amount__sum'] or 0
+                loan_dict = {'loan':loan,'refunds':refunds}
+                result_set.append(loan_dict)
+
+            context['loans'] = result_set
+            total_loan = loans.aggregate(Sum('amount'))['amount__sum']
+            context['total_loan'] = total_loan
+            context['total_loan_refund'] = total_loan_refund
+            context['total_loan_remaining'] = total_loan - total_loan_refund
+        
+        return context  
+
+class LendedLoanDetailView(LoginRequiredMixin, TemplateView):
+    model = Borrower
+    loan_model = LendLoan
+    refund_model = RefundLendedLoan
+    template_name = "Loan/lended_loan_details.html" 
+
+    def get(self, request, *args, **kwargs):
+        if not CashBalance.objects.exists():
+            return redirect("daily-transactions")
+        return super().get(request, *args, **kwargs) 
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        borrower = self.model.objects.get(pk=self.kwargs['pk'])
+        context['borrower'] = borrower
+        loans = self.loan_model.objects.filter(borrower=borrower)
+        if loans:
+            result_set = []
+            total_loan_refund = 0
+            for loan in loans.order_by("-date"):
+                refunds = self.refund_model.objects.filter(loan=loan)
+                total_loan_refund += refunds.aggregate(Sum('amount'))['amount__sum'] or 0
+                loan_dict = {'loan':loan,'refunds':refunds}
+                result_set.append(loan_dict)
+
+            context['loans'] = result_set
+            total_loan = loans.aggregate(Sum('amount'))['amount__sum']
+            context['total_loan'] = total_loan
+            context['total_loan_refund'] = total_loan_refund
+            context['total_loan_remaining'] = total_loan - total_loan_refund
+        
+        return context  
 
 # হাওলাদ গ্রহণ
 class BorrowLoanCreateView(LoginRequiredMixin, CreateView):

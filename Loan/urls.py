@@ -3,7 +3,7 @@ from Core.converters import DateConverter
 register_converter(DateConverter, 'date')
 
 from .views import (
-    LoanView, 
+    LoanView, BorrowedLoanDetailView, LendedLoanDetailView,
     LenderView, LenderUpdateView, 
     BorrowerView, BorrowerUpdateView,
     BorrowLoanCreateView, BorrowLoanUpdateView, BorrowLoanDeleteView,
@@ -16,12 +16,18 @@ urlpatterns = [
     path('', LoanView.as_view(), name='loan-dashboard'),
     path('lender/', include([
         path('', LenderView.as_view(), name='lender'),
-        path('<int:pk>/', LenderUpdateView.as_view(), name='update-lender'),
+        path('<int:pk>/', include([
+            path('detail/', BorrowedLoanDetailView.as_view(), name='borrowed-loan-detail'),
+            path('update/', LenderUpdateView.as_view(), name='update-lender'),
+        ])),
     ])),
     
     path('borrower/', include([
         path('', BorrowerView.as_view(), name='borrower'),
-        path('<int:pk>/', BorrowerUpdateView.as_view(), name='update-borrower'),
+        path('<int:pk>/', include([
+            path('detail/', LendedLoanDetailView.as_view(), name='lended-loan-detail'),
+            path('update/', BorrowerUpdateView.as_view(), name='update-borrower'),
+        ])),
     ])),
     path('borrowed-loan/', include([
         path('new/', BorrowLoanCreateView.as_view(), name='create-borrowed-loan'),

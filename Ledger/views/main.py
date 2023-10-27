@@ -83,8 +83,9 @@ class RevenueLedger(LoginRequiredMixin,TemplateView):
         dates = sorted(dates)
         
         data = []
-        # dates = all_dates_in_month(year,month)
-        revenue_groups = RevenueGroup.objects.all()
+        groups = revenues.values('group')
+        revenue_groups = list(set(RevenueGroup.objects.get(pk=group['group']) for group in groups))
+        revenue_groups = sorted(revenue_groups, key=lambda x:x.serial)
         context['revenue_groups'] = revenue_groups
         group_totals = {rg:0 for rg in revenue_groups}
         for day in dates:
@@ -178,8 +179,9 @@ class ExpenditureLedger(LoginRequiredMixin,TemplateView):
         dates = sorted(dates)
 
         data = []
-        # dates = all_dates_in_month(year,month)
-        expenditure_groups = ExpenditureGroup.objects.all()
+        groups = expenditures.values('group')
+        expenditure_groups = list(set(ExpenditureGroup.objects.get(pk=group['group']) for group in groups))
+        expenditure_groups = sorted(expenditure_groups, key=lambda x:x.serial)
         context['expenditure_groups'] = expenditure_groups
         group_totals = {rg:0 for rg in expenditure_groups}
         for day in dates:

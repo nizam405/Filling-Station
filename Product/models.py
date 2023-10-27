@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 import datetime
-from Transaction.functions import last_balance_date
+from Transaction.functions import last_balance_date, next_to_last_balance_date
 
 class Product(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name="মালের নাম")
@@ -58,7 +58,7 @@ class Product(models.Model):
 
 class Rate(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="মালের নাম")
-    date = models.DateField(default=timezone.now, verbose_name="কার্যকরের তারিখ (হইতে)", help_text="YYYY-MM-DD")
+    date = models.DateField(default=next_to_last_balance_date, verbose_name="কার্যকরের তারিখ (হইতে)", help_text="YYYY-MM-DD")
     purchase_rate = models.FloatField(default=0, verbose_name="একক প্রতি ক্রয়মুল্য")
     selling_rate = models.FloatField(default=0, verbose_name="একক প্রতি বিক্রয়মুল্য")
 
@@ -78,11 +78,7 @@ class Rate(models.Model):
                 self.purchase_rate = last_purchase_rate 
             if not self.pk and self.selling_rate == last_selling_rate and self.purchase_rate == last_purchase_rate:
                 update = False
-        # else:
-        #     if not self.selling_rate:
-        #         self.selling_rate = 0
-        #     elif not self.purchase_rate:
-        #         self.purchase_rate = 0
+
         if update:
             return super().save(*args, **kwargs)
 
@@ -93,7 +89,7 @@ class Rate(models.Model):
         return reverse("products")
 
 class Purchase(models.Model):
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=next_to_last_balance_date)
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল", 
         limit_choices_to={'active':True})
     quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
@@ -104,16 +100,16 @@ class Purchase(models.Model):
         ordering = ['-date']
 
     @property
-    def last_rate(self):
+    def prev_rate(self):
         rates = Rate.objects.order_by('-date').filter(product=self.product, date__lte=self.date)
-        last_rate = rates.first().purchase_rate if rates else 0
-        return last_rate
+        prev_rate = rates.first().purchase_rate if rates else 0
+        return prev_rate
 
     @property
     def rate_status(self):
         status = 'same'
-        if self.last_rate < self.rate: status = 'up'
-        elif self.last_rate > self.rate: status = 'down'
+        if self.prev_rate < self.rate: status = 'up'
+        elif self.prev_rate > self.rate: status = 'down'
         return status
 
     def __str__(self):
@@ -123,7 +119,7 @@ class Purchase(models.Model):
         return reverse("daily-transactions", kwargs={'date':self.date})
 
 class Sell(models.Model):
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=next_to_last_balance_date)
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE, verbose_name="মাল", 
         limit_choices_to={'active':True})
     quantity = models.FloatField(default=1, verbose_name="পরিমাণ")
@@ -133,6 +129,19 @@ class Sell(models.Model):
     class Meta:
         ordering = ['-date']
 
+    @property
+    def prev_rate(self):
+        rates = Rate.objects.order_by('-date').filter(product=self.product, date__lte=self.date)
+        prev_rate = rates.first().selling_rate if rates else 0
+        return prev_rate
+
+    @property
+    def rate_status(self):
+        status = 'same'
+        if self.prev_rate < self.rate: status = 'up'
+        elif self.prev_rate > self.rate: status = 'down'
+        return status
+
     def __str__(self):
         return f"Date: {self.date}, Name: {self.product.name}, Amount: {self.amount}"
     
@@ -140,7 +149,7 @@ class Sell(models.Model):
         return reverse("daily-transactions", kwargs={'date':self.date})
 
 class StorageReading(models.Model):
-    date = models.DateField(default=timezone.now, verbose_name="তারিখ")
+    date = models.DateField(default=last_balance_date, verbose_name="তারিখ")
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE, limit_choices_to={'need_rescale':True}, verbose_name="মাল")
     tank_deep = models.FloatField(null=True, blank=False, verbose_name="ট্যাংক ডিপ")
     lorry_load = models.FloatField(default=0, verbose_name="লোড")

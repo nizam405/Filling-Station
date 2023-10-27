@@ -4,6 +4,9 @@
 {% block main %}
 
 <h3 class='print-center'>দৈনিক হাতে নগদ</h3>
+<a href="{% url 'cashbalance-control' %}" class="btn btn-info mb-3">
+    <i class="bi bi-gear pr-2"></i>ব্যালেন্স নিয়ন্ত্রন করুন
+</a>
 {% if object_list %}
 <table class="table table-sm table-striped table-bordered text-center">
     <tr>
@@ -13,14 +16,16 @@
     </tr>
     {% for object in object_list %}
     <tr>
-        <td>{{object.date|e2b_date}}</td>
-        <td>{{object.amount|e2b_digit|ezynumber}}/=</td>
+        <td class='text-right'>
+            <a href="{% url "daily-transactions" object.date %}">{{object.date|e2b_date}}</a>
+        </td>
+        <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}/=</td>
         <td class='d-print-none'>
             <!-- queryset are sorted descending in view. So first means latest-->
             {% if object == object_list.first %}
             <form method='POST' action="{% url 'delete-cashbalance' pk=object.pk %}">
                 {% csrf_token %}
-                <button type="submit" class="btn"><i class="bi bi-trash text-danger"></i></button>
+                <button type="submit" class="btn btn-sm py-0"><i class="bi bi-trash text-danger"></i></button>
             </form>
             {% endif %}
         </td>

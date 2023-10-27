@@ -1,8 +1,20 @@
+
+2023-10-27
+-----------
+>> OwnersEquity Filter
+>> Update DailyStorageReading
+>> Delete/Save multiple Cashbalance at once
+>> Delete all balances when delete Cashbalance of last day of month
+>> Added Loan Detail View
+>> Added prev_rate and Indicator to sell in Daily transactions
+>> Removed unused groups of Revenue and Expenditure form RevenueLedger and ExpenditureLedger
+>> Minor changes on DateFilter (Bootstrap grid to d-flex), Ledger heading simplifications etc.
+
 2023-10-21
 -----------
 >> Added Loan Module
 >> Added Rate functionality in Daily transactions
->> Added Last Rate Update in Product Limits
+>> Added prev_rate and Indicator to purchase in Daily transactions
 >> Fixed difference in Income Statement
 >> Daily transactions "Save" is now "Save and next"
 >> Others minor changes

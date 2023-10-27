@@ -6,12 +6,11 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
 from .models import Product, Purchase, Sell, StorageReading, Rate
-from .forms import SellForm, PurchaseForm, StorageReadingForm
-from Transaction.models import CashBalance
+from .forms import SellForm, PurchaseForm, StorageReadingForm, RateForm
+from Transaction.functions import last_balance_date
 
 # Product
 class ProductView(LoginRequiredMixin, CreateView, ListView):
@@ -44,7 +43,7 @@ class ProductDeleteView(LoginRequiredMixin,DeleteView):
 class RateCreateView(LoginRequiredMixin, CreateView, ListView):
     model = Rate
     template_name = 'Product/rate.html'
-    fields = ['date','purchase_rate','selling_rate']
+    form_class = RateForm
 
     def get_product(self):
         product = Product.objects.get(pk=self.kwargs['product'])
@@ -67,7 +66,7 @@ class RateCreateView(LoginRequiredMixin, CreateView, ListView):
 class RateUpdateView(LoginRequiredMixin, UpdateView, ListView):
     model = Rate
     template_name = 'Product/rate.html'
-    fields = ['date','purchase_rate','selling_rate']
+    form_class = RateForm
 
     def get_product(self):
         product = Product.objects.get(pk=self.kwargs['product'])
@@ -102,7 +101,7 @@ class StorageReadingView(LoginRequiredMixin,CreateView, ListView):
     template_name = 'Product/storage.html'
     # fields = '__all__'
     form_class = StorageReadingForm
-    paginate_by = 20
+    paginate_by = 30
 
     def get_success_url(self):
         url = reverse_lazy('daily-product-storage')
@@ -112,28 +111,24 @@ class StorageReadingView(LoginRequiredMixin,CreateView, ListView):
 
     def get_initial(self):
         initial = super().get_initial()
-        if self.model.objects.exists():
-            date = self.model.objects.order_by('date').last().date
-            qs = self.model.objects.filter(date=date)
-            if qs.count() > 1:
-                date = date + datetime.timedelta(days=1)
-        elif 'date' in self.kwargs:
+        if 'date' in self.kwargs:
             date = self.kwargs['date']
-        initial.update({'date':date})
+            initial.update({'date':date})
         return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if 'date' in self.kwargs:
             context["date"] = self.kwargs['date']
-            context['last_bal_date'] = CashBalance.objects.order_by('date').last().date
+        context['last_bal_date'] = last_balance_date()
         return context
 
 class StorageReadingtUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = StorageReading
     template_name = 'Product/storage.html'
     success_url = reverse_lazy('daily-product-storage')
-    fields = '__all__'
+    # fields = '__all__'
+    form_class = StorageReadingForm
     
     def get_queryset(self):
         if 'date' in self.kwargs:

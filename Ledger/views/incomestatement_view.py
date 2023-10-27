@@ -12,7 +12,7 @@ from Ledger.forms import DateFilterForm
 from Transaction.models import CashBalance
 from Customer.models import DueSell, DueCollection
 from Owner.models import Withdraw, OwnersEquity, Owner, Investment, FixedAsset
-from Loan.models import BorrowLoan, LendLoan
+from Loan.models import BorrowLoan, LendLoan, RefundBorrowedLoan, RefundLendedLoan
 from .functions import get_products_info
 
 class IncomeStatementView(LoginRequiredMixin,TemplateView):
@@ -163,8 +163,11 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         dues -= due_collections.aggregate(Sum('amount'))['amount__sum'] if due_collections else 0
         context['dues'] = dues
         # দেনাদার - প্রদত্ত হাওলাদ এর বকেয়া
-        lended_loans = LendLoan.objects.filter(date__gte=from_date,date__lte=to_date)
-        remaining_lended_loan = sum([loan.remaining for loan in lended_loans])
+        lended_loans = LendLoan.objects.filter(date__lte=to_date)
+        lended_amount = lended_loans.aggregate(Sum('amount'))['amount__sum'] if lended_loans else 0
+        refund_lended_loans = RefundLendedLoan.objects.filter(date__lte=to_date)
+        refund_lended_loan_amount = refund_lended_loans.aggregate(Sum('amount'))['amount__sum'] if refund_lended_loans else 0
+        remaining_lended_loan = lended_amount - refund_lended_loan_amount
         context['remaining_lended_loan'] = remaining_lended_loan
         # স্থায়ী সম্পত্তি
         fixed_assets = FixedAsset.objects.all()
@@ -194,8 +197,11 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         context['withdraws'] = withdraw_amount
         context['rem_profit'] = net_profit - withdraw_amount
         # পাওনাদার - পাপ্ত হাওলাদ এর বকেয়া
-        borrowed_loans = BorrowLoan.objects.filter(date__gte=from_date,date__lte=to_date)
-        remaining_borrowed_loan = sum([loan.remaining for loan in borrowed_loans])
+        borrowed_loans = BorrowLoan.objects.filter(date__lte=to_date)
+        borrowed_amount = borrowed_loans.aggregate(Sum('amount'))['amount__sum'] if borrowed_loans else 0
+        refund_borrowed_loans = RefundBorrowedLoan.objects.filter(date__lte=to_date)
+        refund_borrowed_loan_amount = refund_borrowed_loans.aggregate(Sum('amount'))['amount__sum'] if refund_borrowed_loans else 0
+        remaining_borrowed_loan = borrowed_amount - refund_borrowed_loan_amount
         context['remaining_borrowed_loan'] = remaining_borrowed_loan
 
         amount_before_profit = capital_amount + remaining_borrowed_loan + investment_amount - withdraw_amount

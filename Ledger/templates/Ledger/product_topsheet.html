@@ -34,8 +34,7 @@
 
 <div class="text-center" id="header">
     <h3 class="d-none d-print-block">প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
-    <h4>খতিয়ান: {{month|e2b_month}},{{year|e2b_digit}}</h4>
-    <h4 class="text-center"><u>মজুদপণ্য</u></h4>
+    <h4>মজুদপণ্য (টপশিট) - {{month|e2b_month}},{{year|e2b_digit}}</h4>
     {% if not status %}
     <div class='text-danger'>({{to_date|e2b_date}} তারিখ পর্যন্ত)</div>
     {% endif %}
@@ -53,6 +52,7 @@
         <th>ক্রয়</th>
         <th>বিক্রয়</th>
         <th>সমাপনী মজুদ</th>
+        <th>দর</th>
         <th>সমাপনী মজুদের ক্রয়মুল্য</th>
         <th>মুনাফা</th>
         <th>ট্যাংক ডিপ+লোড</th>
@@ -71,6 +71,7 @@
         <td>{{row.sell_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
         <!-- অবশিষ্ট  মজুদ -->
         <td>{{row.ending_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+        <td>{{row.purchase_rate|floatformat:-2|e2b_digit|ezynumber}}</td>
         <td>{{row.ending_storage_amount|floatformat:-2|e2b_digit|ezynumber}}</td>
         <td {% if row.profit < 0 %}class='text-danger'{% endif %}>
             {{row.profit|floatformat:-2|e2b_digit|ezynumber}}
@@ -92,6 +93,7 @@
     <tr class="text-right font-weight-bold">
         <td colspan="7">মোট সমাপনী মজুদের মূল্যঃ</td>
         <td>{{total.ending_storage_amount|floatformat:-2|e2b_digit|ezynumber}}</td>
+        <td>{{total.total_profit|floatformat:-2|e2b_digit|ezynumber}}</td>
         <td colspan="2">
             {{total.diff_amount|floatformat:-2|e2b_digit|ezynumber}}
             <i class="bi 
@@ -103,6 +105,7 @@
     <tr class="text-right font-weight-bold">
         <td colspan='7'>(ব্যবধান সমন্বয় করে) মোট সমাপনী মজুদের মূল্যঃ</td>
         <td>{{total.actual_price|floatformat:-2|e2b_digit|ezynumber}}</td>
+        <td colspan="3"></td>
     </tr>
 </table>
 {% endblock main %}

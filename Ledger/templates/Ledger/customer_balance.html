@@ -75,7 +75,7 @@
             <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
                 <td>{{ sln|e2b_digit }}</td>
                 <td class="text-left">{{object.customer}}</td>
-                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}/={% endif %}</td>
+                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
                 <td class='d-print-none'>
                     <a href="{% url 'mark-baddebt' month=month year=year goc=1 cust_pk=object.customer.pk %}" class="p-1 nowrap">
                         <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
@@ -90,7 +90,7 @@
             <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
                 <td>{{ sln|e2b_digit }}</td>
                 <td class="text-left">{{object.customer}}</td>
-                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}/={% endif %}</td>
+                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
                 <td class='d-print-none'>
                     <a href="{% url 'mark-baddebt' month=month year=year cust_pk=object.customer.pk %}" class="p-1 nowrap">
                         <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
@@ -100,12 +100,12 @@
             {% endfor %}
             <tr class='text-right'>
                 <th colspan='2'>মোট চলতি বকেয়ার পরিমাণঃ</th>
-                <th>{{total_current_bal|e2b_digit|ezynumber}}/=</th>
+                <th>{{total_current_bal|e2b_digit|ezynumber}}</th>
             </tr>
             {% endif %}
         </table>
         {% endif %}
-        <h4>সর্বমোটঃ {{grand_total|e2b_digit|ezynumber}}/=</h4>
+        <h4>সর্বমোটঃ {{grand_total|e2b_digit|ezynumber}} টাকা</h4>
     </div>
     {% if goc_baddebts or cust_bad_debts %}
     <div class="col" id="bad-debts">
@@ -123,7 +123,7 @@
             <tr>
                 <td>{{ sln|e2b_digit }}</td>
                 <td class="text-left">{{object.customer}}</td>
-                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}/={% endif %}</td>
+                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
                 <td class='d-print-none'>
                     <a href="{% url 'mark-baddebt' month=month year=year goc=1 cust_pk=object.customer.pk unmark=1 %}" class="p-1 nowrap">
                         <i class="bi bi-arrow-left-square text-info"></i> চলতি
@@ -138,7 +138,7 @@
             <tr>
                 <td>{{ sln|e2b_digit }}</td>
                 <td class="text-left">{{object.customer}}</td>
-                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}/={% endif %}</td>
+                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
                 <td class='d-print-none'>
                     <a href="{% url 'mark-baddebt' month=month year=year cust_pk=object.customer.pk unmark=1 %}" class="p-1 nowrap">
                         <i class="bi bi-arrow-left-square text-info"></i> চলতি
@@ -149,7 +149,7 @@
             {% endif %}
             <tr class='text-right'>
                 <th colspan='2'>মোট অনিশ্চিত বকেয়ার পরিমাণঃ</th>
-                <th>{{total_baddebt|e2b_digit|ezynumber}}/=</th>
+                <th>{{total_baddebt|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
     </div>

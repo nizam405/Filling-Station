@@ -1,4 +1,18 @@
 
+2024-02-02
+----------
+>> On Edit StorageReading on last day of month, update 
+    - Ending Storage (Current Month)
+    - Profit, Owner (Till last month of saved profit)
+>> Solved saving balances of deleting more than one month Cashbalance
+>> Profit এর জন্য আয় ব্যয় বিবরণী তে যাওয়া লাগবে না
+>> Solved Printing issues -
+    - Added black border on table
+    - Replaced col-md-6 with col-md on daily_transactions and income_statement
+    - Table head now shows on every page
+>> Solved save_ledger on last date
+>> Update price on update Sell/Purchase (if editable day)
+
 2023-10-27
 -----------
 >> OwnersEquity Filter
@@ -7,7 +21,7 @@
 >> Delete all balances when delete Cashbalance of last day of month
 >> Added Loan Detail View
 >> Added prev_rate and Indicator to sell in Daily transactions
->> Removed unused groups of Revenue and Expenditure form RevenueLedger and ExpenditureLedger
+>> Removed unused groups of Revenue and Expenditure from RevenueLedger and ExpenditureLedger
 >> Minor changes on DateFilter (Bootstrap grid to d-flex), Ledger heading simplifications etc.
 
 2023-10-21

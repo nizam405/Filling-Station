@@ -1,10 +1,6 @@
 import datetime
 from django.db.models import Sum
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
-
 from .models import CashBalance
-from Core.choices import last_day_of_month
 
 def first_balance_date():
     obj = CashBalance.objects.order_by('date').first()
@@ -49,6 +45,8 @@ def save_cashbalance(date:datetime.date):
         prev_balance = CashBalance.objects.get(date=prev_date)
     except: pass
     if prev_balance:
+        print("Saving Cashbalance of",date)
+        start_time = datetime.datetime.now()
         # Debit
         sell = Sell.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         revenue = Revenue.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
@@ -70,7 +68,7 @@ def save_cashbalance(date:datetime.date):
         obj, created = CashBalance.objects.update_or_create(
             date=date, defaults={'amount':balance}
             )
-
-        if date == last_day_of_month(date.year, date.month):
-            return redirect(reverse_lazy('save-ledger',kwargs={'date':date}))
+        end_time = datetime.datetime.now()
+        delta = end_time-start_time
+        print("\tAmount:",balance,"(Time:",delta.total_seconds(),"sec)")
 

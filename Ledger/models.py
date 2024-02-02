@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+from datetime import datetime
 from django.urls import reverse
 from Customer.models import Customer, GroupofCompany
 from Product.models import Product, Purchase
@@ -52,6 +54,7 @@ class Storage(models.Model):
     
     class Meta:
         ordering = ['-year','-month','product']
+        get_latest_by = ['year','month']
         constraints = [models.UniqueConstraint(fields=['year','month','product'], name='unique_storage')]
     
     @property
@@ -78,6 +81,7 @@ class Profit(models.Model):
 
     class Meta:
         ordering = ['-year','-month']
+        get_latest_by = ['-year','-month']
         constraints = [models.UniqueConstraint(fields=['year','month'], name='unique_profit')]
 
     def __str__(self):

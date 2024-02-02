@@ -139,8 +139,10 @@
         text-decoration: none !important; 
         color: #000 !important;
     }
-    #footer, #footer * {
-        color: #999 !important;
+    /* #footer, #footer * {color: #999 !important;} */
+    #footer {display: none;}
+    .table-bordered td, .table-bordered th{
+        border-color: black !important;
     }
 }
 

@@ -16,10 +16,10 @@
         text-align: left
     }
 
-    #owners-equity, #profit-dist > div.col-md-6:nth-child(even) {
+    #owners-equity, #profit-dist > div.col-6:nth-child(even) {
         padding-right: 0.25rem;
     }
-    #financial-statement, #profit-dist > div.col-md-6:nth-child(odd) {
+    #financial-statement, #profit-dist > div.col-6:nth-child(odd) {
         padding-left: 0.25rem;
     }
 </style>
@@ -57,7 +57,7 @@
 </div>
 
 <div class="row" id="incomestatement">
-    <div class="col-md-6 pr-1">
+    <div class="col-6 pr-1">
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
                 <th>বিবরণ</th>
@@ -104,7 +104,7 @@
             </tr>
         </table>
     </div>
-    <div class="col-md-6 pl-1">
+    <div class="col-6 pl-1">
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
                 <th>ব্যয়সমূহ</th>
@@ -144,7 +144,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-6" id="owners-equity">
+    <div class="col-6" id="owners-equity">
         <h3 class="text-center">মালিকানা স্বত্ব বিবরণী</h3>
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
@@ -191,13 +191,12 @@
             </tr>
             {% endif %}
             <tr>
-                <th>{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
-                <th></th>
+                <th colspan="2" >{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
                 <th>{{total_oe|floatformat:2|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
     </div>
-    <div class="col-md-6" id="financial-statement">
+    <div class="col-6" id="financial-statement">
         <h3 class="text-center">আর্থিক অবস্থার বিবরণী</h3>
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
@@ -249,7 +248,7 @@
     </div>
 
     {% for op in profit_distribution %}
-    <div class="col-md-6">
+    <div class="col-6">
         <table class="table table-bordered table-striped table-sm text-right">
             <tr class="text-center">
                 <th>{{op.owner.name}}</th>
@@ -279,8 +278,7 @@
                 <td>{{op.rem_profit|floatformat:2|e2b_digit|ezynumber}}</td>
             </tr>
             <tr>
-                <th>মোটঃ</th>
-                <th></th>
+                <th colspan="2">মোটঃ</th>
                 <th>{{op.current_oe|floatformat:2|e2b_digit|ezynumber}}</th>
             </tr>
         </table>

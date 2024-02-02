@@ -67,7 +67,7 @@
 
 <div class="row" id="transaction-table">
     {% if active_accounts %}
-    <div class="col-md-6 pr-1">
+    <div class="col-6 pr-1">
         <div>ডেবিট</div>
         <table class="table table-sm table-bordered">
             <tr class="text-center">
@@ -79,8 +79,9 @@
             </tr>
             {% if balance_bf_side == 'debit' %}
             <tr>
-                <td colspan="3" class="cp-3">ব্যালেন্স বি/এফ ({{balance_bf_date|e2b_date}})</td>
+                <td colspan="3">ব্যালেন্স বি/এফ ({{balance_bf_date|e2b_date}})</td>
                 <td class="text-right">{{balance_bf_abs|e2b_digit|ezynumber}}</td>
+                <td class="subtotal"></td>
             </tr>
             {% endif %}
 
@@ -215,13 +216,13 @@
             {% endif %}
 
             <tr>
-                <th colspan="4" class="cp-3 text-right">সর্বমোটঃ</th>
+                <th colspan="4" class="cp-4 text-right">সর্বমোটঃ</th>
                 <th class="text-right">{{total_debit|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
     </div>
 
-    <div class="col-md-6 pl-1">
+    <div class="col-6 pl-1">
         <div class="text-right">ক্রেডিট</div>
         <table class="table table-sm table-bordered left2nd">
             <tr class="text-center">
@@ -234,8 +235,9 @@
             
             {% if balance_bf_side == 'credit' %}
             <tr>
-                <td colspan="3" class="cp-3">ব্যালেন্স বি/এফ ({{balance_bf_date|e2b_date}})</td>
+                <td colspan="3">ব্যালেন্স বি/এফ ({{balance_bf_date|e2b_date}})</td>
                 <td class="text-right">{{balance_bf_abs|e2b_digit|ezynumber}}</td>
+                <td class="subtotal"></td>
             </tr>
             {% endif %}
 
@@ -324,7 +326,7 @@
             </tr>
             {% endfor %}
             <tr class="subtotal">
-                <td colspan="4" class="cp-3 text-right">মোটঃ</td>
+                <td colspan="4" class="text-right">মোটঃ</td>
                 <td class="text-right">{{total_withdraws|e2b_digit|ezynumber}}</td>
             </tr>
             {% endif %}
@@ -384,7 +386,7 @@
             {% endif %}
 
             <tr>
-                <th colspan="4" class="cp-3 text-right">সর্বমোটঃ</th>
+                <th colspan="4" class="cp-4 text-right">সর্বমোটঃ</th>
                 <th class="text-right">{{total_credit|e2b_digit|ezynumber}}</th>
             </tr>
         </table>
@@ -430,12 +432,12 @@
         $('#show-subtotal').click(function(){
             if($(this).is(":checked")){
                 $('.subtotal').removeClass('d-none')
-                $('.cp-3').attr('colspan',3)
-                $('.group-label').attr('colspan',4)
+                $('.cp-4').attr('colspan',4)
+                $('.group-label').attr('colspan',5)
             } else {
                 $('.subtotal').addClass('d-none')
-                $('.cp-3').attr('colspan',2)
-                $('.group-label').attr('colspan',3)
+                $('.cp-4').attr('colspan',3)
+                $('.group-label').attr('colspan',4)
             }
         })
     });

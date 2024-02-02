@@ -64,45 +64,49 @@
         {% if goc_balances or cust_balances %}
         <h4 class='text-center'>চলতি পার্টি বকেয়া</h4>
         <table class="table table-sm table-striped table-bordered text-center">
-            <tr>
-                <th>#</th>
-                <th>পার্টি</th>
-                <th>পরিমাণ</th>
-                <th class='d-print-none'></th>
-            </tr>
-            {% if goc_balances %}
-            {% for object,sln in goc_balances|zip %}
-            <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
-                <td>{{ sln|e2b_digit }}</td>
-                <td class="text-left">{{object.customer}}</td>
-                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
-                <td class='d-print-none'>
-                    <a href="{% url 'mark-baddebt' month=month year=year goc=1 cust_pk=object.customer.pk %}" class="p-1 nowrap">
-                        <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-            {% endif %}
-
-            {% if cust_balances %}
-            {% for object,sln in cust_balances|zip:goc_balances_count %}
-            <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
-                <td>{{ sln|e2b_digit }}</td>
-                <td class="text-left">{{object.customer}}</td>
-                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
-                <td class='d-print-none'>
-                    <a href="{% url 'mark-baddebt' month=month year=year cust_pk=object.customer.pk %}" class="p-1 nowrap">
-                        <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-            <tr class='text-right'>
-                <th colspan='2'>মোট চলতি বকেয়ার পরিমাণঃ</th>
-                <th>{{total_current_bal|e2b_digit|ezynumber}}</th>
-            </tr>
-            {% endif %}
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>পার্টি</th>
+                    <th>পরিমাণ</th>
+                    <th class='d-print-none'></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if goc_balances %}
+                {% for object,sln in goc_balances|zip %}
+                <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
+                    <td>{{ sln|e2b_digit }}</td>
+                    <td class="text-left">{{object.customer}}</td>
+                    <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
+                    <td class='d-print-none'>
+                        <a href="{% url 'mark-baddebt' month=month year=year goc=1 cust_pk=object.customer.pk %}" class="p-1 nowrap">
+                            <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+    
+                {% if cust_balances %}
+                {% for object,sln in cust_balances|zip:goc_balances_count %}
+                <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
+                    <td>{{ sln|e2b_digit }}</td>
+                    <td class="text-left">{{object.customer}}</td>
+                    <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
+                    <td class='d-print-none'>
+                        <a href="{% url 'mark-baddebt' month=month year=year cust_pk=object.customer.pk %}" class="p-1 nowrap">
+                            <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                <tr class='text-right'>
+                    <th colspan='2'>মোট চলতি বকেয়ার পরিমাণঃ</th>
+                    <th>{{total_current_bal|e2b_digit|ezynumber}}</th>
+                </tr>
+            </tbody>
         </table>
         {% endif %}
         <h4>সর্বমোটঃ {{grand_total|e2b_digit|ezynumber}} টাকা</h4>
@@ -111,46 +115,50 @@
     <div class="col" id="bad-debts">
         <h4 class='text-center'>অনিশ্চিত হিসাব</h4>
         <table class="table table-sm table-striped table-bordered text-center">
-            <tr>
-                <th>#</th>
-                <th>পার্টি</th>
-                <th>পরিমাণ</th>
-                <th class='d-print-none'></th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>পার্টি</th>
+                    <th>পরিমাণ</th>
+                    <th class='d-print-none'></th>
+                </tr>
+            </thead>
 
-            {% if goc_baddebts %}
-            {% for object,sln in goc_baddebts|zip %}
-            <tr>
-                <td>{{ sln|e2b_digit }}</td>
-                <td class="text-left">{{object.customer}}</td>
-                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
-                <td class='d-print-none'>
-                    <a href="{% url 'mark-baddebt' month=month year=year goc=1 cust_pk=object.customer.pk unmark=1 %}" class="p-1 nowrap">
-                        <i class="bi bi-arrow-left-square text-info"></i> চলতি
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-            {% endif %}
-
-            {% if cust_bad_debts %}
-            {% for object,sln in cust_bad_debts|zip:goc_baddebts_count %}
-            <tr>
-                <td>{{ sln|e2b_digit }}</td>
-                <td class="text-left">{{object.customer}}</td>
-                <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
-                <td class='d-print-none'>
-                    <a href="{% url 'mark-baddebt' month=month year=year cust_pk=object.customer.pk unmark=1 %}" class="p-1 nowrap">
-                        <i class="bi bi-arrow-left-square text-info"></i> চলতি
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-            {% endif %}
-            <tr class='text-right'>
-                <th colspan='2'>মোট অনিশ্চিত বকেয়ার পরিমাণঃ</th>
-                <th>{{total_baddebt|e2b_digit|ezynumber}}</th>
-            </tr>
+            <tbody>
+                {% if goc_baddebts %}
+                {% for object,sln in goc_baddebts|zip %}
+                <tr>
+                    <td>{{ sln|e2b_digit }}</td>
+                    <td class="text-left">{{object.customer}}</td>
+                    <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
+                    <td class='d-print-none'>
+                        <a href="{% url 'mark-baddebt' month=month year=year goc=1 cust_pk=object.customer.pk unmark=1 %}" class="p-1 nowrap">
+                            <i class="bi bi-arrow-left-square text-info"></i> চলতি
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+    
+                {% if cust_bad_debts %}
+                {% for object,sln in cust_bad_debts|zip:goc_baddebts_count %}
+                <tr>
+                    <td>{{ sln|e2b_digit }}</td>
+                    <td class="text-left">{{object.customer}}</td>
+                    <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}{% if object.amount %}{% endif %}</td>
+                    <td class='d-print-none'>
+                        <a href="{% url 'mark-baddebt' month=month year=year cust_pk=object.customer.pk unmark=1 %}" class="p-1 nowrap">
+                            <i class="bi bi-arrow-left-square text-info"></i> চলতি
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                <tr class='text-right'>
+                    <th colspan='2'>মোট অনিশ্চিত বকেয়ার পরিমাণঃ</th>
+                    <th>{{total_baddebt|e2b_digit|ezynumber}}</th>
+                </tr>
+            </tbody>
         </table>
     </div>
     {% endif %}

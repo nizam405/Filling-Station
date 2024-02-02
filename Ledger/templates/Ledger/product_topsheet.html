@@ -45,67 +45,71 @@
 </div>
 
 <table class="table table-sm table-bordered table-striped">
-    <tr class="text-center">
-        <th>#</th>
-        <th>নাম</th>
-        <th>প্রারম্ভিক মজুদ</th>
-        <th>ক্রয়</th>
-        <th>বিক্রয়</th>
-        <th>সমাপনী মজুদ</th>
-        <th>দর</th>
-        <th>সমাপনী মজুদের ক্রয়মুল্য</th>
-        <th>মুনাফা</th>
-        <th>ট্যাংক ডিপ+লোড</th>
-        <th>ব্যবধান</th>
-    </tr>
-    {% for row,sln in products|zip %}
-    <tr class="text-right">
-        <td class='text-center'>{{sln|e2b_digit}}</td>
-        <td class="text-left"><a href="{% url 'product-ledger' pk=row.product.pk month=month year=year %}" class="text-dark">
-            {% if row.product.type == 'Pack' %}
-            <span class="eng">{{row.product.name}}</span> {{row.product.capacity|e2b_digit}} লিঃ
-            {% else %}{{row.product}}{% endif %}
-        </a></td>
-        <td>{{row.initial_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>{{row.purchase_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>{{row.sell_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <!-- অবশিষ্ট  মজুদ -->
-        <td>{{row.ending_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>{{row.purchase_rate|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td>{{row.ending_storage_amount|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td {% if row.profit < 0 %}class='text-danger'{% endif %}>
-            {{row.profit|floatformat:-2|e2b_digit|ezynumber}}
-        </td>
-        {% if row.product.need_rescale %}
-        <td>{{row.ending_storage_reading_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
-        <td>
-            {{row.ending_storage_diff|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}
-            <i class="bi 
-            {% if row.ending_storage_diff < 0 %} bi-caret-down-fill text-danger
-            {% elif row.ending_storage_diff > 0 %} bi-caret-up-fill text-success
-            {% endif %}"></i>
-        </td>
-        {% else %}
-        <td colspan="2"></td>
-        {% endif %}
-    </tr>
-    {% endfor %}
-    <tr class="text-right font-weight-bold">
-        <td colspan="7">মোট সমাপনী মজুদের মূল্যঃ</td>
-        <td>{{total.ending_storage_amount|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td>{{total.total_profit|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td colspan="2">
-            {{total.diff_amount|floatformat:-2|e2b_digit|ezynumber}}
-            <i class="bi 
-            {% if total.diff_amount < 0 %} bi-caret-down-fill text-danger
-            {% elif total.diff_amount > 0 %} bi-caret-up-fill text-success
-            {% endif %}"></i>
-        </td>
-    </tr>
-    <tr class="text-right font-weight-bold">
-        <td colspan='7'>(ব্যবধান সমন্বয় করে) মোট সমাপনী মজুদের মূল্যঃ</td>
-        <td>{{total.actual_price|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td colspan="3"></td>
-    </tr>
+    <thead>
+        <tr class="text-center">
+            <th>#</th>
+            <th>নাম</th>
+            <th>প্রারম্ভিক মজুদ</th>
+            <th>ক্রয়</th>
+            <th>বিক্রয়</th>
+            <th>সমাপনী মজুদ</th>
+            <th>দর</th>
+            <th>সমাপনী মজুদের ক্রয়মুল্য</th>
+            <th>মুনাফা</th>
+            <th>ট্যাংক ডিপ+লোড</th>
+            <th>ব্যবধান</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row,sln in products|zip %}
+        <tr class="text-right">
+            <td class='text-center'>{{sln|e2b_digit}}</td>
+            <td class="text-left"><a href="{% url 'product-ledger' pk=row.product.pk month=month year=year %}" class="text-dark">
+                {% if row.product.type == 'Pack' %}
+                <span class="eng">{{row.product.name}}</span> {{row.product.capacity|e2b_digit}} লিঃ
+                {% else %}{{row.product}}{% endif %}
+            </a></td>
+            <td>{{row.initial_storage|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+            <td>{{row.purchase_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+            <td>{{row.sell_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+            <!-- অবশিষ্ট  মজুদ -->
+            <td>{{row.ending_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+            <td>{{row.purchase_rate|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td>{{row.ending_storage_amount|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td {% if row.profit < 0 %}class='text-danger'{% endif %}>
+                {{row.profit|floatformat:-2|e2b_digit|ezynumber}}
+            </td>
+            {% if row.product.need_rescale %}
+            <td>{{row.ending_storage_reading_qnt|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}</td>
+            <td>
+                {{row.ending_storage_diff|floatformat:-2|e2b_digit|ezynumber}} {{row.unit}}
+                <i class="bi 
+                {% if row.ending_storage_diff < 0 %} bi-caret-down-fill text-danger
+                {% elif row.ending_storage_diff > 0 %} bi-caret-up-fill text-success
+                {% endif %}"></i>
+            </td>
+            {% else %}
+            <td colspan="2"></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        <tr class="text-right font-weight-bold">
+            <td colspan="7">মোট সমাপনী মজুদের মূল্যঃ</td>
+            <td>{{total.ending_storage_amount|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td>{{total.total_profit|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td colspan="2">
+                {{total.diff_amount|floatformat:-2|e2b_digit|ezynumber}}
+                <i class="bi 
+                {% if total.diff_amount < 0 %} bi-caret-down-fill text-danger
+                {% elif total.diff_amount > 0 %} bi-caret-up-fill text-success
+                {% endif %}"></i>
+            </td>
+        </tr>
+        <tr class="text-right font-weight-bold">
+            <td colspan='7'>(ব্যবধান সমন্বয় করে) মোট সমাপনী মজুদের মূল্যঃ</td>
+            <td>{{total.actual_price|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td colspan="3"></td>
+        </tr>
+    </tbody>
 </table>
 {% endblock main %}

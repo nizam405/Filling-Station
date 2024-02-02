@@ -47,46 +47,50 @@
 </div>
 
 <table class="table table-sm table-bordered table-striped">
-    <tr class="text-center">
-        <th>#</th>
-        <th>পার্টি</th>
-        <th>পূর্ববর্তী পাওনা</th>
-        <th>চলতি মাস বকেয়া</th>
-        <th>আদায়</th>
-        <th>বর্তমান পাওনা</th>
-    </tr>
-    {% for customer,sln in customers|zip %}
-    <tr {% if customer.baddebt %}class="baddebt"{% endif %}>
-        <td class='text-center'>{{sln|e2b_digit}}</td>
-        <td>
-            <a href="{% url customer.ledger_link customer=customer.pk month=month year=year %}" class="{{customer.link_css}}">{{customer.name}}</a>
-        </td>
-        <td class="text-right">
-            {% if customer.prev_balance %}
-            <div class="float-left">
-                ({{customer.prev_balance.month|e2b_month}} 
-                {{customer.prev_balance.year|e2b_digit}})
-            </div>
-            {{customer.prev_balance.amount|floatformat:-2|e2b_digit|ezynumber}}
-            {% endif %}
-        </td>
-        <td class="text-right">{{customer.duesell|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td class="text-right">{{customer.duecollection|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td class="text-right">
-            {% if customer.balance == 0 %}<i class="bi bi-check-lg text-success float-left"></i>
-            {% elif customer.balance < 0 %}<i class="bi bi-exclamation-triangle text-danger float-left"></i>
-            {% endif %}
-            {{customer.balance|floatformat:-2|e2b_digit|ezynumber}}
-        </td>
-    </tr>
-    {% endfor %}
-    <tr class="text-right font-weight-bold">
-        <td colspan='2'>(অনিশ্চিত সহ) মোটঃ</td>
-        <td>{{customers_total.total_prev_bal|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td>{{customers_total.total_duesell|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td>{{customers_total.total_collection|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td>{{customers_total.total_bal|floatformat:-2|e2b_digit|ezynumber}}</td>
-    </tr>
+    <thead>
+        <tr class="text-center">
+            <th>#</th>
+            <th>পার্টি</th>
+            <th>পূর্ববর্তী পাওনা</th>
+            <th>চলতি মাস বকেয়া</th>
+            <th>আদায়</th>
+            <th>বর্তমান পাওনা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer,sln in customers|zip %}
+        <tr {% if customer.baddebt %}class="baddebt"{% endif %}>
+            <td class='text-center'>{{sln|e2b_digit}}</td>
+            <td>
+                <a href="{% url customer.ledger_link customer=customer.pk month=month year=year %}" class="{{customer.link_css}}">{{customer.name}}</a>
+            </td>
+            <td class="text-right">
+                {% if customer.prev_balance %}
+                <div class="float-left">
+                    ({{customer.prev_balance.month|e2b_month}} 
+                    {{customer.prev_balance.year|e2b_digit}})
+                </div>
+                {{customer.prev_balance.amount|floatformat:-2|e2b_digit|ezynumber}}
+                {% endif %}
+            </td>
+            <td class="text-right">{{customer.duesell|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td class="text-right">{{customer.duecollection|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td class="text-right">
+                {% if customer.balance == 0 %}<i class="bi bi-check-lg text-success float-left"></i>
+                {% elif customer.balance < 0 %}<i class="bi bi-exclamation-triangle text-danger float-left"></i>
+                {% endif %}
+                {{customer.balance|floatformat:-2|e2b_digit|ezynumber}}
+            </td>
+        </tr>
+        {% endfor %}
+        <tr class="text-right font-weight-bold">
+            <td colspan='2'>(অনিশ্চিত সহ) মোটঃ</td>
+            <td>{{customers_total.total_prev_bal|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td>{{customers_total.total_duesell|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td>{{customers_total.total_collection|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td>{{customers_total.total_bal|floatformat:-2|e2b_digit|ezynumber}}</td>
+        </tr>
+    </tbody>
 </table>
 
 <script>

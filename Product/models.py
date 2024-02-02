@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 from django.urls import reverse
 import datetime
 from Transaction.functions import last_balance_date, next_to_last_balance_date
@@ -14,8 +13,6 @@ class Product(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_CHOICES[-1], verbose_name="ধরন")
     need_rescale = models.BooleanField(default=False, verbose_name="মজুদ মাপতে হয়")
     capacity = models.FloatField(default=None, null=True, blank=True, verbose_name="পরিমান")
-    # purchase_rate = models.FloatField(default=None, verbose_name="একক প্রতি ক্রয়মুল্য")
-    # selling_rate = models.FloatField(default=None, verbose_name="একক প্রতি বিক্রয়মুল্য")
     active = models.BooleanField(default=True, verbose_name='সক্রিয়')
 
     class Meta:
@@ -64,18 +61,27 @@ class Rate(models.Model):
 
     class Meta:
         ordering = ['-date']
+        get_latest_by = "date"
+
+    def prev_rate(self):
+        rates = self.__class__.objects.filter(product=self.product, date__lt=self.date)
+        if rates:
+            return rates.latest()
+        else: None
 
     def save(self, *args, **kwargs):
+        # Use update_or_create on view, Rate will not have two value on same day
         update = True
         rates = self.__class__.objects.filter(product=self.product)
-        if rates:
-            last_rate = rates.order_by('date').last()
+        if rates: # if the product has prev rate, collect data from it
+            last_rate = rates.latest()
             last_selling_rate = last_rate.selling_rate
             if not self.selling_rate:
                 self.selling_rate = last_selling_rate 
             last_purchase_rate = last_rate.purchase_rate
             if not self.purchase_rate:
                 self.purchase_rate = last_purchase_rate 
+            # Don't update if both selling rate and purchase rate have not changed
             if not self.pk and self.selling_rate == last_selling_rate and self.purchase_rate == last_purchase_rate:
                 update = False
 
@@ -147,6 +153,15 @@ class Sell(models.Model):
     
     def get_absolute_url(self):
         return reverse("daily-transactions", kwargs={'date':self.date})
+    
+class ChangedProduct(models.Model):
+    date = models.DateField(default=next_to_last_balance_date)
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
+    
+    class Meta:
+        ordering = ['date']
+    def __str__(self):
+        return f"Date: {self.date}, Name: {self.product.name}"
 
 class StorageReading(models.Model):
     date = models.DateField(default=last_balance_date, verbose_name="তারিখ")

@@ -45,7 +45,6 @@ class GroupofCompanyBalanceForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(GroupofCompanyBalanceForm, self).__init__(*args, **kwargs)
-        print(self.instance)
         customer = self.instance.customer
         self.fields['customer'] = forms.CharField(label=customer.name, disabled=True, initial=customer.name)
 

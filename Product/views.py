@@ -87,7 +87,6 @@ class RateDeleteView(LoginRequiredMixin, DeleteView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        print(self.object)
         self.object.delete()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -166,8 +165,8 @@ def PurchaseFormsetView(request, date):
         }
 
     if request.method == 'POST':
-        if len(formset.errors)>0:
-            print(formset.errors)
+        # if len(formset.errors)>0:
+        #     print(formset.errors)
         if formset.is_valid():
             for form in formset:
                 form.instance.date = date
@@ -198,8 +197,8 @@ def SellFormsetView(request, date):
         }
 
     if request.method == 'POST':
-        if len(formset.errors)>0:
-            print(formset.errors)
+        # if len(formset.errors)>0:
+        #     print(formset.errors)
         if formset.is_valid():
             for form in formset:
                 form.instance.date = date

@@ -85,8 +85,8 @@ def DueCollectionFormsetView(request, date):
         }
 
     if request.method == 'POST':
-        if formset.errors:
-            print(formset.errors)
+        # if formset.errors:
+        #     print(formset.errors)
         if formset.is_valid():
             formset.save()
             return redirect('daily-transactions', date)
@@ -110,8 +110,8 @@ def DueSellFormsetView(request, date):
         }
 
     if request.method == 'POST':
-        if formset.errors:
-            print(formset.errors)
+        # if formset.errors:
+        #     print(formset.errors)
         if formset.is_valid():
             formset.save()
             return redirect('daily-transactions', date)

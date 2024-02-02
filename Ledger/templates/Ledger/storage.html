@@ -35,40 +35,44 @@
 <div class='d-print-none'>{% bootstrap_messages %}</div>
 
 <table class="table table-sm table-striped table-bordered text-center">
-    <tr>
-        <th>#</th>
-        <th>মাস ও বছর</th>
-        <th>মাল</th>
-        <th>পরিমাণ</th>
-        <th>দর</th>
-        <th>মুল্য</th>
-    </tr>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>মাস ও বছর</th>
+            <th>মাল</th>
+            <th>পরিমাণ</th>
+            <th>দর</th>
+            <th>মুল্য</th>
+        </tr>
+    </thead>
     {% if object_list %}
-    {% for object,sln in object_list|zip %}
-    <tr>
-        <td>{{sln|e2b_digit}}</td>
-        <td class="text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
-        {% if object.product.type == 'Pack' %}
-        <td>
-            <span class="eng">{{object.product.name}}</span> {{object.product.capacity|e2b_digit}} লিঃ
-        </td>
-        <td>{{object.quantity|floatformat:-2|e2b_digit|ezynumber}} টি</td>
-        <td class='text-right'>{{object.get_purchase_rate|floatformat:-2|e2b_digit|ezynumber}}/=</td>
-        <td class='text-right'>{% if object.price %}{{object.price|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</td>
+    <tbody>
+        {% for object,sln in object_list|zip %}
+        <tr>
+            <td>{{sln|e2b_digit}}</td>
+            <td class="text-left">{{object.month|e2b_month}}, {{object.year|e2b_digit}}</td>
+            {% if object.product.type == 'Pack' %}
+            <td>
+                <span class="eng">{{object.product.name}}</span> {{object.product.capacity|e2b_digit}} লিঃ
+            </td>
+            <td>{{object.quantity|floatformat:-2|e2b_digit|ezynumber}} টি</td>
+            <td class='text-right'>{{object.get_purchase_rate|floatformat:-2|e2b_digit|ezynumber}}/=</td>
+            <td class='text-right'>{% if object.price %}{{object.price|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</td>
+            {% else %}
+            <td>{{object.product}}</td>
+            <td>{{object.quantity|floatformat:-2|e2b_digit|ezynumber}} লিটার</td>
+            <td class='text-right'>{{object.get_purchase_rate|floatformat:-2|e2b_digit|ezynumber}}/=</td>
+            <td class='text-right'>{% if object.price %}{{object.price|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        <tr class='text-right'>
+            <th colspan='5'>মজুদপণ্যের মোট ক্রয়মূল্যঃ</th>
+            <th>{% if total %}{{total|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</th>
+        </tr>
         {% else %}
-        <td>{{object.product}}</td>
-        <td>{{object.quantity|floatformat:-2|e2b_digit|ezynumber}} লিটার</td>
-        <td class='text-right'>{{object.get_purchase_rate|floatformat:-2|e2b_digit|ezynumber}}/=</td>
-        <td class='text-right'>{% if object.price %}{{object.price|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</td>
-        {% endif %}
-    </tr>
-    {% endfor %}
-    <tr class='text-right'>
-        <th colspan='5'>মজুদপণ্যের মোট ক্রয়মূল্যঃ</th>
-        <th>{% if total %}{{total|floatformat:-2|e2b_digit|ezynumber}}/={% endif %}</th>
-    </tr>
-    {% else %}
-    <tr><td colspan="5" class="text-seocndary text-center">কোনো মজুদ মাল তালিকাভুক্ত করা হয়নি!</td><tr>
+        <tr><td colspan="5" class="text-seocndary text-center">কোনো মজুদ মাল তালিকাভুক্ত করা হয়নি!</td><tr>
+    </tbody>
     {% endif %}
 </table>
 

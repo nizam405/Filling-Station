@@ -599,9 +599,9 @@ def customerBalanceFormsetView(request,month,year):
         }
 
     if request.method == 'POST':
-        if cust_formset.errors or goc_formset.errors:
-            print(cust_formset.errors)
-            print(goc_formset.errors)
+        # if cust_formset.errors or goc_formset.errors:
+        #     print(cust_formset.errors)
+        #     print(goc_formset.errors)
         if cust_formset.is_valid() and goc_formset.is_valid():
             goc_formset.save()
             cust_formset.save()

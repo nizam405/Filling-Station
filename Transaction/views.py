@@ -17,7 +17,6 @@ from Loan.models import BorrowLoan, LendLoan, RefundLendedLoan, RefundBorrowedLo
 from .forms import DateForm, CashBalanceForm, CashBalanceForm2, CashBalanceControlForm
 from .models import CashBalance
 from .functions import save_cashbalance, last_balance_date
-from Core.choices import last_day_of_month
 
 class DailyTransactionView(LoginRequiredMixin,TemplateView):
     template_name = "Transaction/daily_transactions.html"
@@ -28,11 +27,7 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         if 'balance_form' in request.POST:
             if context['balance_form'].is_valid():
                 context['balance_form'].save()
-                last_date = last_day_of_month(date.year,date.month)
-                if date == last_date:
-                    return redirect(reverse_lazy('save-ledger',kwargs={'date':date}))
-                else:
-                    date += datetime.timedelta(days=1)
+                date += datetime.timedelta(days=1)
 
             return redirect('daily-transactions', date)
         return super(TemplateView, self).render_to_response(context)
@@ -201,6 +196,8 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
             context['balance_cf_side'] = 'credit'
         else: context['balance_cf_side'] = 'debit'
 
+        # Edit করার persmission দেয়া হলে, পূর্বের ব্যালেন্স এর সাথে তুলনা করবে
+        context['need_update'] = False
         saved_balance = balances.filter(date=date)
         if saved_balance.count() > 0:
             context['saved_balance_cf'] = saved_balance.last().amount
@@ -265,8 +262,9 @@ class CashBalanceControlView(LoginRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        date = last_balance_date
-        kwargs['initial'] = {'from_date':date, 'to_date':date}
+        to_date = last_balance_date()
+        from_date = last_balance_date() + datetime.timedelta(days=1)
+        kwargs['initial'] = {'from_date':from_date, 'to_date':to_date}
         return kwargs
 
     def form_valid(self, form):
@@ -281,7 +279,11 @@ class CashBalanceControlView(LoginRequiredMixin, FormView):
         elif action == 'delete':
             queryset = CashBalance.objects.filter(date__gte=from_date, date__lte=to_date).order_by('-date')
             for obj in queryset:
+                start_time = datetime.datetime.now()
                 obj.delete()
+                end_time = datetime.datetime.now()
+                delta = end_time-start_time
+                print("Deleted cashbalance of",obj.date, "(Time:",delta.total_seconds(),")")
 
         return super().form_valid(form)
     

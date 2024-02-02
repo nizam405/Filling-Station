@@ -4,16 +4,15 @@ from django.db.models import Sum
 import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from Product.models import Product, Purchase, Sell, StorageReading
 from Expenditure.models import Expenditure
 from Revenue.models import Revenue
-from Ledger.models import Storage, CustomerBalance, GroupofCompanyBalance, Profit
+from Ledger.models import CustomerBalance, GroupofCompanyBalance, Profit
 from Ledger.forms import DateFilterForm
 from Transaction.models import CashBalance
 from Customer.models import DueSell, DueCollection
 from Owner.models import Withdraw, OwnersEquity, Owner, Investment, FixedAsset
 from Loan.models import BorrowLoan, LendLoan, RefundBorrowedLoan, RefundLendedLoan
-from .functions import get_products_info
+from ..functions import get_products_info
 
 class IncomeStatementView(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/incomestatement.html'
@@ -102,7 +101,6 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         pack_profit = sum(product['profit'] for product in pack_products)
         context['pack_product'] = {
             'qnt': pack_qnt,
-            # 'profit_rate': pack_profit/pack_qnt,
             'profit': pack_profit,
         }
         ex_products = [product for product in product_info if product['ending_storage_diff'] != 0]
@@ -116,7 +114,7 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         revenue_amount = revenues.aggregate(Sum('amount'))['amount__sum'] if revenues else 0
         context['revenues'] = rev_groups
         context['revenue_amount'] = revenue_amount
-        total_income = context['total_profit'] + revenue_amount + ex_revenue
+        total_income = total_profit + revenue_amount + ex_revenue
         context['total_income'] = total_income
 
         # Expenditures
@@ -140,25 +138,18 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         context['cash'] = cash
 
         # দেনাদার
-        # customer_balances = CustomerBalance.objects.filter(month=month,year=year,customer__group__isnull=True)
-        # goc_balances = GroupofCompanyBalance.objects.filter(month=month,year=year)
-
         dues = 0
-        # if customer_balances:
-        #     dues = customer_balances.aggregate(Sum('amount'))['amount__sum']
-        #     dues += goc_balances.aggregate(Sum('amount'))['amount__sum']
-        # else:
-        # Prev Balances
+            # Prev Balances
         prev_cust_balances = CustomerBalance.objects.filter(month=prev_month, year=prev_month_year,customer__group__isnull=True)
         prev_cust_balances_amount = prev_cust_balances.aggregate(Sum('amount'))['amount__sum'] if prev_cust_balances else 0
         dues += prev_cust_balances_amount
         prev_goc_balances = GroupofCompanyBalance.objects.filter(month=prev_month, year=prev_month_year)
         prev_goc_balances_amount = prev_goc_balances.aggregate(Sum('amount'))['amount__sum'] if prev_goc_balances else 0
         dues += prev_goc_balances_amount
-        # Due sells
+            # Due sells
         due_sells = DueSell.objects.filter(date__gte=from_date,date__lte=to_date)
         dues += due_sells.aggregate(Sum('amount'))['amount__sum'] if due_sells else 0
-        # Due collections
+            # Due collections
         due_collections = DueCollection.objects.filter(date__gte=from_date,date__lte=to_date)
         dues -= due_collections.aggregate(Sum('amount'))['amount__sum'] if due_collections else 0
         context['dues'] = dues

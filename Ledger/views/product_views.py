@@ -12,7 +12,7 @@ from Ledger.models import Storage
 from Transaction.models import CashBalance
 from Ledger.forms import StorageFilterForm, DateFilterForm
 from Core.choices import all_dates_in_month, last_day_of_month
-from .functions import get_products_info
+from ..functions import get_products_info
 
 class ProductTopSheet(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/product_topsheet.html'
@@ -181,25 +181,6 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
             pre_storage_qnt = 0
             pre_storage_price = 0
 
-            # প্রতিদিনের ট্যাংক ডিপ ও লরি লোড কে পরবর্তী দিন প্রারম্ভিক মজুল হিসেব করলেঃ
-            # ডিজেল, অকটেন need_rescale=True, মাসের প্রথম তারিখ না হলে, গত দিনের মজুদ আসবে
-            # if product.need_rescale and day != target_date:
-            #     pre_storages = StorageReading.objects.filter(date=day-datetime.timedelta(days=1), product=pk)
-            #     if pre_storages:
-            #         pre_storage = pre_storages.last()
-            #         pre_storage_qnt = pre_storage.tank_deep + pre_storage.lorry_load
-            # else:
-            #     # বাকি সকল মালের জন্য পুর্ববর্তী মাসের মজুদ আসবে
-            #     # ডিজেল, অকটেন এর প্রথম দিনের প্রারম্ভিক মজুদ
-            #     pre_storages = Storage.objects.filter(month=context['prev']['month'],product=pk)
-            #     if pre_storages:
-            #         pre_storage = pre_storages.last()
-            #         pre_storage_qnt = pre_storage.amount + total_purchase_quantity - total_sell_quantity
-            # pre_storage_price = int(product.purchase_rate * pre_storage_qnt)
-            # --------------------------------------
-           
-            # গতমাসের ব্যাল্যান্স এর সাথে গতকাল পর্যন্ত হিসেব করে
-            # prev_date = day - datetime.timedelta(days=1)
             pre_sells = Sell.objects.filter(product=pk, date__gte=target_date, date__lt=day)
             pre_purchase = Purchase.objects.filter(product=pk, date__gte=target_date, date__lt=day)
             if pre_storages:
@@ -212,10 +193,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
             if pre_purchase:
                 pre_storage_qnt += pre_purchase.aggregate(Sum('quantity'))['quantity__sum']
                 pre_storage_price += pre_purchase.aggregate(Sum('amount'))['amount__sum']
-            
-            # pre_storage_price = int(product.purchase_rate * pre_storage_qnt)
             # --------------------------------------
-
             todays_data['pre_storage_qnt'] = pre_storage_qnt
             todays_data['pre_storage_price'] = pre_storage_price
             # 3. ক্রয়

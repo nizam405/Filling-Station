@@ -43,57 +43,62 @@
 
     {% if has_balance %}
     <table class="table table-stripped table-bordered table-sm">
-        <tr class="text-center">
-            <th>তারিখ</th>
-            {% for sub_company in sub_companies %}
-            <th>{{sub_company.short_name}}</th>
-            {% endfor %}
-            <th>মোট বিক্রয়</th>
-            <th>আদায়</th>
-            <th>পাওনা</th>
-        </tr>
-        <tr>
-            <td class="text-center">{{balance_bf_date|e2b_date:True}}</td>
-            <td colspan="{{sub_companies.count|add:2}}">ব্যালেন্স বি/এফ</td>
-            <td class="text-right">{{balance_bf|e2b_digit|ezynumber}}</td>
-        </tr>
-        {% for obj in qs %}
-        <tr class="text-right">
-            <td class="text-center">
-                <a href="{% url 'daily-transactions' date=obj.date %}">{{obj.date|e2b_date:True}}</a>
-            </td>
-            {% for sub_company in obj.sub_company_data %}
-            <td>
-                <span class="full-details">
+        <thead>
+
+            <tr class="text-center">
+                <th>তারিখ</th>
+                {% for sub_company in sub_companies %}
+                <th>{{sub_company.short_name}}</th>
+                {% endfor %}
+                <th>মোট বিক্রয়</th>
+                <th>আদায়</th>
+                <th>পাওনা</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center">{{balance_bf_date|e2b_date:True}}</td>
+                <td colspan="{{sub_companies.count|add:2}}">ব্যালেন্স বি/এফ</td>
+                <td class="text-right">{{balance_bf|e2b_digit|ezynumber}}</td>
+            </tr>
+            {% for obj in qs %}
+            <tr class="text-right">
+                <td class="text-center">
+                    <a href="{% url 'daily-transactions' date=obj.date %}">{{obj.date|e2b_date:True}}</a>
+                </td>
+                {% for sub_company in obj.sub_company_data %}
+                <td>
+                    <span class="full-details">
+                        {% if sub_company.amount %}
+                        {% for sell in sub_company.sells %}
+                        <div>{{sell.product.short_name}}
+                        {{sell.quantity|floatformat:-2|e2b_digit|ezynumber}}লিঃ =
+                        {{sell.amount|floatformat:-2|e2b_digit|ezynumber}}</div>
+                        {% endfor %}
+                        মোটঃ 
+                        {% endif %}
+                    </span>
                     {% if sub_company.amount %}
-                    {% for sell in sub_company.sells %}
-                    <div>{{sell.product.short_name}}
-                    {{sell.quantity|floatformat:-2|e2b_digit|ezynumber}}লিঃ =
-                    {{sell.amount|floatformat:-2|e2b_digit|ezynumber}}</div>
-                    {% endfor %}
-                    মোটঃ 
+                    {{sub_company.amount|floatformat:-2|e2b_digit|ezynumber}}
                     {% endif %}
-                </span>
-                {% if sub_company.amount %}
-                {{sub_company.amount|floatformat:-2|e2b_digit|ezynumber}}
-                {% endif %}
-            </td>
+                </td>
+                {% endfor %}
+                <td class="text-right">{% if obj.amount %}{{obj.amount|e2b_digit|ezynumber}}{% endif %}</td>
+                <td class="text-right">{% if obj.collection %}{{obj.collection|e2b_digit|ezynumber}}{% endif %}</td>
+                <td class="text-right {% if forloop.last %}font-weight-bold{% endif %}">
+                    {{obj.balance|e2b_digit|ezynumber}}
+                </td>
+            </tr>
             {% endfor %}
-            <td class="text-right">{% if obj.amount %}{{obj.amount|e2b_digit|ezynumber}}{% endif %}</td>
-            <td class="text-right">{% if obj.collection %}{{obj.collection|e2b_digit|ezynumber}}{% endif %}</td>
-            <td class="text-right {% if forloop.last %}font-weight-bold{% endif %}">
-                {{obj.balance|e2b_digit|ezynumber}}
-            </td>
-        </tr>
-        {% endfor %}
-        <tr class="text-right">
-            <th>মোটঃ</th>
-            {% for amount in totals.values %}
-            <th>{% if amount > 0 %}{{amount|e2b_digit|ezynumber}}{% endif %}</th>
-            {% endfor %}
-            <th>{{total_sell|e2b_digit|ezynumber}}</th>
-            <th>{{total_collection|e2b_digit|ezynumber}}</th>
-        </tr>
+            <tr class="text-right">
+                <th>মোটঃ</th>
+                {% for amount in totals.values %}
+                <th>{% if amount > 0 %}{{amount|e2b_digit|ezynumber}}{% endif %}</th>
+                {% endfor %}
+                <th>{{total_sell|e2b_digit|ezynumber}}</th>
+                <th>{{total_collection|e2b_digit|ezynumber}}</th>
+            </tr>
+        </tbody>
     </table>
 
     <h5>

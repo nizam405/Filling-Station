@@ -41,7 +41,6 @@ def zip_lists(object_list,last=0):
 
 @register.filter(name='formsetNumber')
 def formset_number(formset):
-    # print(len(formset))
     nums = [i for i in range(0,len(formset))]
     return zip(formset,nums)
 

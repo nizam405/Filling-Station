@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}পার্টি - টপশিট{% endblock title %}
+{% block title %}পার্টি খতিয়ান - টপশিট{% endblock title %}
 {% block style %}
 <style>
     #date-filter select, #date-filter button, #date-filter a {
@@ -36,7 +36,7 @@
     <h3>প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
 </div>
 <div class="text-center">
-    <h4>পার্টি (টপশিট) - {{month|e2b_month}},{{year|e2b_digit}}</h4>
+    <h4>পার্টি খতিয়ান (টপশিট) - {{month|e2b_month}},{{year|e2b_digit}}</h4>
     {% if not status %}
     <div class='text-danger'>({{to_date|e2b_date}} তারিখ পর্যন্ত)</div>
     {% endif %}

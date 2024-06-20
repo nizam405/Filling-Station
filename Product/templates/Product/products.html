@@ -44,6 +44,7 @@
         <th>সংক্ষিপ্ত নাম</th>
         <th>ক্রয়মুল্য</th>
         <th>বিক্রয়মুল্য</th>
+        <th>মুনাফা</th>
         <th>সর্বশেষ পরিবর্তন</th>
         <th>অবস্থা</th>
         <th class='d-print-none'></th>
@@ -65,6 +66,19 @@
         </td>
         <td {% if object.purchase_rate >= object.selling_rate %}class="text-danger"{% endif %}>
             {{object.selling_rate|floatformat:-2|e2b_digit}}
+        </td>
+        <td>
+            {% if object.selling_rate >= object.purchase_rate %}
+            {{object.profit_rate|floatformat:-2|e2b_digit}}
+            ({{object.profit_rate_update|floatformat:-2|e2b_digit}})
+            <div class='float-right'>
+                <i class="bi 
+                    {% if object.profit_rate_update < 0 %} bi-caret-down-fill text-danger
+                    {% elif object.profit_rate_update > 0 %} bi-caret-up-fill text-success
+                    {% endif %}">
+                </i>
+            </div>
+            {% endif %}
         </td>
         <td class='text-right'>{{object.last_rate.date|e2b_date}}</td>
         <td class='icon-lg'>

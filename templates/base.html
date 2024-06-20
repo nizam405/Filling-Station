@@ -16,20 +16,7 @@
 </head>
 <body class='bangla'>
     <nav class="sticky-top navbar navbar-light bg-light d-print-none p-0">
-        <div class='bg-info w-100 px-3 py-2 text-light' id='header'>
-            <a href="{% url 'home' %}" class="bangla2 brand text-light">
-                <i class="bi bi-fuel-pump"></i> প্রধান সি.এন.জি এন্ড ফিলিং স্টেশন
-            </a>
-            <div class="float-right">
-                {% if user.is_authenticated %}
-                <span class="eng">{{user}}</span>
-                | <a href="{% url 'password-change' %}">পাসওয়ার্ড পরিবর্তন</a>
-                | <a href="{% url 'logout' %}">লগ-আউট</a>
-                {% else %}
-                <a href="{% url 'login' %}">লগ-ইন</a>
-                {% endif %}
-            </div>
-        </div>
+        {% include "header.html" %}
         {% if user.is_authenticated %}
         <div id='menu' class="pl-3">
             <button type="button" id="sidebarCollapse" class="btn btn-info menu-item">
@@ -39,8 +26,8 @@
             <a href="{% url 'daily-transactions' %}" class="btn btn-primary menu-item">দৈনিক লেনদেন</a>
             <!-- Ledgers -->
             {% if month and year %}
-            <a href="{% url 'product-topsheet'  month year %}" class="btn btn-info menu-item">মালের হিসাব</a>
-            <a href="{% url 'customer-topsheet' month year %}" class="btn btn-info menu-item">পার্টি হিসাব</a>
+            <a href="{% url 'product-topsheet'  month year %}" class="btn btn-info menu-item">মালের খতিয়ান</a>
+            <a href="{% url 'customer-topsheet' month year %}" class="btn btn-info menu-item">পার্টি খতিয়ান</a>
             <a href="{% url 'revenue-ledger'    month year %}" class="btn btn-info menu-item">আয়ের খতিয়ান</a>
             <a href="{% url 'expenditure-ledger' month year %}" class="btn btn-info menu-item">ব্যয়ের খতিয়ান</a>
             <a href="{% url 'incomestatement'   month year %}" class="btn btn-success menu-item">আয়-ব্যয় বিবরণী</a>
@@ -51,10 +38,8 @@
             <a href="{% url 'expenditure-ledger' %}" class="btn btn-info menu-item">ব্যয়ের খতিয়ান</a>
             <a href="{% url 'incomestatement' %}" class="btn btn-success menu-item">আয়-ব্যয় বিবরণী</a>
             {% endif %}
-            <a href="{% url 'ownersequity' %}" class="btn btn-primary menu-item">মালিকানা স্বত্ব</a>
+            <a href="{% url 'ownersequity' %}" class="btn btn-success menu-item">মালিকানা স্বত্ব</a>
             <a href="{% url 'loan-dashboard' %}" class="btn btn-primary menu-item">হাওলাদ</a>
-            
-            <i class="bi bi-printer btn py-0" style="font-size: 1.5rem" onclick="window.print()"></i>
         </div>
         {% endif %}
     </nav>

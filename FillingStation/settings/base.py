@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'Transaction',
     'Ledger',
     'Loan',
+    'Documentation',
 ]
 
 MIDDLEWARE = [

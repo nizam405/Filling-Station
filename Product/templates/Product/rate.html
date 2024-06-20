@@ -47,6 +47,7 @@
             <th>পরিবর্তনের তারিখ</th>
             <th>ক্রয় দর</th>
             <th>বিক্রয় দর</th>
+            <th>মুনাফা</th>
             <th></th>
         </tr>
         {% for object,sln in object_list|zip %}
@@ -62,8 +63,19 @@
                     {{object.date|e2b_date}}
                 </a>
             </td>
-            <td>{{object.purchase_rate|floatformat:4|e2b_digit|ezynumber}}</td>
-            <td>{{object.selling_rate|floatformat:4|e2b_digit|ezynumber}}</td>
+            <td>{{object.purchase_rate|floatformat:-4|e2b_digit|ezynumber}}</td>
+            <td>{{object.selling_rate|floatformat:-4|e2b_digit|ezynumber}}</td>
+            <td>
+                {{object.profit_rate|floatformat:-4|e2b_digit|ezynumber}}
+                ({{object.profit_rate_update|floatformat:-2|e2b_digit}})
+                <div class='float-right'>
+                    <i class="bi 
+                        {% if object.profit_rate_update < 0 %} bi-caret-down-fill text-danger
+                        {% elif object.profit_rate_update > 0 %} bi-caret-up-fill text-success
+                        {% endif %}">
+                    </i>
+                </div>
+            </td>
             <td>
                 <a href="{% url 'update-rate' product=product.pk pk=object.pk %}">
                     <i class="bi bi-pencil-square text-info"></i>

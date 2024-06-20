@@ -9,7 +9,7 @@ from .views.customer_views import (
     CustomerBalanceView, customerBalanceFormsetView, markBaddebt,
 )
 from .views.product_views import StorageView, ProductLedger, ProductTopSheet
-from .views.incomestatement_view import IncomeStatementView
+from .views.incomestatement_view import IncomeStatementView, ProfitAdjustment
 
 urlpatterns = [
     path('customer/', include([
@@ -74,4 +74,5 @@ urlpatterns = [
         path('', IncomeStatementView.as_view(), name='incomestatement'),
         path('<int:month>-<int:year>/', IncomeStatementView.as_view(), name='incomestatement'),
     ])),
+    path('profit-adjustment/<int:month>-<int:year>/', ProfitAdjustment.as_view(), name='profit-adjustment'),
 ]

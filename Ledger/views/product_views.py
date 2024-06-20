@@ -12,7 +12,7 @@ from Ledger.models import Storage
 from Transaction.models import CashBalance
 from Ledger.forms import StorageFilterForm, DateFilterForm
 from Core.choices import all_dates_in_month, last_day_of_month
-from ..functions import get_products_info
+from Ledger.functions import get_products_info
 
 class ProductTopSheet(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/product_topsheet.html'
@@ -78,7 +78,7 @@ class ProductTopSheet(LoginRequiredMixin,TemplateView):
         last_day = last_day_of_month(year,month)
         context['status'] = last_day == to_date
         context['to_date'] = to_date
-        product_data, total_profit = get_products_info(from_date,to_date,prev_month,prev_month_year)
+        product_data, total_profit, profit_adj = get_products_info(year,month)
         context['products'] = product_data
         total_ending_storage_amount = sum(product['ending_storage_amount'] for product in product_data)
         total_ending_storage_diff_amount = sum(product['ending_storage_diff_amount'] for product in product_data)
@@ -170,7 +170,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
         total_sell_quantity = 0
         total_sell_amount = 0
         
-        pre_storages = Storage.objects.filter(month=context['prev'].month,product=pk)
+        pre_storages = Storage.objects.filter(month=context['prev'].month,year=context['prev'].year,product=pk)
         # Loop every day in current month
         days = all_dates_in_month(year,month)
         diff_qnt_today = 0
@@ -219,6 +219,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
                 sell_amount = sells.aggregate(Sum('amount'))['amount__sum']
             todays_data['sell_qnt'] = sell_qnt
             todays_data['sell_amount'] = sell_amount
+            todays_data['selling_rate'] = sell_amount/sell_qnt if sell_qnt > 0 else 0
             total_sell_quantity += sell_qnt
             total_sell_amount += sell_amount
             # 5. অবশিষ্ট মজুদ
@@ -255,8 +256,10 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
         context['total'] = {
             'total_purchase_quantity': total_purchase_quantity,
             'total_purchase_amount': total_purchase_amount,
+            'purchase_rate': total_purchase_amount/total_purchase_quantity,
             'total_sell_quantity': total_sell_quantity,
             'total_sell_amount': total_sell_amount,
+            'selling_rate': total_sell_amount/total_sell_quantity,
         }
         return context
 

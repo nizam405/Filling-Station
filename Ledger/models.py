@@ -7,6 +7,7 @@ from Product.models import Product, Purchase
 from Customer.choices import customer_type
 from .choices import MONTHS, YEAR, currentMonth, prevMonth, currentYear
 from Core.choices import last_day_of_month
+# from .query import StorageManager
 
 class CustomerBalance(models.Model):
     month = models.IntegerField(choices=MONTHS, default=prevMonth, verbose_name="মাস")
@@ -73,6 +74,8 @@ class Storage(models.Model):
     
     def get_absolute_url(self):
         return reverse('product-topsheet')
+
+    # objects = StorageManager()
 
 class Profit(models.Model):
     month = models.IntegerField(choices=MONTHS, default=prevMonth, verbose_name="মাস")

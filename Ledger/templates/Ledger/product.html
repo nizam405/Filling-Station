@@ -98,6 +98,7 @@
                     {{obj.sell_qnt|floatformat:-2|e2b_digit|ezynumber}}
                     {% if product.type == 'Loose' %}লিঃ{% endif %}
                 </div>
+                <div class="price">দরঃ {{obj.selling_rate|floatformat:-2|e2b_digit|ezynumber}}</div>
                 <div class="price">{{obj.sell_amount|e2b_digit|ezynumber}}/=</div>
                 {% endif %}
             </td>
@@ -151,6 +152,7 @@
                     {{total.total_purchase_quantity|floatformat:-2|e2b_digit|ezynumber}}
                     {% if product.type == 'Loose' %}লিঃ{% endif %}
                 </div>
+                <div class="price">দরঃ {{total.purchase_rate|floatformat:-2|e2b_digit|ezynumber}}</div>
                 <div class="price">{{total.total_purchase_amount|e2b_digit|ezynumber}}/=</div>
             </th>
             <th>
@@ -158,6 +160,7 @@
                     {{total.total_sell_quantity|floatformat:-2|e2b_digit|ezynumber}}
                     {% if product.type == 'Loose' %}লিঃ{% endif %}
                 </div>
+                <div class="price">দরঃ {{total.selling_rate|floatformat:-2|e2b_digit|ezynumber}}</div>
                 <div class="price">{{total.total_sell_amount|e2b_digit|ezynumber}}/=</div>
             </th>
         </tr>

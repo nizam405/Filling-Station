@@ -69,3 +69,17 @@ def convert_date_ban(date,short=False):
 @register.filter(name='absolute')
 def absolute(value):
     return abs(value)
+
+@register.filter(name='mul')
+def mul(value1,value2):
+    if value1 is None or value2 is None:
+        return 0
+    else:
+        return value1*value2
+
+@register.filter(name='sub')
+def sub(value1,value2):
+    if value1 is None or value2 is None:
+        return 0
+    else:
+        return value1-value2

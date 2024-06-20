@@ -62,15 +62,21 @@
             <tr class="text-center">
                 <th>বিবরণ</th>
                 <th>পরিমাণ</th>
-                <th>দর (মুনাফা)</th>
+                <th>গড় মুনাফা</th>
                 <th>টাকা</th>
             </tr>
             {% for product in loose_products %}
             <tr>
                 <td>{{product.product.name}}</td>
                 <td>{{product.sell_qnt|floatformat:2|e2b_digit|ezynumber}}</td>
-                <td>{{product.profit_rate|floatformat:4|e2b_digit|ezynumber}}</td>
-                <td>{{product.profit|floatformat:2|e2b_digit|ezynumber}}</td>
+                <td>
+                    {% comment %} {{product.profit_rate|floatformat:4|e2b_digit|ezynumber}}<br> {% endcomment %}
+                    {{product.profit_rate|floatformat:-4|e2b_digit|ezynumber}}
+                </td>
+                <td>
+                    {% comment %} {{product.profit|floatformat:2|e2b_digit|ezynumber}}<br> {% endcomment %}
+                    {{product.profit|floatformat:2|e2b_digit|ezynumber}}
+                </td>
             </tr>
             {% endfor %}
             {% for product in ex_products %}
@@ -83,6 +89,15 @@
             </tr>
             {% endif %}
             {% endfor %}
+            {% if total_profit_diff > 0 %}
+            <tr>
+                <td>
+                    <a href="{% url "profit-adjustment" month=month year=year %}">
+                    <b>মালের মূল্যবৃদ্ধির কারণে সমাপনী মজুদে লাভ</b></a>
+                </td>
+                <td colspan="3">{{total_profit_diff|floatformat:2|e2b_digit|ezynumber}}</td>
+            </tr>
+            {% endif %}
             <tr>
                 <td>মবিল ক্যান</td>
                 <td>{{pack_product.qnt|floatformat:0|e2b_digit|ezynumber}}</td>
@@ -130,6 +145,15 @@
             </tr>
             {% endif %}
             {% endfor %}
+            {% if total_profit_diff < 0 %}
+            <tr>
+                <td>
+                    <a href="{% url "profit-adjustment" month=month year=year %}">
+                    <b>মালের মূল্যহ্রাসের কারণে সমাপনী মজুদে ক্ষতি</b></a>
+                </td>
+                <td colspan="3">{{total_profit_diff|absolute|floatformat:2|e2b_digit|ezynumber}}</td>
+            </tr>
+            {% endif %}
             <tr class='text-right'>
                 <th>মোট খরচঃ</th>
                 <td rowspan="{{expenditures.count|add:1}}" class='align-bottom'>

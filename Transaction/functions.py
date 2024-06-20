@@ -7,7 +7,11 @@ def first_balance_date():
     return obj.date
 
 def last_balance_date():
-    obj = CashBalance.objects.order_by('date').last()
+    obj = CashBalance.objects.latest()
+    return obj.date
+
+def last_balance_date_of_month(year,month):
+    obj = CashBalance.objects.filter(date__year=year,date__month=month).latest()
     return obj.date
 
 def next_to_last_balance_date():

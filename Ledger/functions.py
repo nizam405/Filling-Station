@@ -10,7 +10,8 @@ from Ledger.models import CustomerBalance, GroupofCompanyBalance, Profit, Storag
 
 from datetime import date, datetime
 from django.db.models import Sum
-from Core.choices import get_prev_month, get_next_month
+from Core.choices import get_prev_month, get_next_month, last_day_of_month
+from Transaction.functions import last_balance_date_of_month
 
 def save_profit_oe(year,month):
     """
@@ -193,10 +194,13 @@ def save_customer_balance(date):
             cust_instance.bad_debt = cust_bal_prev.last().bad_debt
             cust_instance.save()
 
-def get_products_info(from_date:date, to_date:date, prev_month:date.month, prev_month_year:date.year):
+def get_products_info(year,month):
     """Used in Product Ledger and IncomeStatement"""
-    print("Getting product information")
-    start_time = datetime.now()
+    # print("Getting product information")
+    # start_time = datetime.now()
+    prev_month_year, prev_month = get_prev_month(year, month)
+    from_date = date(year,month,1)
+    to_date = last_balance_date_of_month(year,month)
 
     sells = Sell.objects.filter(date__gte=from_date,date__lte=to_date)
     purchases = Purchase.objects.filter(date__gte=from_date,date__lte=to_date).order_by('date')
@@ -204,6 +208,7 @@ def get_products_info(from_date:date, to_date:date, prev_month:date.month, prev_
 
     products = Product.objects.all()
     product_info = []
+    total_profit_diff = 0
     total_profit = 0
     # total_sell_amount = 0
     # total_purchase_amount = 0
@@ -234,9 +239,10 @@ def get_products_info(from_date:date, to_date:date, prev_month:date.month, prev_
         data['purchase_amount'] = purchase_amount
         # total_purchase_amount += purchase_amount
         
-        rate = product.get_purchase_rate(date=to_date)
-        data['purchase_rate'] = rate
-        
+        # Rates
+        purchase_rate = product.get_purchase_rate(date=to_date)
+        data['purchase_rate'] = purchase_rate
+
         # Sell - বিক্রয়
         sell = sells.filter(product=product)
         sell_qnt = sell.aggregate(Sum('quantity'))['quantity__sum'] if sell else 0
@@ -248,7 +254,7 @@ def get_products_info(from_date:date, to_date:date, prev_month:date.month, prev_
         # Ending Storage - সমাপনী মজুদ
         ending_qnt = initial_qnt + purchase_qnt - sell_qnt
         data['ending_qnt'] = ending_qnt
-        ending_storage_amount = ending_qnt*rate
+        ending_storage_amount = ending_qnt*purchase_rate
         data['ending_storage_amount'] = ending_storage_amount
         # total_ending_storage_amount += ending_storage_amount
 
@@ -257,12 +263,12 @@ def get_products_info(from_date:date, to_date:date, prev_month:date.month, prev_
             if ending_storage_readings:
                 ending_storage_reading_qnt = ending_storage_readings.last().qnt
                 data['ending_storage_reading_qnt'] = ending_storage_reading_qnt
-                ending_storage_reading_amount = ending_storage_reading_qnt*rate
+                ending_storage_reading_amount = ending_storage_reading_qnt*purchase_rate
                 data['ending_storage_reading_amount'] = ending_storage_reading_amount
                 # Different
                 endding_storage_diff = ending_storage_reading_qnt - ending_qnt
                 data['ending_storage_diff'] = endding_storage_diff
-                ending_storage_diff_amount = endding_storage_diff*rate
+                ending_storage_diff_amount = endding_storage_diff*purchase_rate
                 data['ending_storage_diff_amount'] = ending_storage_diff_amount
         # Profit
         profit = sell_amount + ending_storage_amount - initial_storage_amount - purchase_amount
@@ -270,16 +276,25 @@ def get_products_info(from_date:date, to_date:date, prev_month:date.month, prev_
         total_profit += profit
         profit_rate = profit / sell_qnt if sell_qnt > 0 else 0
         data['profit_rate'] = profit_rate
+        # গড় মুনাফা
+        avg_purchase_rate = purchase_amount/purchase_qnt if purchase_qnt > 0 else 0
+        data['avg_purchase_rate'] = avg_purchase_rate
+        profit_rate_diff = purchase_rate - avg_purchase_rate if avg_purchase_rate != 0 else 0
+        data['profit_rate_diff'] = profit_rate_diff
+        profit_diff = profit_rate_diff * ending_qnt
+        data['profit_diff'] = profit_diff
+        total_profit_diff += profit_diff
         if initial_storage_amount==0 and purchase_amount==0 and sell_amount==0 and ending_storage_amount==0:
             continue
         product_info.append(data)
-    end_time = datetime.now()
-    delta = end_time-start_time
-    print("(Time to get product info:",delta.total_seconds(),"sec)")
+    # end_time = datetime.now()
+    # delta = end_time-start_time
+    # print("(Time to get product info:",delta.total_seconds(),"sec)")
+
     # print('sell', total_sell_amount)
     # print('initial_storage', total_initial_storage_amount)
     # print('purchase', total_purchase_amount)
     # print('ending_storage', total_ending_storage_amount)
-    return (product_info, total_profit)
+    return (product_info, total_profit, total_profit_diff)
 
             

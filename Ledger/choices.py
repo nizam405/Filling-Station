@@ -1,4 +1,4 @@
-from datetime import date
+import datetime
 from pybengali import convert_e2b_digit as e2b
 
 MONTHS = [
@@ -16,7 +16,7 @@ MONTHS = [
     (12, 'ডিসেম্বর'),
 ]
 
-today = date.today()
+today = datetime.date.today()
 currentMonth = today.month
 prevMonth = 12 if today.month == 1 else today.month-1
 

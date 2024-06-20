@@ -10,6 +10,7 @@ class CashBalance(models.Model):
     
     class Meta:
         ordering = ['-date']
+        get_latest_by = ['date']
 
     def __str__(self):
         return f"{self.date} - {self.amount}"

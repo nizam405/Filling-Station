@@ -59,14 +59,14 @@ class OwnersEquityView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['filter_form'] = OwnersEquityFilter(self.request.GET or None)
 
-        queryset = self.model.objects.all().order_by('year','month')
+        queryset = self.model.objects.all().order_by('year','-month')
         if 'owner' in self.request.GET:
             owner = self.request.GET['owner']
             if owner: queryset = queryset.filter(owner=owner)
         year = currentYear
         if 'year' in self.request.GET:
             if self.request.GET['year']: year = self.request.GET['year']
-        queryset = queryset.filter(year=year)
+        current_queryset = queryset.filter(year=year)
         context['year'] = year
 
         object_list = []
@@ -75,7 +75,7 @@ class OwnersEquityView(LoginRequiredMixin, TemplateView):
                 'withdraw': 0,
                 'investment': 0
             }
-        for qs in queryset:
+        for qs in current_queryset:
             month = int(qs.month)
             year = int(qs.year)
             prev_month_year, prev_month = get_prev_month(year, month)

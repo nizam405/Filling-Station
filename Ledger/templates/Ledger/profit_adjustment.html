@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}সমাপনী মজুদে পরিবর্তন{% endblock title %}
+{% block style %}
+<style>
+
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load extra_tags %}
+{% load bootstrap4 %}
+
+<div class="text-center" id="header">
+    <h3 class='d-none d-print-block'>প্রধান সি এন জি এন্ড ফিলিং স্টেশন</h3>
+    <h3>মালের মূল্যবৃদ্ধি/মূল্যহ্রাস এর কারণে সমাপনী মজুদে পরিবর্তন</h3>
+    <h4>{{month|e2b_month}},{{year|e2b_digit}}</h4>
+    {% if not status %}
+    <div class='text-danger'>({{last_bal_date|e2b_date}} তারিখ পর্যন্ত)</div>
+    {% endif %}
+</div>
+
+<table class="table table-sm table-bordered text-right">
+    <tr class='text-center'>
+        <th>মালের নাম</th>
+        <th>গড় ক্রয়মূল্য</th>
+        <th>সমাপনী ক্রয়মূল্য</th>
+        <th>দামের পার্থক্য</th>
+        <th>সমাপনী মজুদের পরিমান</th>
+        <th>টাকার পরিমান</th>
+    </tr>
+    {% for item in product_info %}
+    {% if item.profit_diff != 0 %}
+    <tr>
+        <td class='text-left'>{{item.product.name}}</td>
+        <td>{{item.avg_purchase_rate|floatformat:4|e2b_digit}}</td>
+        <td>{{item.purchase_rate|floatformat:4|e2b_digit}}</td>
+        <td>{{item.profit_rate_diff|floatformat:2|e2b_digit}}</td>
+        <td>{{item.ending_qnt|floatformat:2|e2b_digit}}</td>
+        <td>{{item.profit_diff|floatformat:2|e2b_digit}}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    <tr>
+        <th colspan='5'>সমাপনী মজুদে মোট {% if total_profit_diff > 0 %}লাভ{% else %}ক্ষতি{% endif %}</th>
+        <th>{{total_profit_diff|floatformat:2|e2b_digit}}</th>
+    </tr>
+</table>
+
+
+{% load static %}
+<script src="{% static 'form_list.js' %}"></script>
+
+{% endblock main %}

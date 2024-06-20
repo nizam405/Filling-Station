@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load bootstrap4 %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-4.4.1-dist/css/bootstrap.min.css' %}">
+    <script src="{% static 'jquery-3.6.0.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+
+    <title>{% block title %}{% endblock title %}</title>
+    {% block style %}{% endblock style %}
+</head>
+<body class='bangla'>
+    <nav class="sticky-top navbar navbar-light bg-light d-print-none p-0">
+        {% include "header.html" %}
+    </nav>
+
+    <div id="content" class="container-fluid d-flex">
+        {% if user.is_authenticated %}
+        {% comment %} {% include 'navigation.html' %} {% endcomment %}
+        {% endif %}
+        <div class='w-100'>
+            {% block main %}
+            {% endblock main %}
+        </div>
+    </div>
+
+    <div class="eng text-center text-secondary" id="footer">
+        Developed by CyberWith. 
+        Contact: <a href="mailto:nizamuddin405@gmail.com" >nizamuddin405@gmail.com</a>;
+        01303036193
+    </div>
+
+    <script src="{% static 'bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
+</body>
+</html>

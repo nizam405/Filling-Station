@@ -12,7 +12,8 @@ from Transaction.models import CashBalance
 from Customer.models import DueSell, DueCollection
 from Owner.models import Withdraw, OwnersEquity, Owner, Investment, FixedAsset
 from Loan.models import BorrowLoan, LendLoan, RefundBorrowedLoan, RefundLendedLoan
-from ..functions import get_products_info
+from Ledger.functions import get_products_info
+from Core.choices import last_day_of_month
 
 class IncomeStatementView(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/incomestatement.html'
@@ -92,7 +93,7 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         to_date = self.kwargs['to_date']
 
         # Products Info
-        product_info, total_profit = get_products_info(from_date, to_date, prev_month, prev_month_year)
+        product_info, total_profit, total_profit_diff = get_products_info(year,month)
         context['total_profit'] = total_profit
         loose_products = [product for product in product_info if product['product'].type == 'Loose']
         context['loose_products'] = loose_products
@@ -107,6 +108,9 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
         ex_revenue = sum(product['ending_storage_diff_amount'] for product in ex_products if product['ending_storage_diff']>0)
         ex_loss = sum(product['ending_storage_diff_amount'] for product in ex_products if product['ending_storage_diff']<0)
         context['ex_products'] = ex_products
+
+        # Profit Adjustment
+        context['total_profit_diff'] = total_profit_diff
         
         # Revenues
         revenues = Revenue.objects.filter(date__gte=from_date,date__lte=to_date).order_by('group')
@@ -242,3 +246,22 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
                     defaults={'profit':owner_profit,'amount':current_oe, 'share':current_share})
             context['profit_distribution'] = profit_dist
         return context
+
+class ProfitAdjustment(LoginRequiredMixin,TemplateView):
+    template_name = 'Ledger/profit_adjustment.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        month = self.kwargs['month']
+        year = self.kwargs['year']
+        context['month'] = month
+        context['year'] = year
+        last_bal_date = CashBalance.objects.latest().date
+        context['last_bal_date'] = last_bal_date
+        to_date = last_day_of_month(year,month)
+        if last_bal_date == to_date: context['status'] = True
+        product_info, total_profit, total_profit_diff = get_products_info(year,month)
+        context['product_info'] = product_info
+        context['total_profit_diff'] = total_profit_diff
+        return context
+    

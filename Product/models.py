@@ -20,30 +20,72 @@ class Product(models.Model):
     
     @property
     def last_rate(self):
-        rates = Rate.objects.filter(product=self.pk).order_by('date')
-        if rates: return rates.last()
+        rates = Rate.objects.filter(product=self.pk)
+        if rates: return rates.latest()
     
     def get_purchase_rate(self,date=datetime.date.today()):
-        rates = Rate.objects.filter(product=self.pk, date__lte=date).order_by('date')
-        if rates:
-            rate = rates.last().purchase_rate
-        else: rate = 0
-        return rate
+        rates = Rate.objects.filter(product=self.pk, date__lte=date)
+        if rates: return rates.latest().purchase_rate 
+        else: return 0
 
     def get_selling_rate(self,date=datetime.date.today()):
-        rates = Rate.objects.filter(product=self.pk, date__lte=date).order_by('date')
-        if rates:
-            rate = rates.last().selling_rate
-        else: rate = 0
-        return rate
+        rates = Rate.objects.filter(product=self.pk, date__lte=date)
+        if rates: return rates.latest().selling_rate 
+        else: return 0
 
     @property
     def purchase_rate(self):
         return self.get_purchase_rate()
+    
+    @property
+    def purchase_rate_update(self):
+        if self.last_rate:
+            prev_rate = self.last_rate.prev_rate()
+            if prev_rate:
+                return self.last_rate.purchase_rate - prev_rate.purchase_rate
+            else: return 0
+    
+    @property
+    def monthly_purchase_rate_update(self):
+        if self.last_rate:
+            prev_month_rate = self.last_rate.prev_month_rate()
+            if prev_month_rate:
+                return self.last_rate.purchase_rate - prev_month_rate.purchase_rate
+            else: return 0
 
     @property
     def selling_rate(self):
         return self.get_selling_rate()
+    
+    @property
+    def selling_rate_update(self):
+        if self.last_rate:
+            prev_rate = self.last_rate.prev_rate()
+            if prev_rate:
+                return self.last_rate.selling_rate - prev_rate.selling_rate
+            else: return 0
+    
+    @property
+    def monthly_selling_rate_update(self):
+        if self.last_rate:
+            prev_month_rate = self.last_rate.prev_month_rate()
+            if prev_month_rate:
+                return self.last_rate.selling_rate - prev_month_rate.selling_rate
+            else: return 0
+    
+    @property
+    def profit_rate(self):
+        return self.selling_rate - self.purchase_rate
+    
+    @property
+    def profit_rate_update(self):
+        if self.last_rate:
+            return self.selling_rate_update - self.purchase_rate_update
+    
+    @property
+    def monthly_profit_rate_update(self):
+        if self.last_rate and self.last_rate.prev_rate():
+            return self.profit_rate - self.last_rate.prev_rate().profit_rate
 
     def __str__(self):
         output = f"{self.name}"
@@ -68,6 +110,42 @@ class Rate(models.Model):
         if rates:
             return rates.latest()
         else: None
+
+    def prev_month_rate(self, current_month_year=None, current_month=None):
+        if current_month_year==None or current_month==None:
+            current_month_year = self.date.year
+            current_month = self.date.month
+
+        first_day = datetime.date(current_month_year, current_month,1)
+        rates = self.__class__.objects.filter(product=self.product, date__lt=first_day)
+        if rates:
+            return rates.latest()
+        else: None
+    
+    @property
+    def prev_month_rate(self):
+        return self.prev_month_rate()
+    
+    @property
+    def purchase_rate_update(self):
+        if self.prev_rate():
+            return self.prev_rate().purchase_rate - self.purchase_rate
+        else: return 0
+    
+    @property
+    def selling_rate_update(self):
+        if self.prev_rate():
+            return self.prev_rate().selling_rate - self.selling_rate
+        else: return 0
+
+    @property
+    def profit_rate(self):
+        return self.selling_rate - self.purchase_rate
+    
+    @property
+    def profit_rate_update(self):
+        if self.prev_rate():
+            return self.profit_rate - self.prev_rate().profit_rate
 
     def save(self, *args, **kwargs):
         # Use update_or_create on view, Rate will not have two value on same day

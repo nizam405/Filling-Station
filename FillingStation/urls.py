@@ -33,6 +33,7 @@ urlpatterns = [
     path('owner/', include("Owner.urls")),
     path('product/', include("Product.urls")),
     path('revenue/', include("Revenue.urls")),
+    path('documentation/', include("Documentation.urls")),
 ]
 
 if settings.DEBUG:

@@ -83,3 +83,14 @@ def sub(value1,value2):
         return 0
     else:
         return value1-value2
+
+@register.filter(name='pages')
+def pages(current,max):
+    display = 15
+    first = 1 if current < display//2 else current - display//2
+    last = display if current < display//2 else current + display//2
+    if last > max:
+        first -= last-max
+        last = max
+    # print(current,max,first,last)
+    return range(first,last+1)

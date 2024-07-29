@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}মজুদ মাল{% endblock title %}
+{% block title %}দৈনিক মজুদ মাল{% endblock title %}
 {% block style %}
 <style>
     form .bootstrap4-multi-input div.col-4 {
@@ -92,25 +92,36 @@
     <ul class="pagination eng">
         {% if page_obj.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            <a class="page-link" href="?page1">&laquo; First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Prev</a>
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">Previous</span>
+            <span class="page-link">Prev</span>
         </li>
+        <li class="page-item disabled">
+            <a class="page-link" href="?page1">First &laquo;</a>
+        </li>
+    <li class="page-item">
         {% endif %}
-        {% for page in page_obj.paginator.page_range %}
+        {% for page in page_obj.number|pages:page_obj.paginator.num_pages %}
         <li class="page-item {% if page == page_obj.number %}active{% endif %}">
             <a class="page-link" href="?page={{page}}">{{page}}</a>
         </li>
         {% endfor %}
         {% if page_obj.has_next %}
             <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
             </li>
         {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
             <li class="page-item disabled">
-            <span class="page-link">Next</span>
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
             </li>
         {% endif %}
     </ul>

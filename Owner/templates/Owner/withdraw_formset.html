@@ -20,7 +20,7 @@
             <div class="col-sm-3">মালিক</div>
             <div class="col-sm-6">বিবরণ</div>
             <div class="col-sm-2">টাকা</div>
-            <div class="col-sm-1">বাতিল</div>
+            <div class="col-sm-1">মুছে ফেলুন</div>
         </div>
         {{formset.management_form}}
         {% for form in formset %}
@@ -30,7 +30,7 @@
             <div class="col-sm-3">{% bootstrap_field form.owner show_label=False %}</div>
             <div class="col-sm-6">{% bootstrap_field form.detail show_label=False %}</div>
             <div class="col-sm-2 eng">{% bootstrap_field form.amount show_label=False %}</div>
-            <div class="col-sm-1 p-2">{{form.DELETE}}</div>
+            <div class="col-sm-1 p-2">{{form.DELETE}} <i class="bi bi-trash text-danger"></i></div>
         </div>
         {% endfor %}
     </div>
@@ -39,7 +39,7 @@
         <div class="col-sm-3">{% bootstrap_field empty_form.owner show_label=False %}</div>
         <div class="col-sm-6">{% bootstrap_field empty_form.detail show_label=False %}</div>
         <div class="col-sm-2 eng">{% bootstrap_field empty_form.amount show_label=False %}</div>
-        <div class="col-sm-1 p-2">{{empty_form.DELETE}}</div>
+        <div class="col-sm-1 p-2">{{empty_form.DELETE}} <i class="bi bi-trash text-danger"></i></div>
     </div>
     <div class="p-2">
         <span class="bi bi-back mr-2 eng" id='copy-form' style="cursor:pointer;"> Copy</span>

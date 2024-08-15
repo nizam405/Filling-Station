@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% load bootstrap4 %}
     {% load static %}
     <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'bootstrap-4.4.1-dist/css/bootstrap.min.css' %}">
@@ -12,22 +11,84 @@
     <link rel="stylesheet" href="{% static 'style.css' %}">
 
     <title>{% block title %}{% endblock title %}</title>
-    {% block style %}{% endblock style %}
+    {% block style %}
+    <style>
+        p {text-align: justify;}
+        .img-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        img {max-width: 100%}
+        h5 {padding-top: 70px;}
+        #left,#right {
+            overflow-y: scroll;
+            padding-top: 10px;
+            padding-bottom: 50px;
+        }
+        #left {
+            border-right: 1px solid #ddd;
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        #left::-webkit-scrollbar {
+        display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        #left {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+        }
+
+        @media print {
+            #left, #right {
+                max-height: none !important;;
+            }
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            #right::-webkit-scrollbar {
+            display: none;
+            }
+
+            /* Hide scrollbar for IE, Edge and Firefox */
+            #right {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            }
+        }
+        .card-header, .card-link {padding: 0px}
+        .card-link {display: inline-block; padding: 6px 10px}
+        .list-group-item {padding: 0px;}
+        .list-group-item a {display: block; padding: 6px 10px 6px 20px;}
+    </style>
+    {% endblock style %}
 </head>
 <body class='bangla'>
-    <nav class="sticky-top navbar navbar-light bg-light d-print-none p-0">
+    <nav id="top-nav" class="sticky-top navbar navbar-light bg-light d-print-none p-0">
         {% include "header.html" %}
     </nav>
 
-    <div id="content" class="container-fluid d-flex">
-        {% if user.is_authenticated %}
-        {% comment %} {% include 'navigation.html' %} {% endcomment %}
-        {% endif %}
-        <div class='w-100'>
-            {% block main %}
-            {% endblock main %}
+    <div class="container-fluid">
+        <div class='row'>
+            <div class='col-lg-3 col-md-4 d-print-none' id='left'>
+                {% if not index_hide %}
+                <div>
+                    <h4 class='text-center'>সূচিপত্র</h4>
+                    {% include "Documentation/index_section.html" %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class='col-lg-9 col-md-8' id='right'>
+                <div class="text-center">
+                    <h2>ব্যবহার বিধি</h2>
+                    <h3>ডিজিটাল হিসাব সফটওয়্যার</h3>
+                </div>
+                {% block main %}
+                {% endblock main %}
+            </div>
+            
         </div>
     </div>
+
 
     <div class="eng text-center text-secondary" id="footer">
         Developed by CyberWith. 
@@ -36,5 +97,15 @@
     </div>
 
     <script src="{% static 'bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
+    <script>
+        
+        let nav_height = parseInt($('#top-nav').outerHeight());
+        
+        $(window).on('load resize', function(){
+            let body_height = parseInt($(window).height());
+            let content_height = body_height - nav_height
+            $('#left, #right').css({'maxHeight': content_height});
+        })
+    </script>
 </body>
 </html>

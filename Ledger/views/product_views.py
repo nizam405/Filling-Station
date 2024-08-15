@@ -1,4 +1,5 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
+from django.forms import modelformset_factory
 from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import CreateView
 from django.db.models import Sum
@@ -10,9 +11,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from Product.models import Product, StorageReading, Purchase, Sell
 from Ledger.models import Storage
 from Transaction.models import CashBalance
-from Ledger.forms import StorageFilterForm, DateFilterForm
+from Ledger.forms import StorageFilterForm, DateFilterForm, StorageUpdateForm
 from Core.choices import all_dates_in_month, last_day_of_month
 from Ledger.functions import get_products_info
+from Transaction.functions import first_balance_date
 
 class ProductTopSheet(LoginRequiredMixin,TemplateView):
     template_name = 'Ledger/product_topsheet.html'
@@ -209,7 +211,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
                 todays_data['purchase_amount'] = purchase_amount
                 total_purchase_amount += purchase_amount
 
-                todays_data['purchase_rate'] = purchase_amount/purchase_qnt
+                todays_data['purchase_rate'] = purchase_amount/purchase_qnt if purchase_qnt else 0
             # 4. বিক্রয়
             sell_qnt = 0
             sell_amount = 0
@@ -256,17 +258,16 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
         context['total'] = {
             'total_purchase_quantity': total_purchase_quantity,
             'total_purchase_amount': total_purchase_amount,
-            'purchase_rate': total_purchase_amount/total_purchase_quantity,
+            'purchase_rate': total_purchase_amount/total_purchase_quantity if total_purchase_quantity else 0,
             'total_sell_quantity': total_sell_quantity,
             'total_sell_amount': total_sell_amount,
-            'selling_rate': total_sell_amount/total_sell_quantity,
+            'selling_rate': total_sell_amount/total_sell_quantity if total_sell_quantity else 0,
         }
         return context
 
 # To store balances/Storage
-class StorageView(LoginRequiredMixin, CreateView, ListView):
+class StorageView(LoginRequiredMixin, ListView):
     model = Storage
-    fields = ['month','year','product','quantity']
     template_name = 'Ledger/storage.html'
 
     def get(self,request,*args, **kwargs):
@@ -291,27 +292,7 @@ class StorageView(LoginRequiredMixin, CreateView, ListView):
         year = self.kwargs['year']
         qs = self.model.objects.filter(month=month, year=year)
         return qs
-    
-    def get_success_url(self):
-        return reverse_lazy('product-storage', kwargs=self.kwargs)
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        month = form.cleaned_data['month']
-        year = form.cleaned_data['year']
-        return redirect(reverse_lazy('product-storage', kwargs={'month':month, 'year':year}))
-    
-    def form_invalid(self, form):
-        self.object_list = self.get_queryset()
-        messages.error(self.request, "মজুদ মাল মাসে একবারই লিপিবদ্ধ হয়!")
-        context = self.get_context_data(form=form)
-        return self.render_to_response(context)
-
-    def get_initial(self):
-        initial = super().get_initial()
-        initial.update(self.kwargs)
-        return initial
-    
+      
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # মাসিক খতিয়ান এর parameter সেট করার জন্য, যেন পরবর্তী মাসে চলে যায়
@@ -328,3 +309,20 @@ class StorageView(LoginRequiredMixin, CreateView, ListView):
         if qs:
             context['total'] = qs.aggregate(Sum('price'))['price__sum']
         return context
+
+def storage_formset_view(request,month,year):
+    first_date = first_balance_date()
+    empty_storages = Storage.objects.filter(quantity=0, month=first_date.month, year=first_date.year)
+    print(first_date.month, first_date.year, empty_storages)
+    
+    storage_formset_factory = modelformset_factory(Storage, StorageUpdateForm, extra=0)
+    storage_formset = storage_formset_factory(request.POST or None, queryset=empty_storages, prefix='storage')
+    storage_formset.initial = [{'product':obj.product} for obj in empty_storages]
+
+    template = "Ledger/storage_formset.html"
+    context = {
+        'formset': storage_formset,
+        'month': month, 'year':year
+        }
+
+    return render(request,template,context)

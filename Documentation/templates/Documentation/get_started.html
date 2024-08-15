@@ -1,0 +1,20 @@
+{% extends "Documentation/base.html" %}
+
+{% load static %}
+
+{% block main %}
+<h4>হিসাবরক্ষণের জন্য প্রয়োজনীয় পদক্ষেপ</h4>
+
+<h5 id='add-balance'># প্রাথমিক ব্যালেন্স যুক্ত করা</h5>
+<p>হিসাবকালের শুরুতে অবশ্যই হাতে নগদ/ব্যালেন্স বি/এফ যুক্ত করতে হবে, তা নাহলে লেনদেন লিপিবদ্ধ করা যাবে না। পূর্বের ডেটা না থাকলে হোমপেজে ব্যালেন্স যুক্ত করার অপশনটি দেখা যাবে। </p>
+<div class="img-container">
+    <img src="{% static "Photos/GetStarted/primary-balance.png" %}" alt="Add Balance">
+</div>
+<p>এরপর তারিখ ও পরিমাণ দিয়ে সেভ করি। উল্লেখ্য যে, আপনি যদি ব্যাবসার প্রথম দিন থেকে হিসাব শুরু করেন, তাহলে পরিমান ০ (শুন্য) দেবেন।</p>
+<p><i>** এই ব্যালেন্স একবারই এন্ট্রি করতে হবে। **</i></p>
+<div class="img-container">
+    <img src="{% static "Photos/GetStarted/add-balance.png" %}" alt="Add Balance">
+</div>
+
+
+{% endblock main %}

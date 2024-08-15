@@ -1,6 +1,12 @@
 
-2027-07-29
-দৈনিক মজুদ মালের হিসাব এর pagination 15 পেজে fix করা হয়েছে।
+2024-08-15
+>> Zero division issue fixed.
+>> Product post save signal -> Create Storage
+>> Date limit to current date for Loan & Investment
+>> Added Documentation.
+2027-07-30
+----------
+>> দৈনিক মজুদ মালের হিসাব এর pagination 15 পেজে fix করা হয়েছে।
 2024-06-19
 ----------
 >> মালের রেট সম্পর্কিত সমস্যাটি সমাধান করা হয়েছে।

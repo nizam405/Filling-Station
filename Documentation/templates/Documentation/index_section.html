@@ -1,0 +1,226 @@
+<div id="index">
+    <div class="card">
+        <!-- Home -->
+        <div class="card-header" id='heading-home'>
+            <a class='card-link' href="{% url "doc-home" %}">প্রাথমিক ধারনা</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#home' aria-expanded='false' aria-controls='heading-home'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='home' class="collapse" data-parent='#index' aria-lebelledby='home'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-home" %}#program-start'>প্রোগ্রামটি চালু করা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-home" %}#log-in'>সিস্টেম-এ প্রবেশ করা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-home" %}#pass-change'>পাসওয়ার্ড পরিবর্তন</a></li>
+                <li class='list-group-item'><a href='{% url "doc-home" %}#log-out'>সিস্টেম থেকে বের হওয়া</a></li>
+                <li class='list-group-item'><a href='{% url "doc-home" %}#print'>প্রিন্ট করা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-home" %}#program-close'>প্রোগ্রামটি বন্ধ করা</a></li>
+            </ul>
+        </div>
+        
+        <!-- Get started -->
+        <div class="card-header" id='heading-get-started'>
+            <a class='card-link' href="{% url "doc-get-started" %}">হিসাবরক্ষণের জন্য প্রয়োজনীয় পদক্ষেপ</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#get-started' aria-expanded='false' aria-controls='heading-get-started'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='get-started' class="collapse" data-parent='#index' aria-lebelledby='get-started'>
+            <ul class='list-group'>
+                <li class="list-group-item"><a href='{% url "doc-get-started" %}#add-balance'>প্রাথমিক ব্যালেন্স যুক্ত করা</a></li>
+            </ul>
+        </div>
+
+        <!-- Product management -->
+        <div class="card-header" id='heading-product-management'>
+            <a class='card-link' href="{% url "doc-product-management" %}">মাল/পণ্য ব্যবস্থাপনা</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#product-management' aria-expanded='false' aria-controls='heading-product-management'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='product-management' class="collapse" data-parent='#index' aria-lebelledby='product-management'>                 
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-product-management" %}#product-list'>মালের তালিকা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-product-management" %}#add-product'>নতুন পণ্য যুক্ত করা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-product-management" %}#edit-product'>পণ্যের মূল্য/তথ্য পরিবর্তন করা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-product-management" %}#change-status'>পণ্যের অবস্থা পরিবর্তন করা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-product-management" %}#product-rate'>পণ্যের মূল্য নির্ধারন</a></li>
+                <li class='list-group-item'><a href='{% url "doc-product-management" %}#storage'>মজুদ মাল</a></li>
+            </ul>
+        </div>
+        
+        <!-- Expenditure-Revenue  -->
+        <div class="card-header" id='heading-exp-rev'>
+            <a class='card-link' href="{% url "doc-exp-rev" %}">আয়/ব্যায়ের খাত ব্যাবস্থাপনা</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#exp-rev' aria-expanded='false' aria-controls='heading-exp-rev'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='exp-rev' class="collapse" data-parent='#index' aria-lebelledby='exp-rev'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-exp-rev" %}#expenditure'>খরচের খাত</a></li>
+                <li class='list-group-item'><a href='{% url "doc-exp-rev" %}#revenue'>আয়ের খাত</a></li>
+            </ul>
+        </div>
+        
+        <!-- Party -->
+        <div class="card-header" id='heading-party'>
+            <a class='card-link' href="{% url "doc-party" %}">পার্টি ব্যাবস্থাপনা</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#party' aria-expanded='false' aria-controls='heading-party'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='party' class="collapse" data-parent='#index' aria-lebelledby='party'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-party" %}#groupofcompany'>গ্রুপ অফ কোম্পানি</a></li>
+                <li class='list-group-item'><a href='{% url "doc-party" %}#party'>পার্টি</a></li>
+                <li class='list-group-item'><a href='{% url "doc-party" %}#party-balance'>পার্টি ব্যালেন্স</a></li>
+            </ul>
+        </div>
+        
+        <!-- Daily Transaction -->
+        <div class="card-header" id='heading-daily-transaction'>
+            <a class='card-link' href="{% url "doc-daily-transaction" %}">দৈনিক লেনদেন হিসাবভুক্তকরণ</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#daily-transaction' aria-expanded='false' aria-controls='heading-daily-transaction'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='daily-transaction' class="collapse" data-parent='#index' aria-lebelledby='daily-transaction'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#purchase'>মাল ক্রয়</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#sell'>মাল বিক্রয়</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#revenue'>আয়</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#expenditure'>ব্যায়</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#withdraw'>উত্তোলন</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#due-sell'>বাকি বিক্রয়</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#due-collection'>বকেয়া আদায়</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#daily-storage'>দৈনিক মজুদ মাল</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#balance'>ব্যালেন্স সেভ করা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#navigation'>নেভিগেশন</a></li>
+                <li class='list-group-item'><a href='{% url "doc-daily-transaction" %}#subtotal'>সাবটোটাল</a></li>
+            </ul>
+        </div>
+        
+        <!-- Ledger -->
+        <div class="card-header" id='heading-ledger'>
+            <a class='card-link' href="{% url "doc-ledger" %}">খতিয়ান</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#ledger' aria-expanded='false' aria-controls='heading-ledger'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='ledger' class="collapse" data-parent='#index' aria-lebelledby='ledger'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-ledger" %}#product'>মালের খতিয়ান</a></li>
+                <li class='list-group-item'><a href='{% url "doc-ledger" %}#party'>পার্টি খতিয়ান</a></li>
+                <li class='list-group-item'><a href='{% url "doc-ledger" %}#revenue'>আয়ের খতিয়ান</a></li>
+                <li class='list-group-item'><a href='{% url "doc-ledger" %}#expenditure'>ব্যয়ের খতিয়ান</a></li>
+            </ul>
+        </div>
+        
+        <!-- Income Statement -->
+        <div class="card-header" id='heading-income-statement'>
+            <a class='card-link' href="{% url "doc-income-statement" %}">আয়-ব্যয় বিবরণী</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#income-statement' aria-expanded='false' aria-controls='heading-income-statement'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='income-statement' class="collapse" data-parent='#index' aria-lebelledby='income-statement'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-income-statement" %}#adjustment'>মালের মূল্যবৃদ্ধি/মূল্যহ্রাস এর কারণে সমাপনী মজুদে পরিবর্তন</a></li>
+                <li class='list-group-item'><a href='{% url "doc-income-statement" %}#oe-asset'>মালিকানা স্বত্ব বিবরণী ও আর্থিক অবস্থার বিবরণী</a></li>
+                <li class='list-group-item'><a href='{% url "doc-income-statement" %}#profit-dist'>মুনাফা বন্টন</a></li>
+            </ul>
+        </div>
+        
+        <!-- Owners Equity -->
+        <div class="card-header" id='heading-oe'>
+            <a class='card-link' href="{% url "doc-oe" %}">বাৎসরিক মালিকানা স্বত্ব</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#oe' aria-expanded='false' aria-controls='heading-oe'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='oe' class="collapse" data-parent='#index' aria-lebelledby='oe'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-oe" %}#add-oe'>মূলধন যুক্ত করা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-oe" %}#oe-details'>মালিকানা স্বত্বের মাসিক বিস্তারিত বিবরণ</a></li>
+            </ul>
+        </div>
+
+        <!-- Loan -->
+        <div class="card-header" id='heading-loan'>
+            <a class='card-link' href="{% url "doc-loan" %}">হাওলাদ ব্যাবস্থাপনা</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#loan' aria-expanded='false' aria-controls='heading-loan'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='loan' class="collapse" data-parent='#index' aria-lebelledby='loan'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-loan" %}#lender'>হাওলাদ দাতা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-loan" %}#borrow-loan'>হাওলাদ গ্রহণ</a></li>
+                <li class='list-group-item'><a href='{% url "doc-loan" %}#refund-borrowed-loan'>গৃহীত হাওলাদ পরিশোধ</a></li>
+                <li class='list-group-item'><a href='{% url "doc-loan" %}#lender-details'>হাওলাদ দাতার সকল লেনদেন</a></li>
+                <li class='list-group-item'><a href='{% url "doc-loan" %}#borrower'>হাওলাদ গ্রহীতা</a></li>
+                <li class='list-group-item'><a href='{% url "doc-loan" %}#lend-loan'>হাওলাদ প্রদান</a></li>
+                <li class='list-group-item'><a href='{% url "doc-loan" %}#refund-lended-loan'>প্রদত্ত হাওলাদ ফেরত</a></li>
+                <li class='list-group-item'><a href='{% url "doc-loan" %}#borrower-details'>হাওলাদ গ্রহীতার সকল লেনদেন</a></li>
+            </ul>
+        </div>
+
+        <!-- Error management -->
+        <div class="card-header" id='heading-error-handling'>
+            <a class='card-link' href="{% url "doc-error-handling" %}">ভূল হলে করণীয়</a>
+            <button class='btn btn-link btn-light collapsed float-right' data-toggle='collapse' data-target='#error-handling' aria-expanded='false' aria-controls='heading-error-handling'>
+                <i class='bi bi-chevron-down'></i>
+            </button>
+        </div>
+        <div id='error-handling' class="collapse" data-parent='#index' aria-lebelledby='error-handling'>
+            <ul class='list-group'>
+                <li class='list-group-item'><a href='{% url "doc-error-handling" %}#daily-transaction'>দৈনিক লেনদেন সমূহে ভূল হলে করণীয়</a></li>
+                <li class='list-group-item'><a href='{% url "doc-error-handling" %}#daily-storage'>দৈনিক মজুদ মালের পরিমান ভূল হলে করণীয়</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        function highlightAndExpand() {
+            const currentPath = window.location.pathname;
+            const currentHash = window.location.hash;
+
+            // Loop through each link
+            $('.list-group-item a').each(function() {
+                const linkUrl = $(this).attr('href');
+                const linkPath = linkUrl.split('#')[0];
+                const linkHash = linkUrl.split('#')[1] ? `#${linkUrl.split('#')[1]}` : '';
+
+                // Check if both path and hash match
+                if (currentPath === linkPath && currentHash === linkHash) {
+                    // Highlight the active link
+                    $(this).addClass('bg-secondary text-light');
+
+                    // Expand the corresponding section
+                    const sectionId = $(this).closest('.collapse').attr('id');
+                    $(`#${sectionId}`).collapse('show');
+
+                    // Expand the button corresponding to the section
+                    $(`#${sectionId}`).siblings('.card-header').find('.btn').removeClass('collapsed').attr('aria-expanded', 'true');
+                } else {
+                    $(this).removeClass('bg-secondary text-light');
+                }
+            });
+        }
+
+        // Execute on page load
+        highlightAndExpand();
+
+        // Reapply highlighting after navigation (especially for hash changes)
+        $(window).on('hashchange', function() {
+            highlightAndExpand();
+        });
+
+        $('.list-group-item a').on('click', function() {
+            setTimeout(highlightAndExpand, 50); // Slight delay to allow URL to update
+        });
+    });
+</script>

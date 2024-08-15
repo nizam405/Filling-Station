@@ -1,0 +1,114 @@
+{% extends "Documentation/base.html" %}
+
+{% load static %}
+{% block main %}
+
+<h4>হাওলাদ ব্যাবস্থাপনা</h4>
+
+<p>হাওলাদ মডিউলের সাহায্যে হাওলাদ গ্রহণ, হাওলাদ প্রদান, পরিশোধ, ফেরত অর্থাৎ হাওলাদ সম্পর্কিত সকল কাজ সম্পাদন করা যাবে। হাওলাদ অপশনটি 'দৈনিক লেনদেন' পেজে রাখা হয়নি। কারণ এই ধরণের লেনদেন প্রতিদিন হয়না। হাওলাদ পেজটিতে যাওয়ার জন্য উপরের মেন্যুবার থেকে 'হাওলাদ' এ ক্লিক করি। </p>
+
+<div class="img-container">
+    <img src="{% static "Photos/Loan/loan.png" %}">
+</div>
+<p>এখানে হাওলাদ গৃহীত হাওলাদ ও প্রদত্ত হাওলাদ এর বিস্তারিত প্রতিবেদন দেখা যাবে।</p>
+
+<!-- হাওলাদ দাতা -->
+<h5 id='lender'># হাওলাদ দাতা</h5>
+<p><b>হাওলাদ দাতার তালিকাঃ </b>হাওলাদ দাতার তালিকা দেখার জন্য 'হাওলাদ' পেজ থেকে <a href="{% url "lender" %}">হাওলাদ দাতার তালিকা</a> তে ক্লিক করতে পারি অথবা সাইডবার থেকে 'হাওলাদ দাতা' এর উপর ক্লিক করতে পারি। </p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/lender.png" %}">
+</div>
+
+<p>তাহলে নিচের মতো পেজ আসবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/lender2.png" %}">
+</div>
+
+<p><b>হাওলাদ দাতা যুক্ত করাঃ </b>হাওলাদ গ্রহণের পূর্বে যা কাছ থেকে হাওলাদ গ্রহণ করা হবে, অবশ্যই তার নাম তালিকাভুক্ত করতে হবে। হাওলাদ দাতা যুক্ত করার জন্য <i class="bi bi-plus-circle btn btn-sm p-0"></i> বাটনটিতে ক্লিক করি। এর পর নাম লিখে <button class="btn btn-sm btn-success eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<p><b>হাওলাদ দাতার নাম পরিবর্তন করাঃ </b>হাওলাদ দাতার নাম পরিবর্তন করার জন্য অ্যাকশন বাটন তালিকা থেকে <i class="bi bi-pencil-square btn btn-sm btn-info"></i> বাটনে ক্লিক করি। এর পর নাম পরিবর্তন করে <button class="btn btn-sm btn-success eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<!-- হাওলাদ গ্রহণ -->
+<h5 id='borrow-loan'># হাওলাদ গ্রহণ</h5>
+<p>হাওলাদ গ্রহণ করা হলে, 'হাওলাদ' পেজ থেকে 'হাওলাদ গ্রহণ' লিখাটির পাশে <i class="bi bi-plus-circle btn"></i> বাটনে ক্লিক করি। তাহলে নিচের মতো ফর্ম আসবে। </p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/borrow-loan.png" %}">
+</div>
+<p>এখানে হাওলাদ দাতার/প্রদানকারী ও হাওলাদের পরিমাণ দিয়ে <button class="btn btn-sm btn-success eng">Save</button> বাটনে ক্লিক করি। ঐদিনের ব্যালেন্স সেভ করার আগ পর্যন্ত হাওলাদের তথ্য পরিবর্তন ও ডিলিট করা যাবে।</p>
+
+<!-- গৃহীত হাওলাদ পরিশোধ -->
+<h5 id='refund-borrowed-loan'># গৃহীত হাওলাদ পরিশোধ</h5>
+<p>গৃহীত হাওলাদ পরিশোধ করা হলে যে হাওলাদ পরিশোধ করা হবে তার <span class="btn btn-primary btn-sm d-print-none">পরিশোধ করুন</span> বাটনে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/Loan/refund-borrowed-loan.png" %}">
+</div>
+
+<p>পরবর্তী পেজে পরিশোধের তথ্য দিয়ে <button class="btn btn-sm btn-success eng">Save</button> বাটনে ক্লিক করি।</p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/refund-borrowed-loan2.png" %}">
+</div>
+
+<!-- হাওলাদ দাতার সকল লেনদেন -->
+ <h5 id='lender-details'># হাওলাদ দাতার সকল লেনদেন</h5>
+ <p>হাওলাদ দাতার সকল লেনদেন দেখার জন্য সাইডবার থেকে 'হাওলাদ দাতা' সিলেক্ট করি।</p>
+ <div class="img-container">
+     <img src="{% static "Photos/Loan/lender-details.png" %}">
+ </div>
+<p>এই পেজে আসার পর হাওলাদ দাতার নামের পাশে <span class="btn btn-sm btn-success">সকল লেনদেন দেখুন</span> বাটনে ক্লিক করি। পরবর্তী পেজে ঐ হাওলাদ দাতার সাথে ব্যবসায়ের সকল হাওলাদ সম্পর্কিত লেনদেন দেখাবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/lender-details2.png" %}">
+</div>
+
+
+
+
+<!-- হাওলাদ গ্রহীতা -->
+<h5 id='borrower'># হাওলাদ গ্রহীতা</h5>
+<p><b>হাওলাদ গ্রহীতার তালিকাঃ </b>হাওলাদ গ্রহীতার তালিকা দেখার জন্য 'হাওলাদ' পেজ থেকে <a href="{% url "borrower" %}">হাওলাদ গ্রহীতার তালিকা</a> তে ক্লিক করতে পারি অথবা সাইডবার থেকে 'হাওলাদ গ্রহীতা' এর উপর ক্লিক করতে পারি। </p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/borrower.png" %}">
+</div>
+
+<p>তাহলে নিচের মতো পেজ আসবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/borrower2.png" %}">
+</div>
+
+<p><b>হাওলাদ গ্রহীতা যুক্ত করাঃ </b>হাওলাদ প্রদানের পূর্বে যা কাছ থেকে হাওলাদ প্রদান করা হবে, অবশ্যই তার নাম তালিকাভুক্ত করতে হবে। হাওলাদ গ্রহীতা যুক্ত করার জন্য <i class="bi bi-plus-circle btn btn-sm p-0"></i> বাটনটিতে ক্লিক করি। এর পর নাম লিখে <button class="btn btn-sm btn-success eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<p><b>হাওলাদ গ্রহীতার নাম পরিবর্তন করাঃ </b>হাওলাদ গ্রহীতার নাম পরিবর্তন করার জন্য অ্যাকশন বাটন তালিকা থেকে <i class="bi bi-pencil-square btn btn-sm btn-info"></i> বাটনে ক্লিক করি। এর পর নাম পরিবর্তন করে <button class="btn btn-sm btn-success eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<!-- হাওলাদ প্রদান -->
+<h5 id='lend-loan'># হাওলাদ প্রদান</h5>
+<p>হাওলাদ প্রদান করা হলে, 'হাওলাদ' পেজ থেকে 'হাওলাদ প্রদান' লিখাটির পাশে <i class="bi bi-plus-circle btn"></i> বাটনে ক্লিক করি। তাহলে নিচের মতো ফর্ম আসবে। </p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/lend-loan.png" %}">
+</div>
+<p>এখানে হাওলাদ গ্রহীতার/প্রদানকারী ও হাওলাদের পরিমাণ দিয়ে <button class="btn btn-sm btn-success eng">Save</button> বাটনে ক্লিক করি। ঐদিনের ব্যালেন্স সেভ করার আগ পর্যন্ত হাওলাদের তথ্য পরিবর্তন ও ডিলিট করা যাবে।</p>
+
+<!-- প্রদত্ত হাওলাদ ফেরত -->
+<h5 id='refund-lended-loan'># প্রদত্ত হাওলাদ ফেরত</h5>
+<p>প্রদত্ত হাওলাদ ফেরত নেওয়া হলে যে হাওলাদ ফেরত নেওয়া হবে তার <span class="btn btn-primary btn-sm d-print-none">গ্রহণ করুন</span> বাটনে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/Loan/refund-lended-loan.png" %}">
+</div>
+
+<p>পরবর্তী পেজে ফেরতের তথ্য দিয়ে <button class="btn btn-sm btn-success eng">Save</button> বাটনে ক্লিক করি।</p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/refund-lended-loan2.png" %}">
+</div>
+
+<!-- হাওলাদ গ্রহীতার সকল লেনদেন -->
+ <h5 id='borrower-details'># হাওলাদ গ্রহীতার সকল লেনদেন</h5>
+ <p>হাওলাদ গ্রহীতার সকল লেনদেন দেখার জন্য সাইডবার থেকে 'হাওলাদ গ্রহীতা' সিলেক্ট করি।</p>
+ <div class="img-container">
+     <img src="{% static "Photos/Loan/borrower-details.png" %}">
+ </div>
+<p>এই পেজে আসার পর হাওলাদ গ্রহীতার নামের পাশে <span class="btn btn-sm btn-success">সকল লেনদেন দেখুন</span> বাটনে ক্লিক করি। পরবর্তী পেজে ঐ হাওলাদ গ্রহীতার সাথে ব্যবসায়ের সকল হাওলাদ সম্পর্কিত লেনদেন দেখাবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/Loan/borrower-details2.png" %}">
+</div>
+
+{% endblock main %}

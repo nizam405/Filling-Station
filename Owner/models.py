@@ -1,10 +1,8 @@
 from django.db import models
-from django.utils import timezone
 from django.urls import reverse
 from Transaction.models import CashBalance
 from Ledger.choices import MONTHS, YEAR, currentMonth, currentYear
-from Core.choices import get_prev_month
-from Ledger.models import Profit
+from Transaction.functions import next_to_last_balance_date
 
 class Owner(models.Model):
     name = models.CharField(max_length=255, verbose_name="নাম")
@@ -20,7 +18,7 @@ class Owner(models.Model):
         return reverse("owners")
 
 class Withdraw(models.Model):
-    date = models.DateField(default=timezone.now, verbose_name='তারিখ')
+    date = models.DateField(default=next_to_last_balance_date, verbose_name='তারিখ')
     owner = models.ForeignKey(to=Owner, on_delete=models.SET_NULL, null=True, verbose_name='মালিক')
     detail = models.CharField(max_length=255, null=True, blank=True, verbose_name='বিবরণ')
     amount = models.IntegerField(null=True, blank=False, verbose_name='পরিমাণ (টাকা)')
@@ -35,7 +33,7 @@ class Withdraw(models.Model):
         return reverse("daily-transactions", kwargs={'date':self.date})
 
 class Investment(models.Model):
-    date = models.DateField(default=timezone.now, verbose_name='তারিখ')
+    date = models.DateField(default=next_to_last_balance_date, verbose_name='তারিখ')
     owner = models.ForeignKey(to=Owner, on_delete=models.SET_NULL, null=True, verbose_name='মালিক')
     detail = models.CharField(max_length=255, null=True, blank=True, verbose_name='বিবরণ')
     amount = models.IntegerField(null=True, blank=False, verbose_name='পরিমাণ (টাকা)')
@@ -73,7 +71,7 @@ class OwnersEquity(models.Model):
         return f"{self.month}, {self.year} - {self.owner} - {self.amount}"
 
 class FixedAsset(models.Model):
-    date = models.DateField(default=timezone.now, verbose_name='তারিখ')
+    date = models.DateField(default=next_to_last_balance_date, verbose_name='তারিখ')
     name = models.CharField(max_length=255, verbose_name="নাম")
     detail = models.CharField(max_length=255, null=True, blank=True, verbose_name='বিবরণ')
     price = models.IntegerField(null=True, blank=False, verbose_name='মূল্য')

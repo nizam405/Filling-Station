@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}মজুদ মাল{% endblock title %}
+{% block style %}
+<style>
+    .form-control, .input-group-text {
+        border-radius: 0;
+    }
+    .form-group {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load bootstrap4 %}
+{% load extra_tags %}
+
+<h3>মজুদ মাল - {{month|e2b_month}}, {{year|e2b_digit}}</h3>
+{% if formset.length > 0 %}
+<form action="" method="post">
+    {% csrf_token %}
+    <div id="form-container">
+        <div class="row text-center">
+            <div class="col-sm-3">মালের নাম</div>
+            <div class="col-sm-3">মজুদের পরিমাণ</div>
+            <div class="col-sm-3">টাকা</div>
+        </div>
+
+        {{formset.management_form}}
+        {% for form in formset %}
+        <div class="row forms">
+            {{form.id}}
+            <div class="col-sm-3 pr-0">{% bootstrap_field form.product show_label=False %}</div>
+            <div class="col-sm-3 px-0 eng">{% bootstrap_field form.quantity show_label=False %}</div>
+            <div class="col-sm-3">{% bootstrap_field form.price show_label=False %}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    
+    <div class="py-2">
+        {% bootstrap_button 'Save' button_type='submit' button_class='btn-success eng' %}
+    </div>
+{% else %}
+<div class='text-info display-4'>সকল পণ্যের মজুদ হিসাবভুক্ত করা হয়েছে।</div>
+{% endif %}
+
+    
+
+</form>
+{% load static %}
+<script src="{% static 'formset.js' %}"></script> 
+
+{% endblock main %}

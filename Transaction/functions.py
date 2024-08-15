@@ -35,6 +35,12 @@ def get_next_month():
     next_month = demo.replace(day=1)
     return next_month
 
+def first_ledger_month_date():
+    first_bal = first_balance_date()
+    demo = first_bal + datetime.timedelta(days=28)
+    first_m_date = demo.replace(day=1)
+    return first_m_date
+
 def save_cashbalance(date:datetime.date):
     from Product.models import Sell, Purchase
     from Revenue.models import Revenue

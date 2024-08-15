@@ -231,15 +231,16 @@ class Sell(models.Model):
     
     def get_absolute_url(self):
         return reverse("daily-transactions", kwargs={'date':self.date})
+
+# This class has created for controlling rate change during Sell & Purchase if rate_update is checked. Use can change product after rate update. But this class is not used yet.
+# class ChangedProduct(models.Model):
+#     date = models.DateField(default=next_to_last_balance_date)
+#     product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
     
-class ChangedProduct(models.Model):
-    date = models.DateField(default=next_to_last_balance_date)
-    product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
-    
-    class Meta:
-        ordering = ['date']
-    def __str__(self):
-        return f"Date: {self.date}, Name: {self.product.name}"
+#     class Meta:
+#         ordering = ['date']
+#     def __str__(self):
+#         return f"Date: {self.date}, Name: {self.product.name}"
 
 class StorageReading(models.Model):
     date = models.DateField(default=last_balance_date, verbose_name="তারিখ")

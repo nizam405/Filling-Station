@@ -1,12 +1,19 @@
 from django.db.models.signals import pre_save, pre_delete, post_save
 from django.dispatch import receiver
-from .models import Sell, Purchase, Rate, StorageReading, ChangedProduct
+from .models import Sell, Purchase, Rate, StorageReading, Product
 from Ledger.models import Storage
 from Ledger.functions import save_profit_oe_from, save_storage
 from Core.choices import last_day_of_month
 from Transaction.functions import get_prev_month
+from Transaction.models import CashBalance
 import datetime
 
+@receiver(post_save, sender=Product)
+def create_storage(sender, instance, created, **kwargs):
+    if created:
+        cashbalance = CashBalance.objects.order_by('date').last()
+        year, month = get_prev_month(cashbalance.date.year,cashbalance.date.month)
+        Storage.objects.create(month=month, year=year, product=instance, quantity=0, price=0)
 
 @receiver(post_save, sender=StorageReading)
 def update_storage(sender,instance:StorageReading, **kwargs):
@@ -69,41 +76,9 @@ def on_delete(sender, instance, **kwargs):
 @receiver(pre_save, sender=Sell)
 @receiver(pre_save, sender=Purchase)
 def on_change(sender, instance, **kwargs):
-    # prev_bal_month = get_prev_month() # prev month of last cashbalance date
-    # prev_month_last_date = last_day_of_month(prev_bal_month.year,prev_bal_month.month)
-    # current_month_last_date = last_day_of_month(instance.date.year,instance.date.month)
-    # যদি চলতি মাসের শেষ তারিখ অথবা পূর্বের মাসের লেনদেন হয় তবে ChangedProduct এ রেকর্ড রাখা হবে
-    # keep_record = instance.date <= prev_month_last_date or instance.date == current_month_last_date
-    # obj = ChangedProduct(date=instance.date, product=instance.product)
 
-    if instance.id is None: # Create Operation
-        pass 
-        # if keep_record: 
-            # Note: নতুন প্রোডাক্ট যুক্ত হলে Cashbalance কম বেশি হতে পারে, তাই Cashbalance আগে Delete করতে হবে
-            # ChangedProduct.objects.get_or_create(date=instance.date,product=instance.product)
-    else: # Update operation
+    if instance.id is not None: # Update operation
         prev_instance = instance.__class__.objects.get(id=instance.id)
         product_changed = prev_instance.product != instance.product
-        # price_unchanged = prev_instance.price == instance.price
         if product_changed:
             update_rate(prev_instance)
-        # if keep_record:
-        #     ChangedProduct.objects.get_or_create(date=instance.date,product=instance.product)
-        #     if product_changed:
-        #         ChangedProduct.objects.get_or_create(date=instance.date,product=prev_instance.product)
-
-# @receiver(post_save, sender=Sell)
-# @receiver(post_save, sender=Purchase)
-# def adjust_sell(sender, instance, **kwargs):
-#     changed = ChangedProduct.objects.all()
-#     if changed:
-#         current_date = None
-#         # Update Storage Ledger of those products
-#         for obj in changed:
-#             save_storage(obj.date,obj.product)
-#             # delete sell
-#             current_date = obj.date
-#             obj.delete()
-#         # Update Profit, OE from concerned date
-#         if current_date:
-#             save_profit_oe_from(current_date)

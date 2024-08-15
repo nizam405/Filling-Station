@@ -21,7 +21,7 @@
             <div class="col-sm-4">দেনাদার</div>
             <div class="col-sm-3">আদায়</div>
             <div class="col-sm-3">অবশিষ্ট পাওনা</div>
-            <div class="col-sm-2">বাতিল</div>
+            <div class="col-sm-2">মুছে ফেলুন</div>
         </div>
         {{formset.management_form}}
         {% for form in formset %}
@@ -34,7 +34,7 @@
                 <span class='bi bi-arrow-left-square mr-2 copy-bal' style='cursor:pointer;'></span>
                 <span class='remaining-bal eng'></span>
             </div>
-            <div class="col-sm-2 p-2">{{form.DELETE}}</div>
+            <div class="col-sm-2 p-2">{{form.DELETE}} <i class="bi bi-trash text-danger"></i></div>
         </div>
         {% endfor %}
     </div>
@@ -46,7 +46,7 @@
             <span class='bi bi-arrow-left-square mr-2 copy-bal' style='cursor:pointer;'></span>
             <span class='remaining-bal eng'></span>
         </div>
-        <div class="col-sm-2 p-2">{{empty_form.DELETE}}</div>
+        <div class="col-sm-2 p-2">{{empty_form.DELETE}} <i class="bi bi-trash text-danger"></i></div>
     </div>
     {% include 'forms_buttons.html' %}
     <div class="p-2"><a href="{% url 'customers' %}">পার্টি যুক্ত করুন</a></div>

@@ -13,7 +13,15 @@ class InvestmentForm(forms.ModelForm):
     class Meta:
         model = Investment
         fields = '__all__'
-        widgets = {'date': forms.SelectDateWidget(years=year_choices())}
+        widgets = {
+            'date': forms.SelectDateWidget(
+                attrs={'disabled': 'disabled'}  # Disable the date field
+            ),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super(InvestmentForm, self).__init__(*args, **kwargs)
+        self.fields['date'].required = False
 
 # Detail view
 class OwnersEquityForm(forms.ModelForm):
@@ -21,7 +29,7 @@ class OwnersEquityForm(forms.ModelForm):
         model = OwnersEquity
         fields = ['owner', 'month', 'year']
     
-    owner = forms.ModelChoiceField(queryset=Owner.objects.all(), empty_label=None)
+    # owner = forms.ModelChoiceField(queryset=Owner.objects.all())
 
 # Top Sheet Filter
 class OwnersEquityFilter(forms.ModelForm):

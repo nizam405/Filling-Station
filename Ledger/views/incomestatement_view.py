@@ -236,7 +236,7 @@ class IncomeStatementView(LoginRequiredMixin,TemplateView):
                 owner_info['rem_profit'] = owner_profit - wd_amount
                 current_oe = prev_oe_amount + owner_investment - wd_amount + owner_profit
                 owner_info['current_oe'] = current_oe
-                current_share = (current_oe*100)/total_oe
+                current_share = (current_oe*100)/total_oe if total_oe else 0
                 owner_info['current_share'] = current_share
 
                 profit_dist.append(owner_info)

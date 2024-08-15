@@ -1,0 +1,42 @@
+{% extends "Documentation/base.html" %}
+
+{% load static %}
+{% block main %}
+
+<h4>ভূল হলে করণীয়</h4>
+
+<h5 id='daily-transaction'># দৈনিক লেনদেন সমূহে ভূল হলে করণীয়</h5>
+<p>দৈনিক লেনদেনসমূহ - ক্রয়, বিক্রয়, আয়, ব্যয়, উত্তোলন, বাকি বিক্রয়, বকেয়া আদায়
+     ও হাওলাদ সম্পর্কিত লেনদেন ভুল লিপিবদ্ধ হয়ে ব্যালেন্স সেভ করার পর আর পরিবর্তন করা যায় না। যদি পরিবর্তন করতে হয়, তবে ব্যালেন্স ডিলিট করে ঐদিনের হিসাব পরিবর্তন করা যাবে।</p>
+
+<p><b>গতদিনের ভুল সংশোধনঃ </b>যদি হিসাবের ভূল ঐদিনই/পরের দিন ধরা পড়ে তাহলে একদিনের ব্যালেন্স ডিলিট করলেই যথেষ্ঠ। ব্যালেন্স ডিলিট করার জন্য সাইডবার থেকে 'দৈনিক হাতে নগদ' অপশনে ক্লিক করি। তাহলে নিচের মতো পেজ আসবে। </p>
+
+<div class="img-container">
+    <img src="{% static "Photos/ErrorHandling/single-balance-delete.png" %}">
+</div>
+
+<p>এখান থেকে সর্বশেষ ব্যালেন্স এর পাশে <i class='bi bi-trash text-danger'></i> বাটনটি দেখা যাবে। এতে ক্লিক করলেই সর্বশেষ ব্যালেন্স ডিলিট হয়ে যাবে এবং ঐদিনের সকল লেনদেন পরিবর্তন করা যাবে।</p>
+
+<p><b>পুরাতন ভুল সংশোধনঃ </b>যদি কিছুদিন আগের কোনো ভূল ধরা পড়ে, তাহলে ঐ দিন হতে চলতি তারিখ পর্যন্ত সকল ব্যালেন্স ডিলিট করতে হবে। একাধিক ব্যালেন্স ডিলিট করার জন্য <a href="{% url 'cashbalance-list' %}">দৈনিক হাতে নগদ</a> পেজে আসার পর <span class="btn btn-info btn-sm"><i class="bi bi-gear pr-2"></i>ব্যালেন্স নিয়ন্ত্রন করুন</span> বাটনে ক্লিক করি। </p>
+<div class="img-container">
+    <img src="{% static "Photos/ErrorHandling/balance-control.png" %}">
+</div>
+<p>তাহলে নিচের ফর্মটি প্রদর্শিত হবে। ধরা যাক, জুন মাসের ১ তারিখে কোনো হিসাবে ভূল ছিল। তাহলে তারিখ (হতে) ফিল্ডে জুন এর ১ তারিখ সিলেক্ট করি। এবং <span class="eng">Action</span> থেকে <span class="eng">Delete</span> নির্বাচন করি। অতপর <span class="eng btn btn-primary btn-sm">Go</span> বাটনে ক্লিক করি।</p>
+<div class="img-container">
+    <img src="{% static "Photos/ErrorHandling/multi-balance-delete.png" %}">
+</div>
+<p>এই মূহুর্তে <a href="{% url 'daily-transactions' %}">দৈনিক লেনদেন</a> পেজে অথবা <a href="{% url 'loan-dashboard' %}">হাওলাদ</a> পেজে পরিবর্তনের <i class="bi bi-pencil-square text-info"></i> বাটনটি পাওয়া যাবে।</p>
+<p>পরিবর্তন সম্পন্ন হয়ে গেলে পুনরায় ব্যালেন্স সেভ করতে হবে। তাই আবার 'দৈনিক হাতে নগদ' পেজে যাই ও <span class="btn btn-info btn-sm"><i class="bi bi-gear pr-2"></i>ব্যালেন্স নিয়ন্ত্রন করুন</span> বাটনে ক্লিক করি। এবার তারিখ (পর্যন্ত) এ যে পর্যন্ত সেভ লেনদেন এন্ট্রি করা হয়েছিল ঐ তারিখ দেই। <span class="eng">Action</span> থেকে এবার <span class="eng">Save</span> নির্বাচন করি। অতপর <span class="eng btn btn-primary btn-sm">Go</span> বাটনে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/ErrorHandling/multi-balance-save.png" %}">
+</div>
+
+<h5 id='daily-storage'># দৈনিক মজুদ মালের পরিমান ভূল হলে করণীয়</h5>
+<p>দৈনিক মজুদ মাল যেকোনো সময় পরিবর্তন করা যাবে। অর্থাত পুরাতন কোনো হিসাবে ভূল হলে ব্যালেন্স ডিলিট করার প্রয়োজন নেই। শুধমাত্র নির্দিষ্ট তারিখের দৈনিক লেনদেন পেজে যাওয়ার পর মজুদ মালের পরিমানের পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনে ক্লিক করলেই পরিবর্তন করার সুযোগ পাবো।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/ErrorHandling/storage.png" %}">
+</div>
+
+{% endblock main %}

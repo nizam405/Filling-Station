@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}বকেয়া আদায়{% endblock title %}
+{% block title %}পার্টি ব্যালেন্স{% endblock title %}
 {% block style %}
 <style>
     .form-control, .input-group-text {
@@ -45,7 +45,7 @@
         {% endfor %}
     </div>
     <div class="py-2">
-        {% bootstrap_button 'Save' button_type='submit' button_class='btn-primary eng' %}
+        {% bootstrap_button 'Save' button_type='submit' button_class='btn-success eng' %}
         <a href="{% url 'customers' %}" class="p-2">পার্টি যুক্ত করুন</a>
     </div>
 

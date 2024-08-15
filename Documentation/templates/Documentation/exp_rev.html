@@ -1,0 +1,19 @@
+{% extends "Documentation/base.html" %}
+
+{% load static %}
+{% block main %}
+<h4>আয়/ব্যায়ের খাত ব্যাবস্থাপনা</h4>
+
+<h5 id='expenditure'># খরচের খাত</h5>
+<p>খরচের খাত যুক্ত করার জন্য সাইডবার থেকে “খরচের খাত” নির্বাচন করি। এখানে নাম ও ক্রম লিখে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি। একই পেজে খরচের খাতের তালিকা দেখা যাবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/ExpRev/exp.png" %}" alt="Expenditure">
+</div>
+
+<h5 id='revenue'># আয়ের খাত</h5>
+<p>আয়ের খাত যুক্ত করার জন্য সাইডবার থেকে “আয়ের খাত” নির্বাচন করি। এখানে নাম ও ক্রম লিখে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি। একই পেজে আয়ের খাতের তালিকা দেখা যাবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/ExpRev/rev.png" %}" alt="Revenue">
+</div>
+
+{% endblock main %}

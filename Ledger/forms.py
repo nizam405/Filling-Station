@@ -58,3 +58,14 @@ class StorageFilterForm(forms.ModelForm):
     class Meta:
         model = Storage
         fields = ['product','month','year']
+
+# Used in Storage Update Formset
+class StorageUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Storage
+        fields = ['product','quantity','price']
+    
+    def __init__(self, *args, **kwargs):
+        super(StorageUpdateForm, self).__init__(*args, **kwargs)
+        # product = self.instance.product
+        self.fields['product'] = forms.CharField(disabled=True)

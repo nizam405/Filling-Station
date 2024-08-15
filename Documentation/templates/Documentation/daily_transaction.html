@@ -1,0 +1,184 @@
+{% extends "Documentation/base.html" %}
+
+{% load static %}
+
+{% block main %}
+<h4>দৈনিক লেনদেন হিসাবভুক্তকরণ</h4>
+<p>এই সফটওয়্যারটির হোম পেজ হিসেবে 'দৈনিক লেনদেন' নামক পেজটি নির্ধারন করা আছে। এছাড়া অন্য যেকোনো পেজ থেকে উপরের নেভিগেশন বার থেকে 'দৈনিক লেনদেন' অথবা হেডার এর ফিলিং স্টেশন লিখা লোগোতে ক্লিক করেও <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসা যাবে।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/daily-transaction.png" %}" alt="Purchase">
+</div>
+
+
+<h5 id='purchase'># মাল ক্রয়</h5>
+<p>দৈনিক ক্রয়সমূহ এন্ট্রি করার জন্য <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসার পর <b>মাল ক্রয়</b> লিখাটির পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনটি-তে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/purchase.png" %}" alt="Purchase">
+</div>
+
+<p>পরবর্তী পেজে ড্রপডাউন মেনু থেকে মালের নাম সিলেক্ট করি। মালের নাম সিলেক্ট করার সাথে সাথে মালের দর সয়ংক্রিয়ভাবে চলে আসবে। এরপর মালের পরিমাণ দেই। পরিমাণ দেওয়ার সাথে সাথে মোট মূল্য সয়ংক্রিয়ভাবে চলে আসবে। এখানে মোট মূল্য যদি পরিবর্তন করা হয়, তবে দর সেই অনুযায়ী পরিবর্তন হয়ে যাবে। চাইলে দর পরিবর্তন করা যাবে, এক্ষেত্রে মোট মূল্য পরিবর্তন হবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/purchase2.png" %}" alt="Purchase">
+</div>
+<p>মোট টাকার ডান পাশে 'দর পরিবর্তন' নামে একটি চেকবক্স আছে। এর কাজ হলো এখন যে দরে পণ্যটি কেনা হলো তা ঐ পণ্যের দর হালনাগাদ করা। সাধারণত কোনো পণ্যের মূল্য যখন পরিবর্তন হবে শুধু মাত্র তখনই এই বক্সটি চেক করে দিতে হবে। এটি না করেও আপনি <a href="{% url "products" %}">মালের তালিকা</a> পেজ থেকে 'দর' অপশন সিলেক্ট করেও দর হালনাগাদ করা যায়, এটি <a href='{% url "doc-product-management" %}#product-rate'>এই ডকুমেন্টেশনে</a> আলোচনা করা হয়েছে।</p>
+<p>অপর আরেকটি ক্রয় এন্ট্রি করার জন্য <i class="bi bi-plus-circle-fill text-secondary" style="font-size: 1.5rem"></i> বাটনে ক্লিক করি। এভাবে প্রয়োজনীয় সংখ্যক ফর্ম যুক্ত করে দিনের সকল ক্রয় এন্ট্রি করে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<p><b>ক্রয় পরিবর্তনঃ </b>কোনো কারণের ক্রয় পরিবর্তন করতে হলে একই ভাবে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনে ক্লিক করি। এখানে পূর্বের ক্রয় গুলো দেখাবে। এই পেজে নতুন ক্রয় এন্টি ছাড়াও পুরাতন গুলো পরিবর্তন করা যাবে।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/purchase-edit.png" %}" alt="Purchase">
+</div>
+
+<p><b>ক্রয় মুছে ফেলাঃ </b>ক্রয় মুছে ফেলার জন্য এডিট ফর্ম থেকে 'মুছে ফেলুন' লিখাটির বরাবর <i class="bi bi-trash text-danger"></i> <span class="eng">(Delete)</span> চেকবক্সটিতে চেক করে সেভ করতে হবে। উল্লেখ্য যে এই পেজে একইসাথে একাধিক ক্রয় মুছে ফেলা যাবে।</p>
+
+{% comment %} Sell {% endcomment %}
+<h5 id='sell'># মাল বিক্রয়</h5>
+<p>দৈনিক বিক্রয়সমূহ এন্ট্রি করার জন্য <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসার <b>মাল বিক্রয়</b> লিখাটির পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনটি-তে ক্লিক করি।</p>
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/sell.png" %}" alt="sell">
+</div>
+<p>পরবর্তী পেজে ড্রপডাউন মেনু থেকে মালের নাম সিলেক্ট করি। মালের নাম সিলেক্ট করার সাথে সাথে মালের দর সয়ংক্রিয়ভাবে চলে আসবে। এরপর মালের পরিমাণ দেই। পরিমাণ দেওয়ার সাথে সাথে মোট মূল্য সয়ংক্রিয়ভাবে চলে আসবে। এখানে মোট মূল্য যদি পরিবর্তন করা হয়, তবে দর সেই অনুযায়ী পরিবর্তন হয়ে যাবে। চাইলে দর পরিবর্তন করা যাবে, এক্ষেত্রে মোট মূল্য পরিবর্তন হবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/sell2.png" %}" alt="sell">
+</div>
+<p>মোট টাকার ডান পাশে 'দর পরিবর্তন' নামে একটি চেকবক্স আছে। এর কাজ হলো এখন যে দরে পণ্যটি কেনা হলো তা ঐ পণ্যের দর হালনাগাদ করা। সাধারণত কোনো পণ্যের মূল্য যখন পরিবর্তন হবে শুধু মাত্র তখনই এই বক্সটি চেক করে দিতে হবে। এটি না করেও আপনি <a href="{% url "products" %}">মালের তালিকা</a> পেজ থেকে 'দর' অপশন সিলেক্ট করেও দর হালনাগাদ করা যায়, এটি <a href='{% url "doc-product-management" %}#product-rate'>এই ডকুমেন্টেশনে</a> আলোচনা করা হয়েছে।</p>
+<p>অপর আরেকটি বিক্রয় এন্ট্রি করার জন্য <i class="bi bi-plus-circle-fill text-secondary" style="font-size: 1.5rem"></i> বাটনে ক্লিক করি। এভাবে প্রয়োজনীয় সংখ্যক ফর্ম যুক্ত করে দিনের সকল বিক্রয় এন্ট্রি করে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<p><b>বিক্রয় পরিবর্তনঃ </b>কোনো কারণে বিক্রয় পরিবর্তন করতে হলে একই ভাবে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনে ক্লিক করি। এখানে পূর্বের বিক্রয় গুলো দেখাবে। এই পেজে নতুন বিক্রয় এন্টি ছাড়াও পুরাতন গুলো পরিবর্তন করা যাবে।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/sell-edit.png" %}" alt="sell">
+</div>
+
+<p><b>বিক্রয় মুছে ফেলাঃ </b>বিক্রয় মুছে ফেলার জন্য এডিট ফর্ম থেকে 'মুছে ফেলুন' লিখাটির বরাবর <i class="bi bi-trash text-danger"></i> <span class="eng">(Delete)</span> চেকবক্সটিতে চেক করে সেভ করতে হবে। উল্লেখ্য যে এই পেজে একইসাথে একাধিক বিক্রয় মুছে ফেলা যাবে।</p>
+
+{% comment %} আয় {% endcomment %}
+<h5 id='revenue'># আয়</h4>
+<p><b>আয় হিসাবভুক্ত করাঃ </b>আয় যুক্ত করার জন্য <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসার পর <b>আয়</b> লিখাটির পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনটি তে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/revenue.png" %}" alt="sell">
+</div>
+
+<p>পরবর্তী পেজে ড্রপডাউন মেনু থেকে আয়ের খাত নির্বাচন করতে হবে। এরপর বিবরন (ঐচ্ছিক) ও টাকার পরিমাণ লিখতে হবে। অপর আরেকটি আয়ের এন্ট্রি করার জন্য <i class="bi bi-plus-circle-fill text-secondary" style="font-size: 1.5rem"></i> বাটনে ক্লিক করি। এভাবে প্রয়োজনীয় সংখ্যক ফর্ম যুক্ত করে দিনের সকল আয় এন্ট্রি করে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/revenue-form.png" %}" alt="sell">
+</div>
+<p>একই পদ্ধতি অনুসরণ করে আয়সমূহ পরিবর্তন করা যাবে।</p> <p>আয় মুছে ফেলতে চাইলে এডিট ফর্ম থেকে 'মুছে ফেলুন' লিখাটির বরাবর <i class="bi bi-trash text-danger"></i> <span class="eng">(Delete)</span> চেকবক্সটিতে চেক করে সেভ করতে হবে। </p>
+
+{% comment %} ব্যায় {% endcomment %}
+<h5 id='expenditure'># ব্যায়</h5>
+<p><b>ব্যায় হিসাবভুক্ত করাঃ </b>ব্যায় যুক্ত করার জন্য <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসার পর <b>ব্যায়</b> লিখাটির পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনটি তে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/expenditure.png" %}" alt="sell">
+</div>
+
+<p>পরবর্তী পেজে ড্রপডাউন মেনু থেকে ব্যায়ের খাত নির্বাচন করতে হবে। এরপর বিবরন (ঐচ্ছিক) ও টাকার পরিমাণ লিখতে হবে। অপর আরেকটি ব্যায়ের এন্ট্রি করার জন্য <i class="bi bi-plus-circle-fill text-secondary" style="font-size: 1.5rem"></i> বাটনে ক্লিক করি। এভাবে প্রয়োজনীয় সংখ্যক ফর্ম যুক্ত করে দিনের সকল ব্যায় এন্ট্রি করে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/expenditure-form.png" %}" alt="sell">
+</div>
+<p>একই পদ্ধতি অনুসরণ করে ব্যায়সমূহ পরিবর্তন করা যাবে।</p> <p>ব্যায় মুছে ফেলতে চাইলে এডিট ফর্ম থেকে 'মুছে ফেলুন' লিখাটির বরাবর <i class="bi bi-trash text-danger"></i> <span class="eng">(Delete)</span> চেকবক্সটিতে চেক করে সেভ করতে হবে। </p>
+
+    
+
+{% comment %} উত্তোলন {% endcomment %}
+<h5 id='withdraw'># উত্তোলন</h5>
+<p><b>উত্তোলন হিসাবভুক্ত করাঃ </b>উত্তোলন যুক্ত করার জন্য <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসার পর <b>উত্তোলন</b> লিখাটির পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনটি তে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/withdraw.png" %}" alt="sell">
+</div>
+
+<p>পরবর্তী পেজে ড্রপডাউন মেনু থেকে মালিকের নাম নির্বাচন করতে হবে। এরপর বিবরন (ঐচ্ছিক) ও টাকার পরিমাণ লিখতে হবে। একই মালিকের আরেকটি উত্তোলন এন্ট্রি করার জন্য <span class="bi bi-back mr-2 eng"> Copy</span> বাটনে ক্লিক করি। এবং অপর মালিকের উত্তোলন এন্ট্রি করার জন্য <i class="bi bi-plus-circle-fill text-secondary" style="font-size: 1.5rem"></i> বাটনে ক্লিক করি। এভাবে প্রয়োজনীয় সংখ্যক ফর্ম যুক্ত করে দিনের সকল উত্তোলন এন্ট্রি করে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/withdraw-form.png" %}" alt="sell">
+</div>
+<p>একই পদ্ধতি অনুসরণ করে উত্তোলনসমূহ পরিবর্তন করা যাবে।</p> <p>উত্তোলন মুছে ফেলতে চাইলে এডিট ফর্ম থেকে 'মুছে ফেলুন' লিখাটির বরাবর <i class="bi bi-trash text-danger"></i> <span class="eng">(Delete)</span> চেকবক্সটিতে চেক করে সেভ করতে হবে। </p>
+
+
+
+{% comment %} বাকি বিক্রয় {% endcomment %}
+<h5 id='due-sell'># বাকি বিক্রয়</h5>
+<p>দৈনিক বাকি বিক্রয়সমূহ এন্ট্রি করার জন্য <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসার <b>বাকি বিক্রয়</b> লিখাটির পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনটি-তে ক্লিক করি।</p>
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/due-sell.png" %}" alt="sell">
+</div>
+<p>পরবর্তী পেজে ড্রপডাউন মেনু থেকে ক্রেতার নাম ও মালের নাম সিলেক্ট করি। মালের নাম সিলেক্ট করার সাথে সাথে মালের দর সয়ংক্রিয়ভাবে চলে আসবে। এরপর মালের পরিমাণ দেই। পরিমাণ দেওয়ার সাথে সাথে মোট মূল্য সয়ংক্রিয়ভাবে চলে আসবে। এখানে মোট মূল্য যদি পরিবর্তন করা হয়, তবে দর সেই অনুযায়ী পরিবর্তন হয়ে যাবে। চাইলে দর পরিবর্তন করা যাবে, এক্ষেত্রে মোট মূল্য পরিবর্তন হবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/due-sell-form.png" %}" alt="sell">
+</div>
+<p>একই পার্টির আরেকটি বিক্রয় এন্ট্রি করার জন্য <span class="bi bi-back mr-2 eng"> Copy</span> বাটনে ক্লিক করি। অপর আরেক পার্টির বিক্রয় এন্ট্রি করার জন্য <i class="bi bi-plus-circle-fill text-secondary" style="font-size: 1.5rem"></i> বাটনে ক্লিক করি। এভাবে প্রয়োজনীয় সংখ্যক ফর্ম যুক্ত করে দিনের সকল বিক্রয় এন্ট্রি করে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<p><b>বাকি বিক্রয় পরিবর্তনঃ </b>কোনো কারণে বাকি বিক্রয় পরিবর্তন করতে হলে একই ভাবে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনে ক্লিক করি। এখানে পূর্বের বিক্রয় গুলো দেখাবে। এই পেজে নতুন বিক্রয় এন্টি ছাড়াও পুরাতন গুলো পরিবর্তন করা যাবে।</p>
+
+<p><b>বিক্রয় মুছে ফেলাঃ </b>বিক্রয় মুছে ফেলার জন্য এডিট ফর্ম থেকে 'মুছে ফেলুন' লিখাটির বরাবর <i class="bi bi-trash text-danger"></i> <span class="eng">(Delete)</span> চেকবক্সটিতে চেক করে সেভ করতে হবে। উল্লেখ্য যে এই পেজে একইসাথে একাধিক বিক্রয় মুছে ফেলা যাবে।</p>
+
+{% comment %} বকেয়া আদায় {% endcomment %}
+<h5 id='due-collection'># বকেয়া আদায়</h5>
+<p>দৈনিক পার্টির বকেয়া আদায় এন্ট্রি করার জন্য <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসার <b>বকেয়া আদায় </b> লিখাটির পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনটি-তে ক্লিক করি।</p>
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/due-collection.png" %}" alt="sell">
+</div>
+
+<p>পরবর্তী পেজে ড্রপডাউন মেনু থেকে দেনাদারের নাম সিলেক্ট করি। দেনাদারের নাম এন্ট্রি করা না থাকলে অর্থাৎ নতুন দেনাদার হলে <a href="{% url "customers" %}">পার্টি যুক্ত করুন</a> লিংকে ক্লিক করে পার্টি যুক্ত করতে হবে এবং পুনরায় এই পেজে আসতে হবে। দেনাদারের নাম সিলেক্ট করার সাথে সাথে পাওনার পরিমাণ সয়ংক্রিয়ভাবে চলে আসবে। যদি সম্পূর্ণ পাওনা পরিশোধ করে দেয়, তাহলে 'অবশিষ্ট পাওনা' বরাবর টাকার অংকের পাশে <span class='bi bi-arrow-left-square' style='cursor:pointer;'></span> বাটনে ক্লিক করি, এতে সয়ংক্রিয়ভাবে টাকার পরিমাণ বসে যাবে এবং অবশিষ্ট ০ দেখাবে। কিন্তু যদি আংশিক পরিশোধ করে, তাহলে আদায়ের ঘরে পরিমাণ দেই। পরিমাণ দেওয়ার সাথে সাথে অবশিষ্ট পাওনা সয়ংক্রিয়ভাবে চলে আসবে।</p>
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/due-collection-form.png" %}" alt="sell">
+</div>
+
+<p>অপর আরেকটি বকেয়া আদায় এন্ট্রি করার জন্য <i class="bi bi-plus-circle-fill text-secondary" style="font-size: 1.5rem"></i> বাটনে ক্লিক করি। এভাবে প্রয়োজনীয় সংখ্যক ফর্ম যুক্ত করে দিনের সকল বকেয়া আদায় এন্ট্রি করে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি।</p>
+
+<p><b>বকেয়া আদায় পরিবর্তনঃ </b>কোনো কারণে বকেয়া আদায় পরিবর্তন করতে হলে একই ভাবে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনে ক্লিক করি। এখানে পূর্বের বকেয়া আদায় গুলো দেখাবে। এই পেজে নতুন বকেয়া আদায় এন্টি ছাড়াও পুরাতন গুলো পরিবর্তন করা যাবে।</p>
+
+<p><b>বকেয়া আদায় মুছে ফেলাঃ </b>বকেয়া আদায় মুছে ফেলার জন্য এডিট ফর্ম থেকে 'মুছে ফেলুন' লিখাটির বরাবর <i class="bi bi-trash text-danger"></i> <span class="eng">(Delete)</span> চেকবক্সটিতে চেক করে সেভ করতে হবে। উল্লেখ্য যে এই পেজে একইসাথে একাধিক বকেয়া আদায় মুছে ফেলা যাবে।</p>
+
+{% comment %} দৈনিক মজুদ মাল {% endcomment %}
+<h5 id='daily-storage'># দৈনিক মজুদ মাল</h5>
+<p>দৈনিক মজুদ মাল এন্ট্রি করার জন্য <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে আসার <span class="text-info font-italic">মজুদ মালের পরিমানঃ</span> লিখাটির পাশে <i class="bi bi-pencil-square text-info"></i> <span class="eng">(Edit)</span> বাটনটি-তে ক্লিক করি।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/daily-storage.png" %}" alt="sell">
+</div>
+<p>পরবর্তী পেজে তারিখ, মাল, ট্যাংক ডিপ ও লোড ফিল্ডগুলো দেখাবে। এখানে তারিখ দেয়া থাকবে, প্রয়োজন হলে পরিবর্তন করা যাবে। মাল নামক ড্রপডাউন লিস্ট এ শুধুমাত্র ঐসমস্ত লুস মালের নাম দেখা যাবে, যে লুস মাল এন্ট্রি করার সময় 'মজুদ মাপতে হয়' নামক চেকবক্সটি চেক করা হয়েছে। যদি কাঙ্খিত মাল এখানে দেখা না যায়, তবে <a href="{% url "products" %}">মালের তালিকা</a> থেকে মালের তথ্য পরিবর্তন করতে হবে, এবং পুনরায় এই পেজে আসলে মালের তালিকা দেখা যাবে। মালের তথ্য পরিবর্তন করার পদ্ধতি <a href='{% url "doc-product-management" %}#edit-product'>এখানে দেখে নিন।</a> এরপর ট্যাংক ডিপ ও লোডের পরিমাণ লিখে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করি। </p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/daily-storage-form.png" %}" alt="sell">
+</div>
+
+<p>এভাবে একে একে যে সকল মালের মজুদ মাপতে হয়, তার ট্যাংক ডিপ ও লোড এন্ট্রি করতে হবে। এবার পুনরায় <a href="{% url "daily-transactions" %}">দৈনিক লেনদেন</a> পেজটিতে ফিরে আসি।</p>
+
+{% comment %} ব্যালেন্স সেভ করা {% endcomment %}
+<h5 id='balance'># ব্যালেন্স সেভ করা</h5>
+<p>দিনের সকল লেনদেন হিসাবভুক্ত করার পর যখন দৈনিক মজুদ মাল এন্ট্রি করা হয় তখন নিচে <b>ব্যালেন্স সি/এফ</b> ও <button class="btn btn-sm btn-success rounded-0 eng">Save</button> দেখা যাবে। যদি দৈনিক মজুদ মাল এন্ট্রি করা না হয়, তবে সেভ বাটন দেখা যাবে না। এরপর সারাদিনের ব্যালেন্স গুনে দেখতে হবে। যদি বাস্তবে টাকার পরিমাণের সাথে <b>ব্যালেন্স সি/এফ</b> নাম মিলে, তবে <b>ব্যালেন্স সি/এফ</b> এর নিচে হাতে নগদ নামে আরেকটি টেক্সট বক্স আছে, এখানে টাকার পরিমাণ লিখে দিব, তাহলে ডান পাশে পার্থক্য দেখা যাবে। </p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/balance.png" %}" alt="sell">
+</div>
+
+<p>যদি পার্থক্য ঋনাত্বক হয়, তাহলে সমপরিমাণ টাকা ব্যায় হিসেবে দেখিয়ে দেব। আর যদি ধনাত্বক হয়, তাহলে সমপরিমাণ টাকা আয় হিসাবে দেখিয়ে দেব। তাহলে সফটওয়্যার এর সাথে বাস্তবে টাকার অংক মিলে যাবে। তবে খেয়াল রাখতে হবে পার্থক্য বেশি হওয়ার কথা না। যদি বেশি হয়, তাহলে বুঝতে হবে হিসেবে কোথাও ভূল হয়েছে।</p>
+<p>এবার ব্যালেন্স ঠিক থাকলে <button class="btn btn-sm btn-success rounded-0 eng">Save</button> বাটনে ক্লিক করে ব্যালেন্স সেভ করতে হবে। এভাবেই প্রতিদিনের হিসাব সংরক্ষণ করতে হবে। মাসের শেষ দিন যখন ব্যালেন্স সেভ করা হবে, তখন সয়ংক্রিয়ভাবে ফাইনাল খতিয়ান ও আয়-ব্যায় বিবরণী প্রস্তুত হবে।</p>
+
+{% comment %} নেভিগেশন {% endcomment %}
+<h5 id='navigation'># নেভিগেশন</h5>
+<p>কিছুদিন হিসাব করার পর আমাদের পুরাতন হিসাব দেখার প্রয়োজন হতে পারে। আমরা এই পেজের নেভিগেশন সিস্টেম ব্যবহার করে সহজেই পুরাতন হিসাবগুলো দেখতে পারবো।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/navigation.png" %}" alt="sell">
+</div>
+
+<p>প্রথমত এখানে তারিখ নির্বাচন করে নির্দিষ্ট তারিখের লেনদেন দেখা যাবে। এর জন্য মাস, দিন ও বছর সিলেক্ট করে <i class='bi bi-arrow-right btn btn-success btn-sm'></i> <span class='eng'>(Go)</span> বাটনে ক্লিক করতে হবে। তাহলে ঐদিনের লেনদেন দেখাবে। এছাড়া পূর্বদিনের লেনদেন দেখার জন্য তারিখ সিলেক্ট করার প্রয়োজন নেই, শুধুমাত্র <i class="bi bi-chevron-left btn btn-info btn-sm"></i> <span class='eng'>(Previous)</span> বাটনে ক্লিক করলেই পূর্বদিনের লেনদেন দেখা যাবে। একইভাবে পরবর্তী দিনের লেনদেন দেখার জন্য <i class="bi bi-chevron-right btn btn-info btn-sm"></i> <span class='eng'>(Next)</span> বাটনে ক্লিক করব।</p>
+
+{% comment %} সাবটোটাল {% endcomment %}
+<h5 id='subtotal'># সাবটোটাল</h5>
+<p>দৈনিক লেনদেন পেজে প্রতিটি খাতের মোট টাকা আলাদা ভাবে দেখায়, এটকেই সাবটোটাল বলা হয়। ডিফল্টভাবে এটা চালু করা থাকে। যদি কখনো এটা ছাড়া প্রিন্ট করার প্রয়োজন হয়, তবে <span class="eng">Show Subtotal</span> অপশনের টিক উঠিয়ে দেই।</p>
+
+<div class="img-container">
+    <img src="{% static "Photos/DailyTransaction/subtotal.png" %}" alt="Subtotal">
+</div>
+
+{% endblock main %}

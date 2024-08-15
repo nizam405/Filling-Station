@@ -8,7 +8,7 @@ from .views.customer_views import (
     CustomerLedger, GroupofCompanyLedger,
     CustomerBalanceView, customerBalanceFormsetView, markBaddebt,
 )
-from .views.product_views import StorageView, ProductLedger, ProductTopSheet
+from .views.product_views import StorageView, ProductLedger, ProductTopSheet, storage_formset_view
 from .views.incomestatement_view import IncomeStatementView, ProfitAdjustment
 
 urlpatterns = [
@@ -41,7 +41,7 @@ urlpatterns = [
         ])),
     ])),
     path('product/', include([
-        path('topsheet', include([
+        path('topsheet/', include([
             path('', ProductTopSheet.as_view(), name='product-topsheet'),
             path('<int:month>-<int:year>/', ProductTopSheet.as_view(), name='product-topsheet'),
         ])),
@@ -52,9 +52,8 @@ urlpatterns = [
         ])),
         path('storage/', include([
             path('', StorageView.as_view(), name='product-storage'),
-            path('<int:product_id>/', StorageView.as_view(), name='product-storage'),
-            path('<int:product_id>/<int:month>-<int:year>/', StorageView.as_view(), name='product-storage'),
             path('<int:month>-<int:year>/', StorageView.as_view(), name='product-storage'),
+            path('update/<int:month>-<int:year>/', storage_formset_view, name='update-product-storage'),
         ])),
     ])),
     path('revenue/', include([

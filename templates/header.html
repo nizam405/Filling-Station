@@ -1,16 +1,16 @@
 <div class='bg-info w-100 px-3 py-2 text-light' id='header'>
     <a href="{% url 'home' %}" class="bangla2 brand text-light">
-        <i class="bi bi-fuel-pump"></i> প্রধান সি.এন.জি এন্ড ফিলিং স্টেশন
+        <i class="bi bi-fuel-pump"></i> প্রধান ফিলিং স্টেশন
     </a>
     <div class="float-right">
         {% if user.is_authenticated %}
-        <a href="{% url "documentation-home" %}">ব্যবহার বিধি</a> |
+        <a href="{% url "doc-home" %}">ব্যবহার বিধি</a> |
         <span class="eng">{{user}}</span>
         | <a href="{% url 'password-change' %}">পাসওয়ার্ড পরিবর্তন</a>
         | <a href="{% url 'logout' %}">লগ-আউট</a>
         {% else %}
         <a href="{% url 'login' %}">লগ-ইন</a>
         {% endif %}
-        <i class="bi bi-printer btn btn-sm py-0 text-info bg-light ml-2" style="font-size: 1.5rem" onclick="window.print()"></i>
+        <i class="bi bi-printer btn btn-sm py-0 text-light ml-2" style="font-size: 1.4rem; border: 2px solid white; border-radius: 5px;" onclick="window.print()"></i>
     </div>
 </div>

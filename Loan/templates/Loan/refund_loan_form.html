@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}হাওলাদ পরিশোধ{% endblock title %}
+{% block title %}{{title}}{% endblock title %}
 
 {% block style %}{% endblock style %}
 
@@ -22,7 +22,7 @@
         </div>
         
         <div class="col-md-12 text-center eng">
-            {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+            {% bootstrap_button "Save" button_type="submit" button_class="btn-success" %}
             <a href="{% url 'loan-dashboard' %}" class="btn btn-secondary">Cancel</a>
         </div>
     </div>

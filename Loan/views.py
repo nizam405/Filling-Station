@@ -202,6 +202,11 @@ class BorrowLoanCreateView(LoginRequiredMixin, CreateView):
         initial = super().get_initial()
         initial['date'] = next_to_last_balance_date()
         return initial
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].disabled = True  # Disable the date field
+        return form
 
 class BorrowLoanUpdateView(LoginRequiredMixin, UpdateView):
     model = BorrowLoan
@@ -216,6 +221,11 @@ class BorrowLoanUpdateView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['title'] = "হাওলাদ গ্রহণ (পরিবর্তন)"
         return context
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].disabled = True  # Disable the date field
+        return form
 
 class BorrowLoanDeleteView(LoginRequiredMixin, DeleteView):
     model = BorrowLoan
@@ -242,6 +252,11 @@ class RefundBorrowedLoanCreateView(LoginRequiredMixin, CreateView):
         initial['loan'] = loan
         initial['date'] = next_to_last_balance_date()
         return initial
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].disabled = True  # Disable the date field
+        return form
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -253,6 +268,11 @@ class RefundBorrowedLoanUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "Loan/refund_loan_form.html"
     fields = ['date','loan','amount']
     success_url = reverse_lazy('loan-dashboard')
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].disabled = True  # Disable the date field
+        return form
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -284,6 +304,11 @@ class LendLoanCreateView(LoginRequiredMixin, CreateView):
         initial = super().get_initial()
         initial['date'] = next_to_last_balance_date()
         return initial
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].disabled = True  # Disable the date field
+        return form
 
 class LendLoanUpdateView(LoginRequiredMixin, UpdateView):
     model = LendLoan
@@ -293,6 +318,11 @@ class LendLoanUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.model.objects.get(pk=self.kwargs['loan_pk'])
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].disabled = True  # Disable the date field
+        return form
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -324,6 +354,11 @@ class RefundLendedLoanCreateView(LoginRequiredMixin, CreateView):
         initial['loan'] = loan
         initial['date'] = next_to_last_balance_date()
         return initial
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].disabled = True  # Disable the date field
+        return form
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -335,6 +370,11 @@ class RefundLendedLoanUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "Loan/refund_loan_form.html"
     fields = ['date','loan','amount']
     success_url = reverse_lazy('loan-dashboard')
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].disabled = True  # Disable the date field
+        return form
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -12,6 +12,7 @@ from .models import Owner, Withdraw, Investment, OwnersEquity, FixedAsset
 from .forms import WithdrawForm, InvestmentForm, OwnersEquityForm, FixedAssetForm, OwnersEquityFilter
 import datetime
 from Core.choices import get_prev_month, last_day_of_month, all_dates_in_month
+from Transaction.functions import next_to_last_balance_date
 from Ledger.choices import currentYear
 from Transaction.models import CashBalance
     
@@ -230,6 +231,22 @@ class InvestmentCreateView(LoginRequiredMixin,CreateView):
     model = Investment
     form_class = InvestmentForm
     template_name = 'Owner/investment_form.html'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['date'] = next_to_last_balance_date()
+        return initial
+    
+    def form_valid(self, form):
+        # If the date field is disabled, set the value explicitly
+        form.instance.date = next_to_last_balance_date()
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        print(form.errors)
+        return response
+    
 
 # class InvestmentUpdateView(UpdateView):
 #     model = Investment

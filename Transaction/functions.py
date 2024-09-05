@@ -3,8 +3,10 @@ from django.db.models import Sum
 from .models import CashBalance
 
 def first_balance_date():
-    obj = CashBalance.objects.order_by('date').first()
-    return obj.date
+    try:
+        obj = CashBalance.objects.order_by('date').first()
+        return obj.date
+    except: return datetime.date.today()
 
 def last_balance_date():
     obj = CashBalance.objects.latest()

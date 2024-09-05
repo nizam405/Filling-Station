@@ -1,3 +1,4 @@
+{% if has_cashbalance %}
 <nav id="sidebar" class="d-print-none">
     <ul id="navbar">
         <li class='nav-header'>পণ্য/মাল</li>
@@ -28,3 +29,4 @@
         {% comment %} <li><a href="{% url 'fixed-assets' %}">স্থায়ী সম্পত্তি</a></li> {% endcomment %}
     </ul>
 </nav>
+{% endif %}

@@ -19,9 +19,11 @@
         {% include "header.html" %}
         {% if user.is_authenticated %}
         <div id='menu' class="pl-3">
+            {% if has_cashbalance %}
             <button type="button" id="sidebarCollapse" class="btn btn-info menu-item">
                 <i class="bi bi-justify"></i>
             </button>
+            {% endif %}
             <!-- Daily Transaction -->
             <a href="{% url 'daily-transactions' %}" class="btn btn-primary menu-item">দৈনিক লেনদেন</a>
             <!-- Ledgers -->

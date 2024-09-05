@@ -52,7 +52,7 @@ class OwnersEquityView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if not CashBalance.objects.exists():
-            return redirect('create-cashbalance')
+            return redirect('daily-transactions')
         
         return super().get(request, *args, **kwargs)
     
@@ -122,7 +122,7 @@ class OwnersEquityDetailView(LoginRequiredMixin,TemplateView):
     
     def get(self, request, *args, **kwargs):
         if not CashBalance.objects.exists():
-            return redirect('create-cashbalance')
+            return redirect('daily-transactions')
         
         today = datetime.date.today()
         # pk

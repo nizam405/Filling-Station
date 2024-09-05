@@ -19,7 +19,7 @@ class CustomerTopSheet(LoginRequiredMixin,TemplateView):
 
     def get(self, request, *args, **kwargs):
         if not CashBalance.objects.exists():
-            return redirect('create-cashbalance')
+            return redirect('daily-transactions')
         
         first_bal_date = CashBalance.objects.order_by('date').first().date
         last_bal_date = CashBalance.objects.order_by('date').last().date
@@ -198,7 +198,7 @@ class CustomerLedger(LoginRequiredMixin,TemplateView):
 
     def get(self, request, *args, **kwargs):
         if not CashBalance.objects.exists():
-            return redirect('create-cashbalance')
+            return redirect('daily-transactions')
         
         today = datetime.date.today()
         # Customer
@@ -324,7 +324,7 @@ class GroupofCompanyLedger(LoginRequiredMixin,TemplateView):
 
     def get(self, request, *args, **kwargs):
         if not CashBalance.objects.exists():
-            return redirect('create-cashbalance')
+            return redirect('daily-transactions')
         
         today = datetime.date.today()
         # customer

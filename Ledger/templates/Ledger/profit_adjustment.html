@@ -14,7 +14,7 @@
     <h3 class='d-none d-print-block'>প্রধান ফিলিং স্টেশন</h3>
     <h3>মালের মূল্যবৃদ্ধি/মূল্যহ্রাস এর কারণে সমাপনী মজুদে পরিবর্তন</h3>
     <h4>{{month|e2b_month}},{{year|e2b_digit}}</h4>
-    {% if not status %}
+    {% if status %}
     <div class='text-danger'>({{last_bal_date|e2b_date}} তারিখ পর্যন্ত)</div>
     {% endif %}
 </div>
@@ -34,7 +34,7 @@
         <td class='text-left'>{{item.product.name}}</td>
         <td>{{item.avg_purchase_rate|floatformat:4|e2b_digit}}</td>
         <td>{{item.purchase_rate|floatformat:4|e2b_digit}}</td>
-        <td>{{item.profit_rate_diff|floatformat:2|e2b_digit}}</td>
+        <td>{{item.profit_rate_diff|floatformat:4|e2b_digit}}</td>
         <td>{{item.ending_qnt|floatformat:2|e2b_digit}}</td>
         <td>{{item.profit_diff|floatformat:2|e2b_digit}}</td>
     </tr>

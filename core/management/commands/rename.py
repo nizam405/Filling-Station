@@ -13,7 +13,7 @@ class Command(BaseCommand):
         new_project_name = kwargs['new_project_name']
         # 
         files_to_rename = [
-            current_project_name + '/settings/base.py',
+            current_project_name + '/settings.py',
             current_project_name + '/wsgi.py',
             'manage.py'
         ]

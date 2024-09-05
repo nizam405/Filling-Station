@@ -259,7 +259,7 @@ class ProfitAdjustment(LoginRequiredMixin,TemplateView):
         last_bal_date = CashBalance.objects.latest().date
         context['last_bal_date'] = last_bal_date
         to_date = last_day_of_month(year,month)
-        if last_bal_date == to_date: context['status'] = True
+        if last_bal_date <= to_date: context['status'] = True
         product_info, total_profit, total_profit_diff = get_products_info(year,month)
         context['product_info'] = product_info
         context['total_profit_diff'] = total_profit_diff

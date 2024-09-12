@@ -10,7 +10,7 @@ from Ledger.models import CustomerBalance, GroupofCompanyBalance, Profit, Storag
 
 from datetime import date, datetime
 from django.db.models import Sum
-from Core.choices import get_prev_month, get_next_month, last_day_of_month
+from Core.choices import get_prev_month, get_next_month, first_date_of_month, last_day_of_month
 from Transaction.functions import last_balance_date_of_month
 
 def save_profit_oe(year,month):
@@ -297,4 +297,24 @@ def get_products_info(year,month):
     # print('ending_storage', total_ending_storage_amount)
     return (product_info, total_profit, total_profit_diff)
 
-            
+def get_navigation_context(year,month):
+    context = {}
+    to_date = last_balance_date_of_month(year,month)
+    last_day = last_day_of_month(year,month)
+    context['status'] = last_day == to_date
+    context['to_date'] = to_date
+    prev_month_year,prev_month = get_prev_month(year,month)
+    next_date_month_year, next_date_month = get_next_month(year,month)
+    
+    context['target_date'] = first_date_of_month(year,month)
+    context['month'] = month
+    context['year'] = year
+    context['prev'] = {
+        'month': prev_month,
+        'year': prev_month_year
+    }
+    context['next'] = {
+        'month': next_date_month,
+        'year': next_date_month_year
+    }
+    return context

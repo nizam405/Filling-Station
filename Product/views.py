@@ -1,4 +1,3 @@
-import datetime 
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.forms import modelformset_factory
@@ -15,7 +14,7 @@ from Transaction.functions import last_balance_date
 # Product
 class ProductView(LoginRequiredMixin, CreateView, ListView):
     model = Product
-    fields = '__all__'
+    fields = ['name','short_name','type','need_rescale','capacity']
     template_name = 'Product/products.html'
     success_url = '.'
 
@@ -32,7 +31,7 @@ def change_product_status(request, pk):
 
 class ProductUpdateView(LoginRequiredMixin, UpdateView, ListView):
     model = Product
-    fields = '__all__'
+    fields = ['name','short_name','type','need_rescale','capacity']
     template_name = 'Product/products.html'
     success_url = reverse_lazy('products')
 

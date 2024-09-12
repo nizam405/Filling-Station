@@ -12,7 +12,7 @@ from .forms import DueCollectionForm, DueSellForm, CustomerForm
 # Group of companies
 class GroupofCompaniesView(LoginRequiredMixin,CreateView, ListView):
     model = GroupofCompany
-    fields = '__all__'
+    fields = ['name','active']
     template_name = 'Customer/groupofcompanies.html'
     success_url = '.'
 
@@ -23,7 +23,7 @@ class GroupofCompaniesView(LoginRequiredMixin,CreateView, ListView):
 
 class GroupofCompanyUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = GroupofCompany
-    fields = '__all__'
+    fields = ['name','active']
     template_name = 'Customer/groupofcompanies.html'
     success_url = reverse_lazy('groupofcompanies')
 
@@ -52,7 +52,7 @@ class CustomerView(LoginRequiredMixin,CreateView, ListView):
 
 class CustomerUpdateView(LoginRequiredMixin,UpdateView, ListView):
     model = Customer
-    fields = '__all__'
+    fields = ['name','short_name','cust_type','group','mobile','serial']
     template_name = 'Customer/customers.html'
     success_url = reverse_lazy('customers')
 

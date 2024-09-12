@@ -16,7 +16,7 @@
 {% load extra_tags %}
 
 <h3>মজুদ মাল - {{month|e2b_month}}, {{year|e2b_digit}}</h3>
-{% if formset.length > 0 %}
+{% if formset.forms|length > 0 %}
 <form action="" method="post">
     {% csrf_token %}
     <div id="form-container">
@@ -30,9 +30,10 @@
         {% for form in formset %}
         <div class="row forms">
             {{form.id}}
+            <!-- Disabled product field -->
             <div class="col-sm-3 pr-0">{% bootstrap_field form.product show_label=False %}</div>
             <div class="col-sm-3 px-0 eng">{% bootstrap_field form.quantity show_label=False %}</div>
-            <div class="col-sm-3">{% bootstrap_field form.price show_label=False %}</div>
+            <div class="col-sm-3 px-0 eng">{% bootstrap_field form.price show_label=False %}</div>
         </div>
         {% endfor %}
     </div>

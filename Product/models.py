@@ -14,6 +14,7 @@ class Product(models.Model):
     need_rescale = models.BooleanField(default=False, verbose_name="মজুদ মাপতে হয়")
     capacity = models.FloatField(default=None, null=True, blank=True, verbose_name="পরিমান")
     active = models.BooleanField(default=True, verbose_name='সক্রিয়')
+    date_created = models.DateField(default=last_balance_date)
 
     class Meta:
         ordering = ['type','name','capacity']

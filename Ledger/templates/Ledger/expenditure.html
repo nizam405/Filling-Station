@@ -14,11 +14,11 @@
 {% block main %}
 
 <div class="d-print-none">
-    {% if filter_form %}
+    {% if date_form %}
     <form method="get" class="d-flex" id="filter">
         <div class="py-2 mr-2">হিসাবের মাস</div>
-        <div>{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
-        <div>{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div>{% bootstrap_field date_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
+        <div>{% bootstrap_field date_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
         <div id="buttons">
             <button type="submit" class='btn' id='go-btn'>
                 <i class='bi bi-arrow-right-square-fill text-success'></i>
@@ -32,7 +32,7 @@
 
 <div>
     <div class="text-center">
-        <h3 class="d-none d-print-block">প্রধান ফিলিং স্টেশন</h3>
+        <h3 class="d-none d-print-block">{{business_name}}</h3>
         <h3>ব্যয়সমূহ - {{month|e2b_month}}, {{year|e2b_digit}}</h3>
         {% if not status %}
         <div class='text-danger'>({{to_date|e2b_date}} তারিখ পর্যন্ত)</div>

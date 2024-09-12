@@ -2,11 +2,12 @@ from django.db import models
 from django.urls import reverse
 from Transaction.models import CashBalance
 from Ledger.choices import MONTHS, YEAR, currentMonth, currentYear
-from Transaction.functions import next_to_last_balance_date
+from Transaction.functions import next_to_last_balance_date, last_balance_date
 
 class Owner(models.Model):
     name = models.CharField(max_length=255, verbose_name="নাম")
     mobile = models.CharField(max_length=11, null=True, blank=True, verbose_name="মোবাইল")
+    date_created = models.DateField(default=last_balance_date)
 
     class Meta:
         ordering = ['name']

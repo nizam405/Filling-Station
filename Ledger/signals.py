@@ -24,21 +24,22 @@ def delete_ledger(sender, instance, **kwargs):
 
 @receiver(post_save, sender=CashBalance)
 def save_ledger(sender, instance, **kwargs):
+    # প্রথমিক ব্যালেন্স সেভ করার সময় খতিয়ান লাগবে না
+    if sender.objects.first() != instance:
+        date = instance.date
+        month = date.month
+        year = date.year
+        target_date = last_day_of_month(year,month)
+        # chek if date is last date of current month
+        if target_date == date:
+            print("Calculating Ledger")
+            start_time = datetime.now()
 
-    date = instance.date
-    month = date.month
-    year = date.year
-    target_date = last_day_of_month(year,month)
-    # chek if date is last date of current month
-    if target_date == date:
-        print("Calculating Ledger")
-        start_time = datetime.now()
-
-        save_storages(date)
-        save_group_of_company_balance(date)
-        save_customer_balance(date)
-        
-        end_time = datetime.now()
-        delta = end_time-start_time
-        print("\t(Ledger creation time:",delta.total_seconds(),"sec)")
-        save_profit_oe(year,month)
+            save_storages(date)
+            save_group_of_company_balance(date)
+            save_customer_balance(date)
+            
+            end_time = datetime.now()
+            delta = end_time-start_time
+            print("\t(Ledger creation time:",delta.total_seconds(),"sec)")
+            save_profit_oe(year,month)

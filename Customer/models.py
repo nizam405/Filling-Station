@@ -3,12 +3,13 @@ from django.utils import timezone
 from django.urls import reverse
 from Product.models import Product
 from .choices import customer_type
-from Core.choices import status_choices
+from Transaction.functions import last_balance_date
 
 class GroupofCompany(models.Model):
     name = models.CharField(max_length=255, verbose_name="নাম")
     # সক্রিয় করলে customer dropdown list এ দেখাবে
     active = models.BooleanField(default=True, verbose_name='সক্রিয়')
+    date_created = models.DateField(default=last_balance_date)
 
     class Meta:
         ordering = ['name']
@@ -28,6 +29,7 @@ class Customer(models.Model):
     serial = models.SmallIntegerField(default=100, verbose_name="ক্রম")
     # সক্রিয় করলে customer dropdown list এ দেখাবে
     active = models.BooleanField(default=True, verbose_name='সক্রিয়')
+    date_created = models.DateField(default=last_balance_date)
 
     class Meta:
         ordering = ['-active','cust_type','group','serial','name']

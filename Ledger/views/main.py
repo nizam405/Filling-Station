@@ -9,71 +9,18 @@ from Expenditure.models import ExpenditureGroup, Expenditure
 from Revenue.models import RevenueGroup, Revenue
 from Owner.models import Withdraw, Owner
 from Ledger.forms import DateFilterForm
+from Ledger.views.mixins import LedgerTopSheetMixin
 from Transaction.models import CashBalance
 from Core.choices import last_day_of_month
 
-class RevenueLedger(LoginRequiredMixin,TemplateView):
+class RevenueLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/revenue.html'
 
-    def get(self, request, *args, **kwargs):
-        # maintain cashbalance date to avoid blank page
-        if CashBalance.objects.exists():
-            first_bal_date = CashBalance.objects.order_by('date').first().date
-            last_bal_date = CashBalance.objects.order_by('date').last().date
-
-            first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
-            first_date = first_date + datetime.timedelta(days=31)
-        else:
-            return redirect('daily-transactions')
-
-        if 'month' in self.request.GET and 'year' in self.request.GET:
-            self.kwargs['month'] = int(self.request.GET['month'])
-            self.kwargs['year'] = int(self.request.GET['year'])
-        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
-            self.kwargs['month'] = last_bal_date.month
-            self.kwargs['year'] = last_bal_date.year
-        month = self.kwargs['month']
-        year = self.kwargs['year']
-        
-        target_date = datetime.date(year,month,1)
-        # For very first time
-        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
-            target_date = last_bal_date
-        # Dont let go future
-        if target_date > last_bal_date:
-            return redirect('revenue-ledger', month=last_bal_date.month, year=last_bal_date.year)
-        elif target_date <= first_bal_date:
-            return redirect('revenue-ledger', month=first_date.month, year=first_date.year)
-
-        prev_month_date = target_date - datetime.timedelta(days=1)
-        self.kwargs['prev_month'] = prev_month_date.month
-        self.kwargs['prev_month_year'] = prev_month_date.year
-        # here num_days+7 to make sure it goes to next month
-        self.kwargs['next_date'] = target_date + datetime.timedelta(days=31)
-
-        return super().get(request, *args, **kwargs)
-    
     def get_context_data(self,*args, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = DateFilterForm(self.request.GET or self.kwargs or None)
-        context['filter_form'] = form
-        context['month'] = self.kwargs['month']
-        context['year'] = self.kwargs['year']
-        context['prev'] = {
-            'month': self.kwargs['prev_month'],
-            'year': self.kwargs['prev_month_year']
-        }
-        context['next'] = {
-            'month': self.kwargs['next_date'].month,
-            'year': self.kwargs['next_date'].year
-        }
-        year = int(self.kwargs['year'])
-        month = int(self.kwargs['month'])
-        from_date = datetime.date(year,month,1)
-        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
-        last_day = last_day_of_month(year,month)
-        context['status'] = last_day == to_date
-        context['to_date'] = to_date
+        # Collect data from mixin context
+        from_date = context['target_date']
+        to_date = context['to_date']
 
         revenues = Revenue.objects.filter(date__gte=from_date, date__lte=to_date)
         dates = [obj['date'] for obj in revenues.values('date').distinct()]
@@ -108,68 +55,14 @@ class RevenueLedger(LoginRequiredMixin,TemplateView):
             
         return context
         
-class ExpenditureLedger(LoginRequiredMixin,TemplateView):
+class ExpenditureLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/expenditure.html'
 
-    def get(self, request, *args, **kwargs):
-        # maintain cashbalance date to avoid blank page
-        if CashBalance.objects.exists():
-            first_bal_date = CashBalance.objects.order_by('date').first().date
-            last_bal_date = CashBalance.objects.order_by('date').last().date
-
-            first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
-            first_date = first_date + datetime.timedelta(days=31)
-        else:
-            return redirect('daily-transactions')
-
-        if 'month' in self.request.GET and 'year' in self.request.GET:
-            self.kwargs['month'] = int(self.request.GET['month'])
-            self.kwargs['year'] = int(self.request.GET['year'])
-        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
-            self.kwargs['month'] = last_bal_date.month
-            self.kwargs['year'] = last_bal_date.year
-        month = self.kwargs['month']
-        year = self.kwargs['year']
-        
-        target_date = datetime.date(year,month,1)
-        # For very first time
-        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
-            target_date = last_bal_date
-        # Dont let go future
-        if target_date > last_bal_date:
-            return redirect('expenditure-ledger', month=last_bal_date.month, year=last_bal_date.year)
-        elif target_date <= first_bal_date:
-            return redirect('expenditure-ledger', month=first_date.month, year=first_date.year)
-
-        prev_month_date = target_date - datetime.timedelta(days=1)
-        self.kwargs['prev_month'] = prev_month_date.month
-        self.kwargs['prev_month_year'] = prev_month_date.year
-        # here num_days+7 to make sure it goes to next month
-        self.kwargs['next_date'] = target_date + datetime.timedelta(days=31)
-
-        return super().get(request, *args, **kwargs)
-    
     def get_context_data(self,*args, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = DateFilterForm(self.request.GET or self.kwargs or None)
-        context['filter_form'] = form
-        context['month'] = self.kwargs['month']
-        context['year'] = self.kwargs['year']
-        context['prev'] = {
-            'month': self.kwargs['prev_month'],
-            'year': self.kwargs['prev_month_year']
-        }
-        context['next'] = {
-            'month': self.kwargs['next_date'].month,
-            'year': self.kwargs['next_date'].year
-        }
-        year = int(self.kwargs['year'])
-        month = int(self.kwargs['month'])
-        from_date = datetime.date(year,month,1)
-        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
-        last_day = last_day_of_month(year,month)
-        context['status'] = last_day == to_date
-        context['to_date'] = to_date
+        # Collect data from mixin context
+        from_date = context['target_date']
+        to_date = context['to_date']
         
         expenditures = Expenditure.objects.filter(date__gte=from_date, date__lte=to_date)
         dates = [obj['date'] for obj in expenditures.values('date').distinct()]
@@ -204,68 +97,14 @@ class ExpenditureLedger(LoginRequiredMixin,TemplateView):
             
         return context
   
-class WithdrawLedger(LoginRequiredMixin,TemplateView):
+class WithdrawLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/withdraw.html'
 
-    def get(self, request, *args, **kwargs):
-        # maintain cashbalance date to avoid blank page
-        if CashBalance.objects.exists():
-            first_bal_date = CashBalance.objects.order_by('date').first().date
-            last_bal_date = CashBalance.objects.order_by('date').last().date
-
-            first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
-            first_date = first_date + datetime.timedelta(days=31)
-        else:
-            return redirect('daily-transactions')
-
-        if 'month' in self.request.GET and 'year' in self.request.GET:
-            self.kwargs['month'] = int(self.request.GET['month'])
-            self.kwargs['year'] = int(self.request.GET['year'])
-        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
-            self.kwargs['month'] = last_bal_date.month
-            self.kwargs['year'] = last_bal_date.year
-        month = self.kwargs['month']
-        year = self.kwargs['year']
-        
-        target_date = datetime.date(year,month,1)
-        # For very first time
-        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
-            target_date = last_bal_date
-        # Dont let go future
-        if target_date > last_bal_date:
-            return redirect('withdraw-ledger', month=last_bal_date.month, year=last_bal_date.year)
-        elif target_date <= first_bal_date:
-            return redirect('withdraw-ledger', month=first_date.month, year=first_date.year)
-
-        prev_month_date = target_date - datetime.timedelta(days=1)
-        self.kwargs['prev_month'] = prev_month_date.month
-        self.kwargs['prev_month_year'] = prev_month_date.year
-        # here num_days+7 to make sure it goes to next month
-        self.kwargs['next_date'] = target_date + datetime.timedelta(days=31)
-
-        return super().get(request, *args, **kwargs)
-    
     def get_context_data(self,*args, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = DateFilterForm(self.request.GET or self.kwargs or None)
-        context['filter_form'] = form
-        context['month'] = self.kwargs['month']
-        context['year'] = self.kwargs['year']
-        context['prev'] = {
-            'month': self.kwargs['prev_month'],
-            'year': self.kwargs['prev_month_year']
-        }
-        context['next'] = {
-            'month': self.kwargs['next_date'].month,
-            'year': self.kwargs['next_date'].year
-        }
-        year = int(self.kwargs['year'])
-        month = int(self.kwargs['month'])
-        from_date = datetime.date(year,month,1)
-        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
-        last_day = last_day_of_month(year,month)
-        context['status'] = last_day == to_date
-        context['to_date'] = to_date
+        # Collect data from mixin context
+        from_date = context['target_date']
+        to_date = context['to_date']
         
         withdraws = Withdraw.objects.filter(date__gte=from_date, date__lte=to_date)
         dates = [obj['date'] for obj in withdraws.values('date').distinct()]

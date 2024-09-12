@@ -24,10 +24,7 @@
         <div class="col-md-6">{% bootstrap_field form.name layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6">{% bootstrap_field form.short_name layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6">{% bootstrap_field form.type layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">
-            {% bootstrap_field form.need_rescale layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}
-            {% bootstrap_field form.active layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}
-        </div>
+        <div class="col-md-6">{% bootstrap_field form.need_rescale layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6">{% bootstrap_field form.capacity layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>লিটার</span>" %}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}

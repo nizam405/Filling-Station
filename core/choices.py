@@ -12,6 +12,9 @@ def year_choices():
 def current_year():
     return datetime.date.today().year
 
+def first_date_of_month(year,month):
+    return datetime.date(year,month,1)
+
 def get_next_month(year,month):
     first_date = datetime.date(year,month,1)
     next_month_date = first_date + datetime.timedelta(days=31)

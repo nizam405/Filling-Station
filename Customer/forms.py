@@ -32,7 +32,7 @@ class DueCollectionForm(forms.ModelForm):
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
-        fields = '__all__'
+        fields = ['name','short_name','cust_type','group','mobile','serial']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

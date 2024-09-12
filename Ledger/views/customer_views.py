@@ -11,78 +11,25 @@ from Product.models import Product
 from Ledger.models import CustomerBalance, GroupofCompanyBalance
 from Ledger.forms import (CustomerLedgerFilterForm, GroupofCompanyLedgerFilterForm, DateFilterForm, 
     CustomerBalanceForm, GroupofCompanyBalanceForm)
+from Ledger.views.mixins import LedgerTopSheetMixin
 from Transaction.models import CashBalance
-from Core.choices import last_day_of_month
 
-class CustomerTopSheet(LoginRequiredMixin,TemplateView):
+class CustomerTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/customer_topsheet.html'
-
-    def get(self, request, *args, **kwargs):
-        if not CashBalance.objects.exists():
-            return redirect('daily-transactions')
-        
-        first_bal_date = CashBalance.objects.order_by('date').first().date
-        last_bal_date = CashBalance.objects.order_by('date').last().date
-
-        first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
-        first_date = first_date + datetime.timedelta(days=31)
-
-        if 'month' in self.request.GET and 'year' in self.request.GET:
-            self.kwargs['month'] = int(self.request.GET['month'])
-            self.kwargs['year'] = int(self.request.GET['year'])
-        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
-            self.kwargs['month'] = last_bal_date.month
-            self.kwargs['year'] = last_bal_date.year
-        month = self.kwargs['month']
-        year = self.kwargs['year']
-        
-        target_date = datetime.date(year,month,1)
-        # For very first time
-        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
-            target_date = last_bal_date
-        # Dont let go future
-        if target_date > last_bal_date:
-            return redirect('customer-topsheet', month=last_bal_date.month, year=last_bal_date.year)
-        elif target_date <= first_bal_date:
-            return redirect('customer-topsheet', month=first_date.month, year=first_date.year)
-
-        prev_month_date = target_date - datetime.timedelta(days=1)
-        self.kwargs['prev_month'] = prev_month_date.month
-        self.kwargs['prev_month_year'] = prev_month_date.year
-        # here num_days+7 to make sure it goes to next month
-        self.kwargs['next_date'] = target_date + datetime.timedelta(days=31)
-
-        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = DateFilterForm(self.request.GET or self.kwargs or None)
-        context['date_form'] = form
-        context['month'] = self.kwargs['month']
-        context['year'] = self.kwargs['year']
-        context['prev'] = {
-            'month': self.kwargs['prev_month'],
-            'year': self.kwargs['prev_month_year']
-        }
-        context['next'] = {
-            'month': self.kwargs['next_date'].month,
-            'year': self.kwargs['next_date'].year
-        }
+        # Collect data from mixin context
+        prev_month = context['prev']['month']
+        prev_month_year = context['prev']['year']
+        from_date = context['target_date']
+        to_date = context['to_date']
         
         customers = []
         total_prev_bal = 0
         total_duesell = 0
         total_collection = 0
         total_bal = 0
-        month = self.kwargs['month']
-        year = self.kwargs['year']
-        prev_month = self.kwargs['prev_month']
-        prev_month_year = self.kwargs['prev_month_year']
-        from_date = datetime.date(year,month,1)
-        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
-        last_day = last_day_of_month(year,month)
-        context['status'] = last_day == to_date
-        context['to_date'] = to_date
         # Group of Companies
         group_of_companies = GroupofCompany.objects.all()
         for goc in group_of_companies:
@@ -265,7 +212,6 @@ class CustomerLedger(LoginRequiredMixin,TemplateView):
 
         context['balance_bf'] = balances.last().amount if balances else 0
         context['balance_bf_date'] = datetime.date(year,month,1)
-        context['has_balance'] = True
         # Data
         duesells = DueSell.objects.filter(customer=customer, date__gte=from_date, date__lte=to_date)
         duecollections = DueCollection.objects.filter(customer=customer, date__gte=from_date, date__lte=to_date)
@@ -599,9 +545,6 @@ def customerBalanceFormsetView(request,month,year):
         }
 
     if request.method == 'POST':
-        # if cust_formset.errors or goc_formset.errors:
-        #     print(cust_formset.errors)
-        #     print(goc_formset.errors)
         if cust_formset.is_valid() and goc_formset.is_valid():
             goc_formset.save()
             cust_formset.save()

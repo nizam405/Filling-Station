@@ -1,85 +1,29 @@
 from django.shortcuts import redirect, render
 from django.forms import modelformset_factory
 from django.views.generic import TemplateView, ListView
-from django.views.generic.edit import CreateView
 from django.db.models import Sum
-from django.contrib import messages
-from django.urls import reverse_lazy
 import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Product.models import Product, StorageReading, Purchase, Sell
 from Ledger.models import Storage
 from Transaction.models import CashBalance
-from Ledger.forms import StorageFilterForm, DateFilterForm, StorageUpdateForm
-from Core.choices import all_dates_in_month, last_day_of_month
+from Ledger.forms import StorageFilterForm, StorageUpdateForm
+from Ledger.views.mixins import LedgerTopSheetMixin
+from Core.choices import all_dates_in_month
 from Ledger.functions import get_products_info
 from Transaction.functions import first_balance_date
 
-class ProductTopSheet(LoginRequiredMixin,TemplateView):
+class ProductTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/product_topsheet.html'
-
-    def get(self, request, *args, **kwargs):
-        if not CashBalance.objects.exists():
-            return redirect('daily-transactions')
-        
-        first_bal_date = CashBalance.objects.order_by('date').first().date
-        last_bal_date = CashBalance.objects.order_by('date').last().date
-
-        first_date = datetime.date(first_bal_date.year,first_bal_date.month,1)
-        first_date = first_date + datetime.timedelta(days=31)
-
-        if 'month' in self.request.GET and 'year' in self.request.GET:
-            self.kwargs['month'] = int(self.request.GET['month'])
-            self.kwargs['year'] = int(self.request.GET['year'])
-        elif 'month' not in self.kwargs and 'year' not in self.kwargs:
-            self.kwargs['month'] = last_bal_date.month
-            self.kwargs['year'] = last_bal_date.year
-        month = self.kwargs['month']
-        year = self.kwargs['year']
-        
-        target_date = datetime.date(year,month,1)
-        # For very first time
-        if last_bal_date.year == first_bal_date.year and last_bal_date.month == first_bal_date.month:
-            target_date = last_bal_date
-        # Dont let go future
-        if target_date > last_bal_date:
-            return redirect('product-topsheet', month=last_bal_date.month, year=last_bal_date.year)
-        elif target_date <= first_bal_date:
-            return redirect('product-topsheet', month=first_date.month, year=first_date.year)
-
-        prev_month_date = target_date - datetime.timedelta(days=1)
-        self.kwargs['prev_month'] = prev_month_date.month
-        self.kwargs['prev_month_year'] = prev_month_date.year
-        # here num_days+7 to make sure it goes to next month
-        self.kwargs['next_date'] = target_date + datetime.timedelta(days=31)
-
-        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = DateFilterForm(self.request.GET or self.kwargs or None)
-        context['date_form'] = form
-        context['month'] = self.kwargs['month']
-        context['year'] = self.kwargs['year']
-        context['prev'] = {
-            'month': self.kwargs['prev_month'],
-            'year': self.kwargs['prev_month_year']
-        }
-        context['next'] = {
-            'month': self.kwargs['next_date'].month,
-            'year': self.kwargs['next_date'].year
-        }
+        # Collect data from mixin context
+        month = context['month']
+        year = context['year']
+
         product_data = []
-        month = int(self.kwargs['month'])
-        year = int(self.kwargs['year'])
-        prev_month = self.kwargs['prev_month']
-        prev_month_year = self.kwargs['prev_month_year']
-        from_date = datetime.date(year,month,1)
-        to_date = CashBalance.objects.filter(date__month=month,date__year=year).order_by('date').last().date
-        last_day = last_day_of_month(year,month)
-        context['status'] = last_day == to_date
-        context['to_date'] = to_date
         product_data, total_profit, profit_adj = get_products_info(year,month)
         context['products'] = product_data
         total_ending_storage_amount = sum(product['ending_storage_amount'] for product in product_data)
@@ -311,18 +255,29 @@ class StorageView(LoginRequiredMixin, ListView):
         return context
 
 def storage_formset_view(request,month,year):
+    if not CashBalance.objects.exists():
+        return redirect('daily-transactions')
     first_date = first_balance_date()
-    empty_storages = Storage.objects.filter(quantity=0, month=first_date.month, year=first_date.year)
-    print(first_date.month, first_date.year, empty_storages)
+    # Can change only first time
+    storages = Storage.objects.filter(month=first_date.month, year=first_date.year)
     
     storage_formset_factory = modelformset_factory(Storage, StorageUpdateForm, extra=0)
-    storage_formset = storage_formset_factory(request.POST or None, queryset=empty_storages, prefix='storage')
-    storage_formset.initial = [{'product':obj.product} for obj in empty_storages]
+    storage_formset = storage_formset_factory(request.POST or None, queryset=storages, prefix='storage')
+    # storage_formset.initial = [{
+    #     'product': obj.product,
+    #     'quantity': obj.quantity,
+    #     'price': obj.price
+    # } for obj in storages]
 
     template = "Ledger/storage_formset.html"
     context = {
         'formset': storage_formset,
         'month': month, 'year':year
         }
+    
+    if request.method == 'POST' and storage_formset.is_valid():
+        # Save the formset without altering 'product' values to strings
+        storage_formset.save()
+        return redirect('product-storage', year=year, month=month)
 
     return render(request,template,context)

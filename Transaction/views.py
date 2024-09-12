@@ -36,13 +36,13 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         if not CashBalance.objects.exists():
             context = self.get_context_data()
             return super(TemplateView, self).render_to_response(context)
-        # In models, CashBalances are ordered by '-date'
-        last_balance = CashBalance.objects.order_by('date').last()
-        first_balance = CashBalance.objects.order_by('date').first()
-        self.kwargs['last_balance'] = last_balance
         
-        current_day = last_balance.date + datetime.timedelta(days=1)
-        first_day = first_balance.date + datetime.timedelta(days=1)
+        last_balance_date = CashBalance.objects.latest().date
+        first_balance_date = CashBalance.objects.earliest().date
+        # self.kwargs['last_balance'] = last_balance
+        
+        current_day = last_balance_date + datetime.timedelta(days=1)
+        first_day = first_balance_date + datetime.timedelta(days=1)
         # if request with no date, just redirect to next day
         if 'date' not in self.kwargs:
             return redirect('daily-transactions', date=current_day)
@@ -197,12 +197,12 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         else: context['balance_cf_side'] = 'debit'
 
         # Edit করার persmission দেয়া হলে, পূর্বের ব্যালেন্স এর সাথে তুলনা করবে
-        context['need_update'] = False
+        # context['need_update'] = False
         saved_balance = balances.filter(date=date)
         if saved_balance.count() > 0:
             context['saved_balance_cf'] = saved_balance.last().amount
-            if context['saved_balance_cf'] != context['balance_cf']:
-                context['need_update'] = True
+            # if context['saved_balance_cf'] != context['balance_cf']:
+            #     context['need_update'] = True
 
         # Limit Editing features
         # context['can_change'] = True

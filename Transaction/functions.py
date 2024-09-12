@@ -4,7 +4,7 @@ from .models import CashBalance
 
 def first_balance_date():
     try:
-        obj = CashBalance.objects.order_by('date').first()
+        obj = CashBalance.objects.earliest()
         return obj.date
     except: return datetime.date.today()
 

@@ -55,6 +55,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'Transaction.context_processors.has_cashbalance',
+                'FillingStation.context_processors.business_name',
             ],
             'libraries': {
                 'extra_tags': 'FillingStation.templatetags.extra_tags',

@@ -2,17 +2,21 @@ from django.db.models.signals import pre_save, pre_delete, post_save
 from django.dispatch import receiver
 from .models import Sell, Purchase, Rate, StorageReading, Product
 from Ledger.models import Storage
-from Ledger.functions import save_profit_oe_from, save_storage
-from Core.choices import last_day_of_month
-from Transaction.functions import get_prev_month
-from Transaction.models import CashBalance
+from Ledger.functions import save_profit_oe_from
+from Core.choices import last_day_of_month, get_prev_month
 import datetime
 
 @receiver(post_save, sender=Product)
 def create_storage(sender, instance, created, **kwargs):
     if created:
-        cashbalance = CashBalance.objects.order_by('date').last()
-        year, month = get_prev_month(cashbalance.date.year,cashbalance.date.month)
+        # প্রারম্ভিক ব্যালেন্সের ক্ষেত্রে (মাসের শেষ দিন) ঐ মাসের তারিখ হবে
+        # মাসের শেষ দিন হলে ঐ মাসের তারিখ হবে (মাস শেষ কিন্তু পরের মাসের প্রথম দিন এখনো ব্যালেন্স সেভ করা হয়নি।)
+        # এছাড়া বিগত মাস হবে
+        year = instance.date_created.year
+        month = instance.date_created.month
+        if instance.date_created != last_day_of_month(year,month):
+            year, month = get_prev_month(year,month)
+
         Storage.objects.create(month=month, year=year, product=instance, quantity=0, price=0)
 
 @receiver(post_save, sender=StorageReading)

@@ -31,22 +31,22 @@ class GroupofCompanyLedgerFilterForm(forms.ModelForm):
 class CustomerBalanceForm(forms.ModelForm):
     class Meta:
         model = CustomerBalance
-        fields = ['amount','bad_debt']
+        fields = ['customer','amount','bad_debt']
     
     def __init__(self, *args, **kwargs):
         super(CustomerBalanceForm, self).__init__(*args, **kwargs)
-        customer = self.instance.customer
-        self.fields['customer'] = forms.CharField(label=customer.name, disabled=True, initial=customer.name)
+        # Disable the customer field
+        self.fields['customer'].disabled = True
     
 class GroupofCompanyBalanceForm(forms.ModelForm):
     class Meta:
         model = GroupofCompanyBalance
-        fields = ['amount','bad_debt']
+        fields = ['customer','amount','bad_debt']
     
     def __init__(self, *args, **kwargs):
         super(GroupofCompanyBalanceForm, self).__init__(*args, **kwargs)
-        customer = self.instance.customer
-        self.fields['customer'] = forms.CharField(label=customer.name, disabled=True, initial=customer.name)
+        # Disable the customer field
+        self.fields['customer'].disabled = True
 
 # Used on several pages to filter
 class DateFilterForm(forms.Form):
@@ -67,5 +67,5 @@ class StorageUpdateForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(StorageUpdateForm, self).__init__(*args, **kwargs)
-        # product = self.instance.product
-        self.fields['product'] = forms.CharField(disabled=True)
+        # Disable the product field
+        self.fields['product'].disabled = True

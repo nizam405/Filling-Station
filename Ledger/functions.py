@@ -20,6 +20,12 @@ def save_profit_oe(year,month):
     এটা তখনই কাজ করবে, যখন Cashbalance ক্রমান্বয়ে save করা হবে। 
     অর্থাৎ এটা শুধু Cashbalance এর মাসের Profit and Owner equity save হবে।
     """
+    owners = Owner.objects.all()
+    owner_count = owners.count()
+    if owner_count == 0:
+        print("Error! No Owner found. Please add owner info.")
+        return 0
+    
     prev_y, prev_m = get_prev_month(year,month)
 
     print("Calculating Net Profit")
@@ -65,12 +71,12 @@ def save_profit_oe(year,month):
     refund_borrowed_loans = RefundBorrowedLoan.objects.filter(date__year__lte=year, date__month__lte=month)
     refund_borrowed_loan_amount = refund_borrowed_loans.aggregate(Sum('amount'))['amount__sum'] if refund_borrowed_loans else 0
     remaining_borrowed_loan = borrowed_amount - refund_borrowed_loan_amount
-    owner_profit = net_profit/2
     amount_before_profit = capital_amount + remaining_borrowed_loan + investment_amount - withdraw_amount
     total_oe = amount_before_profit + net_profit
     print("\tTotal owners' equity:",total_oe)
 
-    owners = Owner.objects.all()
+    owner_profit = net_profit/owner_count
+    # print(net_profit,owner_profit)
     for owner in owners:
         # প্রারম্ভিক মূলধন
         prev_oe = ownersequity.filter(owner=owner)

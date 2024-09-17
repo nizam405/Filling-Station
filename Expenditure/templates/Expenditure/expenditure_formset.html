@@ -17,29 +17,29 @@
     {% csrf_token %}
     <div id="form-container">
         <div class="row text-center">
-            <div class="col-sm-3">খাত</div>
-            <div class="col-sm-5">বিবরণ</div>
-            <div class="col-sm-2">টাকা</div>
-            <div class="col-sm-2">মুছে ফেলুন</div>
+            <div class="col-3">খাত</div>
+            <div class="col-5">বিবরণ</div>
+            <div class="col-2">টাকা</div>
+            <div class="col-2">মুছে ফেলুন</div>
         </div>
         {{formset.management_form}}
         {% for form in formset %}
         <div class="row forms text-center">
             {{form.date}}
             {{form.id}}
-            <div class="col-sm-3">{% bootstrap_field form.group show_label=False %}</div>
-            <div class="col-sm-5">{% bootstrap_field form.detail show_label=False %}</div>
-            <div class="col-sm-2 eng">{% bootstrap_field form.amount show_label=False %}</div>
-            <div class="col-sm-2 p-2">{{form.DELETE}} <i class="bi bi-trash text-danger"></i></div>
+            <div class="col-3 pr-0">{% bootstrap_field form.group show_label=False %}</div>
+            <div class="col-5 p-0">{% bootstrap_field form.detail show_label=False %}</div>
+            <div class="col-2 p-0 eng">{% bootstrap_field form.amount show_label=False %}</div>
+            <div class="col-2 px-0 py-2">{{form.DELETE}} <i class="bi bi-trash text-danger"></i></div>
         </div>
         {% endfor %}
     </div>
     <div id="empty-form" class="d-none">
         {{empty_form.date}}
-        <div class="col-sm-3">{% bootstrap_field empty_form.group show_label=False %}</div>
-        <div class="col-sm-5">{% bootstrap_field empty_form.detail show_label=False %}</div>
-        <div class="col-sm-2 eng">{% bootstrap_field empty_form.amount show_label=False %}</div>
-        <div class="col-sm-2 p-2">{{empty_form.DELETE}} <i class="bi bi-trash text-danger"></i></div>
+        <div class="col-3 pr-0">{% bootstrap_field empty_form.group show_label=False %}</div>
+        <div class="col-5 p-0">{% bootstrap_field empty_form.detail show_label=False %}</div>
+        <div class="col-2 p-0 eng">{% bootstrap_field empty_form.amount show_label=False %}</div>
+        <div class="col-2 px-0 py-2">{{empty_form.DELETE}} <i class="bi bi-trash text-danger"></i></div>
     </div>
     {% include 'forms_buttons.html' %}
     <div class="p-2"><a href="{% url 'expenditure-group' %}">খরচের খাত যুক্ত করুন</a></div>

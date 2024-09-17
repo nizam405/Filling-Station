@@ -23,16 +23,15 @@
             <button type="button" id="sidebarCollapse" class="btn btn-info menu-item">
                 <i class="bi bi-justify"></i>
             </button>
-            {% endif %}
             <!-- Daily Transaction -->
             <a href="{% url 'daily-transactions' %}" class="btn btn-primary menu-item">দৈনিক লেনদেন</a>
             <!-- Ledgers -->
             {% if month and year %}
-            <a href="{% url 'product-topsheet'  month year %}" class="btn btn-info menu-item">মালের খতিয়ান</a>
+            <a href="{% url 'product-topsheet' month year %}" class="btn btn-info menu-item">মালের খতিয়ান</a>
             <a href="{% url 'customer-topsheet' month year %}" class="btn btn-info menu-item">পার্টি খতিয়ান</a>
-            <a href="{% url 'revenue-ledger'    month year %}" class="btn btn-info menu-item">আয়ের খতিয়ান</a>
+            <a href="{% url 'revenue-ledger' month year %}" class="btn btn-info menu-item">আয়ের খতিয়ান</a>
             <a href="{% url 'expenditure-ledger' month year %}" class="btn btn-info menu-item">ব্যয়ের খতিয়ান</a>
-            <a href="{% url 'incomestatement'   month year %}" class="btn btn-success menu-item">আয়-ব্যয় বিবরণী</a>
+            <a href="{% url 'incomestatement' month year %}" class="btn btn-success menu-item">আয়-ব্যয় বিবরণী</a>
             {% else %}
             <a href="{% url 'product-topsheet' %}" class="btn btn-info menu-item">মালের হিসাব</a>
             <a href="{% url 'customer-topsheet' %}" class="btn btn-info menu-item">পার্টি হিসাব</a>
@@ -42,6 +41,7 @@
             {% endif %}
             <a href="{% url 'ownersequity' %}" class="btn btn-success menu-item">মালিকানা স্বত্ব</a>
             <a href="{% url 'loan-dashboard' %}" class="btn btn-primary menu-item">হাওলাদ</a>
+            {% endif %}
         </div>
         {% endif %}
     </nav>

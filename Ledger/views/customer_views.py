@@ -13,6 +13,7 @@ from Ledger.forms import (CustomerLedgerFilterForm, GroupofCompanyLedgerFilterFo
     CustomerBalanceForm, GroupofCompanyBalanceForm)
 from Ledger.views.mixins import LedgerTopSheetMixin
 from Transaction.models import CashBalance
+from Transaction.mixins import BalanceRequiredMixin
 
 class CustomerTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/customer_topsheet.html'
@@ -140,7 +141,7 @@ class CustomerTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
         }
         return context
 
-class CustomerLedger(LoginRequiredMixin,TemplateView):
+class CustomerLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
     template_name = 'Ledger/customer.html'
 
     def get(self, request, *args, **kwargs):
@@ -265,7 +266,7 @@ class CustomerLedger(LoginRequiredMixin,TemplateView):
         context['balance_cf'] = context['balance_bf'] + total_sell - total_collection
         return context
 
-class GroupofCompanyLedger(LoginRequiredMixin,TemplateView):
+class GroupofCompanyLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
     template_name = 'Ledger/groupofcompany.html'
 
     def get(self, request, *args, **kwargs):
@@ -412,7 +413,7 @@ class GroupofCompanyLedger(LoginRequiredMixin,TemplateView):
         return context
 
 # Customer Balance (Group of company included)
-class CustomerBalanceView(LoginRequiredMixin,TemplateView):
+class CustomerBalanceView(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
     template_name = 'Ledger/customer_balance.html'
 
     def get(self,request,*args, **kwargs):

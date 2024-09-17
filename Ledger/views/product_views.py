@@ -13,6 +13,7 @@ from Ledger.views.mixins import LedgerTopSheetMixin
 from Core.choices import all_dates_in_month
 from Ledger.functions import get_products_info
 from Transaction.functions import first_balance_date
+from Transaction.mixins import BalanceRequiredMixin
 
 class ProductTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/product_topsheet.html'
@@ -36,7 +37,7 @@ class ProductTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
         }
         return context
 
-class ProductLedger(LoginRequiredMixin,TemplateView):
+class ProductLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
     template_name = 'Ledger/product.html'
 
     def get(self, request, *args, **kwargs):
@@ -210,7 +211,7 @@ class ProductLedger(LoginRequiredMixin,TemplateView):
         return context
 
 # To store balances/Storage
-class StorageView(LoginRequiredMixin, ListView):
+class StorageView(LoginRequiredMixin, BalanceRequiredMixin, ListView):
     model = Storage
     template_name = 'Ledger/storage.html'
 

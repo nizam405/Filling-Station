@@ -8,9 +8,10 @@ from django.contrib.auth.decorators import login_required
 
 from .models import Revenue, RevenueGroup
 from .forms import RevenueForm
+from Transaction.mixins import BalanceRequiredMixin
 
 # Revenue Group
-class RevenueGroupView(LoginRequiredMixin,CreateView, ListView):
+class RevenueGroupView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
     model = RevenueGroup
     fields = '__all__'
     template_name = 'Revenue/revenue_group.html'
@@ -21,13 +22,13 @@ class RevenueGroupView(LoginRequiredMixin,CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class RevenueGroupUpdateView(LoginRequiredMixin,UpdateView, ListView):
+class RevenueGroupUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
     model = RevenueGroup
     fields = '__all__'
     template_name = 'Revenue/revenue_group.html'
     success_url = reverse_lazy('revenue-group')
 
-class RevenueGroupDeleteView(LoginRequiredMixin,DeleteView):
+class RevenueGroupDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
     model = RevenueGroup
     success_url = reverse_lazy('revenue-group')
 

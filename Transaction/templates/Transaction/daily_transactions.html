@@ -22,6 +22,7 @@
 {% load extra_tags %}
 {% load bootstrap4 %}
 
+{% if has_cashbalance %}
 {% if date_form %}
 <div class="row container-fluid px-0 d-print-none eng">
     <div class="col-md-9">
@@ -66,7 +67,6 @@
 {% endif %}
 
 <div class="row" id="transaction-table">
-    {% if active_accounts %}
     <div class="col-6 pr-1">
         <div>ডেবিট</div>
         <table class="table table-sm table-bordered">
@@ -401,15 +401,20 @@
         {% include "./balance_cf.html" %}
         {% endif %}
     </div>
-    {% else %}
+</div>
+{% else %}
+<div class="row">
     <div class="col-sm-12">
         <div class="text-center m-5 text-secondary">
-            <div class="display-3">দুঃখিত! প্রাথমিক ব্যালেন্স নেই</div>
+            <div class="display-3">হিসাবরক্ষণের জন্য প্রাথমিক ব্যালেন্স যুক্ত করতে হবে। </div>
+            <h3>ব্যবসায়ের শুরু থেকে হিসাব সংরক্ষণ করতে চাইলে ০ (শুন্য) ব্যালেন্স যুক্ত করুন অন্যথায় যথাযথ ব্যালেন্স যুক্ত করুন। প্রথম হিসাব তারিখের পূর্বের তারিখে ব্যালেন্স যুক্ত করুন। </h3>
+            <h4>উদাহরন : ০১-০১-২০২৪ তারিখ থেকে হিসাব সংরক্ষণ করতে চাইলে ৩১-১২-২০২৩ তারিখের ব্যালেন্স যুক্ত করুন।</h4>
             <a href="{% url 'create-cashbalance' date %}" class="btn btn-primary m-3">ব্যালেন্স যুক্ত করুন</a>
         </div>
     </div>
-    {% endif %}
 </div>
+{% endif %}
+
 
 <script>
     $(document).ready(function(){

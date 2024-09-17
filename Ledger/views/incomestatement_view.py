@@ -6,6 +6,7 @@ from Expenditure.models import Expenditure
 from Revenue.models import Revenue
 from Ledger.models import CustomerBalance, GroupofCompanyBalance, Profit
 from Transaction.models import CashBalance
+from Transaction.mixins import BalanceRequiredMixin
 from Customer.models import DueSell, DueCollection
 from Owner.models import Withdraw, OwnersEquity, Owner, Investment, FixedAsset
 from Loan.models import BorrowLoan, LendLoan, RefundBorrowedLoan, RefundLendedLoan
@@ -14,7 +15,7 @@ from Ledger.functions import get_products_info
 from Ledger.views.mixins import LedgerTopSheetMixin
 from Core.choices import last_day_of_month
 
-class IncomeStatementView(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
+class IncomeStatementView(LoginRequiredMixin, LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/incomestatement.html'
 
     def get_context_data(self, **kwargs):
@@ -146,43 +147,45 @@ class IncomeStatementView(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
         # Distribute Profit
         if total_asset == total_oe:
             owners = Owner.objects.all()
-            profit_dist = []
-            owner_profit = net_profit/2
+            owner_count = owners.count()
+            if owner_count > 0:
+                profit_dist = []
+                owner_profit = net_profit/owner_count
 
-            for owner in owners:
-                owner_info = {'owner':owner}
-                # প্রারম্ভিক মূলধন
-                prev_oe = ownersequity.filter(owner=owner)
-                prev_oe_amount = prev_oe.last().amount if prev_oe else 0
-                owner_info['prev_oe'] = prev_oe_amount
-                owner_info['profit'] = owner_profit
-                
-                # অতিরিক্ত মূলধন
-                owner_investments = investments.filter(owner=owner)
-                owner_investment = owner_investments.aggregate(Sum('amount'))['amount__sum'] if owner_investments else 0
-                owner_info['investment'] = owner_investment
-                
-                # উত্তোলন
-                wds = withdraws.filter(owner=owner)
-                wd_amount = wds.aggregate(Sum('amount'))['amount__sum'] if wds else 0
-                owner_info['withdraw'] = wd_amount
-                
-                # বর্তমান মালিকানা
-                owner_info['rem_profit'] = owner_profit - wd_amount
-                current_oe = prev_oe_amount + owner_investment - wd_amount + owner_profit
-                owner_info['current_oe'] = current_oe
-                current_share = (current_oe*100)/total_oe if total_oe else 0
-                owner_info['current_share'] = current_share
+                for owner in owners:
+                    owner_info = {'owner':owner}
+                    # প্রারম্ভিক মূলধন
+                    prev_oe = ownersequity.filter(owner=owner)
+                    prev_oe_amount = prev_oe.last().amount if prev_oe else 0
+                    owner_info['prev_oe'] = prev_oe_amount
+                    owner_info['profit'] = owner_profit
+                    
+                    # অতিরিক্ত মূলধন
+                    owner_investments = investments.filter(owner=owner)
+                    owner_investment = owner_investments.aggregate(Sum('amount'))['amount__sum'] if owner_investments else 0
+                    owner_info['investment'] = owner_investment
+                    
+                    # উত্তোলন
+                    wds = withdraws.filter(owner=owner)
+                    wd_amount = wds.aggregate(Sum('amount'))['amount__sum'] if wds else 0
+                    owner_info['withdraw'] = wd_amount
+                    
+                    # বর্তমান মালিকানা
+                    owner_info['rem_profit'] = owner_profit - wd_amount
+                    current_oe = prev_oe_amount + owner_investment - wd_amount + owner_profit
+                    owner_info['current_oe'] = current_oe
+                    current_share = (current_oe*100)/total_oe if total_oe else 0
+                    owner_info['current_share'] = current_share
 
-                profit_dist.append(owner_info)
+                    profit_dist.append(owner_info)
 
-                oe, create = OwnersEquity.objects.update_or_create(
-                    month=month,year=year,owner=owner,
-                    defaults={'profit':owner_profit,'amount':current_oe, 'share':current_share})
-            context['profit_distribution'] = profit_dist
+                    oe, create = OwnersEquity.objects.update_or_create(
+                        month=month,year=year,owner=owner,
+                        defaults={'profit':owner_profit,'amount':current_oe, 'share':current_share})
+                context['profit_distribution'] = profit_dist
         return context
 
-class ProfitAdjustment(LoginRequiredMixin,TemplateView):
+class ProfitAdjustment(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
     template_name = 'Ledger/profit_adjustment.html'
 
     def get_context_data(self, **kwargs):

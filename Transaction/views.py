@@ -79,11 +79,8 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         context['next_day'] = date + datetime.timedelta(days=1)
         date_str = date.strftime("%d/%m/%Y")
         context['date_str'] = date_str
-
-        context['active_accounts'] = True
         # If no balance at all, add first
         if not CashBalance.objects.exists():
-            context['active_accounts'] = False
             return context
         # date_str = date.strftime("%d %B, %Y")
         context['date_form'] = DateForm(self.request.GET or None, initial={'date':date})

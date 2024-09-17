@@ -1,4 +1,3 @@
-# mixins.py
 from django.shortcuts import redirect
 from Transaction.models import CashBalance
 from Ledger.forms import DateFilterForm

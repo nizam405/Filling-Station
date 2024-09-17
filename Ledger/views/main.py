@@ -1,20 +1,14 @@
-from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from django.db.models import Sum
-import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
 
 from Expenditure.models import ExpenditureGroup, Expenditure
 from Revenue.models import RevenueGroup, Revenue
 from Owner.models import Withdraw, Owner
-from Ledger.forms import DateFilterForm
 from Ledger.views.mixins import LedgerTopSheetMixin
-from Transaction.models import CashBalance
-from Core.choices import last_day_of_month
 
 class RevenueLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
-    template_name = 'Ledger/revenue.html'
+    template_name = 'Ledger/revenue_column.html'
 
     def get_context_data(self,*args, **kwargs):
         context = super().get_context_data(**kwargs)

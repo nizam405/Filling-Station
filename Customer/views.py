@@ -8,9 +8,10 @@ from django.contrib.auth.decorators import login_required
 
 from .models import Customer, DueSell, DueCollection, GroupofCompany
 from .forms import DueCollectionForm, DueSellForm, CustomerForm
+from Transaction.mixins import BalanceRequiredMixin
 
 # Group of companies
-class GroupofCompaniesView(LoginRequiredMixin,CreateView, ListView):
+class GroupofCompaniesView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
     model = GroupofCompany
     fields = ['name','active']
     template_name = 'Customer/groupofcompanies.html'
@@ -21,13 +22,13 @@ class GroupofCompaniesView(LoginRequiredMixin,CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class GroupofCompanyUpdateView(LoginRequiredMixin,UpdateView, ListView):
+class GroupofCompanyUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
     model = GroupofCompany
     fields = ['name','active']
     template_name = 'Customer/groupofcompanies.html'
     success_url = reverse_lazy('groupofcompanies')
 
-class GroupofCompanyDeleteView(LoginRequiredMixin,DeleteView):
+class GroupofCompanyDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
     model = GroupofCompany
     success_url = reverse_lazy('groupofcompanies')
 
@@ -39,7 +40,7 @@ def change_goc_status(requst, pk):
     return redirect('groupofcompanies')
 
 # Customer
-class CustomerView(LoginRequiredMixin,CreateView, ListView):
+class CustomerView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
     model = Customer
     form_class = CustomerForm
     template_name = 'Customer/customers.html'
@@ -50,13 +51,13 @@ class CustomerView(LoginRequiredMixin,CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class CustomerUpdateView(LoginRequiredMixin,UpdateView, ListView):
+class CustomerUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
     model = Customer
     fields = ['name','short_name','cust_type','group','mobile','serial']
     template_name = 'Customer/customers.html'
     success_url = reverse_lazy('customers')
 
-class CustomerDeleteView(LoginRequiredMixin,DeleteView):
+class CustomerDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
     model = Customer
     success_url = reverse_lazy('customers')
 

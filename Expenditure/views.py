@@ -8,9 +8,10 @@ from django.contrib.auth.decorators import login_required
 
 from .models import Expenditure, ExpenditureGroup
 from .forms import ExpenditureForm
+from Transaction.mixins import BalanceRequiredMixin
 
 # Expenditure Group
-class ExpenditureGroupView(LoginRequiredMixin,CreateView, ListView):
+class ExpenditureGroupView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
     model = ExpenditureGroup
     fields = '__all__'
     template_name = 'Expenditure/expenditure_group.html'
@@ -21,7 +22,7 @@ class ExpenditureGroupView(LoginRequiredMixin,CreateView, ListView):
         context['container_class'] = 'hidden'
         return context
 
-class ExpenditureGroupUpdateView(LoginRequiredMixin,UpdateView, ListView):
+class ExpenditureGroupUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
     model = ExpenditureGroup
     fields = '__all__'
     template_name = 'Expenditure/expenditure_group.html'

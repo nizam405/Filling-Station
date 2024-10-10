@@ -2,17 +2,16 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, Sum
 
 from .models import (Lender, Borrower, BorrowLoan, RefundBorrowedLoan, LendLoan, RefundLendedLoan)
 from Transaction.functions import next_to_last_balance_date, get_next_month, get_current_month 
 from Transaction.models import CashBalance
-from Transaction.mixins import BalanceRequiredMixin
+from Core.mixins import RedirectMixin
     
 
 # হাওলাদ দাতা
-class LenderView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
+class LenderView(RedirectMixin, CreateView, ListView):
     model = Lender
     fields = '__all__'
     template_name = 'Loan/lender.html'
@@ -23,14 +22,14 @@ class LenderView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView)
         context['container_class'] = 'hidden'
         return context
 
-class LenderUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
+class LenderUpdateView(RedirectMixin, UpdateView, ListView):
     model = Lender
     fields = '__all__'
     template_name = 'Loan/lender.html'
     success_url = reverse_lazy('lender')
 
 # হাওলাদ গ্রহীতা
-class BorrowerView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
+class BorrowerView(RedirectMixin, CreateView, ListView):
     model = Borrower
     fields = '__all__'
     template_name = 'Loan/borrower.html'
@@ -41,14 +40,14 @@ class BorrowerView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListVie
         context['container_class'] = 'hidden'
         return context
 
-class BorrowerUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
+class BorrowerUpdateView(RedirectMixin, UpdateView, ListView):
     model = Borrower
     fields = '__all__'
     template_name = 'Loan/borrower.html'
     success_url = reverse_lazy('borrower')
 
 # হাওলাদ (ড্যাসবোর্ড)
-class LoanView(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
+class LoanView(RedirectMixin, TemplateView):
     template_name = "Loan/loan_dashboard.html"  
 
     def get(self, request, *args, **kwargs):
@@ -113,7 +112,7 @@ class LoanView(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
 
         return context
 
-class BorrowedLoanDetailView(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
+class BorrowedLoanDetailView(RedirectMixin, TemplateView):
     model = Lender
     loan_model = BorrowLoan
     refund_model = RefundBorrowedLoan
@@ -146,7 +145,7 @@ class BorrowedLoanDetailView(LoginRequiredMixin, BalanceRequiredMixin, TemplateV
         
         return context  
 
-class LendedLoanDetailView(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
+class LendedLoanDetailView(RedirectMixin, TemplateView):
     model = Borrower
     loan_model = LendLoan
     refund_model = RefundLendedLoan
@@ -180,7 +179,7 @@ class LendedLoanDetailView(LoginRequiredMixin, BalanceRequiredMixin, TemplateVie
         return context  
 
 # হাওলাদ গ্রহণ
-class BorrowLoanCreateView(LoginRequiredMixin, BalanceRequiredMixin, CreateView):
+class BorrowLoanCreateView(RedirectMixin, CreateView):
     model = BorrowLoan
     template_name = "Loan/loan_form.html"
     fields = ['date','lender','amount']
@@ -206,7 +205,7 @@ class BorrowLoanCreateView(LoginRequiredMixin, BalanceRequiredMixin, CreateView)
         form.fields['date'].disabled = True  # Disable the date field
         return form
 
-class BorrowLoanUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView):
+class BorrowLoanUpdateView(RedirectMixin, UpdateView):
     model = BorrowLoan
     template_name = "Loan/loan_form.html"
     fields = ['date','lender','amount']
@@ -225,7 +224,7 @@ class BorrowLoanUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView)
         form.fields['date'].disabled = True  # Disable the date field
         return form
 
-class BorrowLoanDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
+class BorrowLoanDeleteView(RedirectMixin, DeleteView):
     model = BorrowLoan
     template_name = "Loan/loan_confirm_delete.html"
     success_url = reverse_lazy('loan-dashboard')
@@ -238,7 +237,7 @@ class BorrowLoanDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView)
         context['title'] = 'হাওলাদ গ্রহণ - বাতিল'
         return context
 
-class RefundBorrowedLoanCreateView(LoginRequiredMixin, BalanceRequiredMixin, CreateView):
+class RefundBorrowedLoanCreateView(RedirectMixin, CreateView):
     model = RefundBorrowedLoan
     template_name = "Loan/refund_loan_form.html"
     fields = ['date','loan','amount']
@@ -261,7 +260,7 @@ class RefundBorrowedLoanCreateView(LoginRequiredMixin, BalanceRequiredMixin, Cre
         context['title'] = "গৃহীত হাওলাদ পরিশোধ"
         return context
 
-class RefundBorrowedLoanUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView):
+class RefundBorrowedLoanUpdateView(RedirectMixin, UpdateView):
     model = RefundBorrowedLoan
     template_name = "Loan/refund_loan_form.html"
     fields = ['date','loan','amount']
@@ -277,12 +276,12 @@ class RefundBorrowedLoanUpdateView(LoginRequiredMixin, BalanceRequiredMixin, Upd
         context['title'] = "গৃহীত হাওলাদ পরিশোধ (পরিবর্তন)"
         return context
 
-class RefundBorrowedLoanDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
+class RefundBorrowedLoanDeleteView(RedirectMixin, DeleteView):
     model = RefundBorrowedLoan
     success_url = reverse_lazy('loan-dashboard')
 
 #  হাওলাদ প্রদান
-class LendLoanCreateView(LoginRequiredMixin, BalanceRequiredMixin, CreateView):
+class LendLoanCreateView(RedirectMixin, CreateView):
     model = LendLoan
     template_name = "Loan/loan_form.html"
     fields = ['date','borrower','amount']
@@ -308,7 +307,7 @@ class LendLoanCreateView(LoginRequiredMixin, BalanceRequiredMixin, CreateView):
         form.fields['date'].disabled = True  # Disable the date field
         return form
 
-class LendLoanUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView):
+class LendLoanUpdateView(RedirectMixin, UpdateView):
     model = LendLoan
     template_name = "Loan/loan_form.html"
     fields = ['date','borrower','amount']
@@ -327,7 +326,7 @@ class LendLoanUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView):
         context['title'] = "হাওলাদ প্রদান (পরিবর্তন)"
         return context
 
-class LendLoanDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
+class LendLoanDeleteView(RedirectMixin, DeleteView):
     model = LendLoan
     template_name = "Loan/loan_confirm_delete.html"
     success_url = reverse_lazy('loan-dashboard')
@@ -340,7 +339,7 @@ class LendLoanDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
         context['title'] = 'হাওলাদ প্রদান - বাতিল'
         return context
 
-class RefundLendedLoanCreateView(LoginRequiredMixin, BalanceRequiredMixin, CreateView):
+class RefundLendedLoanCreateView(RedirectMixin, CreateView):
     model = RefundLendedLoan
     template_name = "Loan/refund_loan_form.html"
     fields = ['date','loan','amount']
@@ -363,7 +362,7 @@ class RefundLendedLoanCreateView(LoginRequiredMixin, BalanceRequiredMixin, Creat
         context['title'] = "প্রদত্ত হাওলাদ ফেরত"
         return context
 
-class RefundLendedLoanUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView):
+class RefundLendedLoanUpdateView(RedirectMixin, UpdateView):
     model = RefundLendedLoan
     template_name = "Loan/refund_loan_form.html"
     fields = ['date','loan','amount']
@@ -379,6 +378,6 @@ class RefundLendedLoanUpdateView(LoginRequiredMixin, BalanceRequiredMixin, Updat
         context['title'] = "প্রদত্ত হাওলাদ ফেরত (পরিবর্তন)"
         return context
 
-class RefundLendedLoanDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
+class RefundLendedLoanDeleteView(RedirectMixin, DeleteView):
     model = RefundLendedLoan
     success_url = reverse_lazy('loan-dashboard')

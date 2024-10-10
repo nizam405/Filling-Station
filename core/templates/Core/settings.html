@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}প্রথম পাতা{% endblock title %}
+ 
+{% block style %}
+<style>
+
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap4 %}
+
+{% block main %}
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="text-center m-5 text-secondary">
+            <div class="display-3">স্বাগতম</div>
+            <h3>আপনার ব্যবসায়ের হিসাব সংরক্ষণ শুরু করতে চাইলে নিচের ফর্মটি পূরন করুন</h3>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form form layout='horizontal' %}
+            {% bootstrap_button "জমা করুন" button_type="submit" button_class='btn-success float-right' %}
+        </form>
+    </div>
+</div>
+
+{% endblock main %}

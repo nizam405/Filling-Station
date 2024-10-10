@@ -2,8 +2,9 @@ from django.db.models.signals import pre_save, pre_delete, post_save
 from django.dispatch import receiver
 from .models import Sell, Purchase, Rate, StorageReading, Product
 from Ledger.models import Storage
+from Product.models import SellingRate
 from Ledger.functions import save_profit_oe_from
-from Core.choices import last_day_of_month, get_prev_month
+from Core.functions import last_day_of_month, get_prev_month
 import datetime
 
 @receiver(post_save, sender=Product)
@@ -86,3 +87,9 @@ def on_change(sender, instance, **kwargs):
         product_changed = prev_instance.product != instance.product
         if product_changed:
             update_rate(prev_instance)
+
+@receiver(pre_save, sender=SellingRate)
+def ensure_one_default(sender, instance, **kwargs):
+    if instance.default:
+        # Unset other defaults before saving
+        sender.objects.filter(product=instance.product,default=True).update(default=False)

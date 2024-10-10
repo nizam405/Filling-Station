@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from .models import Customer, GroupofCompany
 from Ledger.models import CustomerBalance, GroupofCompanyBalance
 from Transaction.models import CashBalance
-from Core.choices import get_prev_month
+from Core.functions import get_prev_month
 
 @receiver(post_save, sender=Customer)
 def create_customer_balance(sender, instance, created, **kwargs):

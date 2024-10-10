@@ -5,7 +5,7 @@ from datetime import datetime
 
 from Transaction.models import CashBalance
 from Ledger.models import CustomerBalance, GroupofCompanyBalance, Profit, Storage
-from Core.choices import last_day_of_month
+from Core.functions import last_day_of_month
 from Ledger.functions import save_profit_oe, save_storages, save_group_of_company_balance, save_customer_balance
 
 @receiver(pre_delete, sender=CashBalance)

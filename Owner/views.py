@@ -3,15 +3,15 @@ from django.shortcuts import render, redirect
 from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView
-from django.views.generic.edit import CreateView, DeleteView, FormView
+from django.views.generic.edit import CreateView, DeleteView
 from django.db.models import Sum
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 
 from .models import Owner, Withdraw, Investment, OwnersEquity, FixedAsset
 from .forms import WithdrawForm, InvestmentForm, OwnersEquityForm, FixedAssetForm, OwnersEquityFilter
 import datetime
-from Core.choices import get_prev_month, last_day_of_month, all_dates_in_month
+from Core.functions import get_prev_month, last_day_of_month, all_dates_in_month
+from Core.mixins import RedirectMixin
 from Transaction.functions import next_to_last_balance_date
 from Ledger.choices import currentYear
 from Transaction.models import CashBalance
@@ -45,7 +45,7 @@ def WithdrawFormsetView(request, date):
     return render(request,template,context)
     
 # Owners Equity
-class OwnersEquityView(LoginRequiredMixin, TemplateView):
+class OwnersEquityView(RedirectMixin, TemplateView):
     model = OwnersEquity
     template_name = 'Owner/ownersequity.html'
     # paginate_by = 24
@@ -117,7 +117,7 @@ class OwnersEquityView(LoginRequiredMixin, TemplateView):
         context['total'] = total
         return context
 
-class OwnersEquityDetailView(LoginRequiredMixin,TemplateView):
+class OwnersEquityDetailView(RedirectMixin, TemplateView):
     template_name = 'Owner/ownersequity_detail.html'
     
     def get(self, request, *args, **kwargs):
@@ -227,7 +227,7 @@ class OwnersEquityDetailView(LoginRequiredMixin,TemplateView):
         context['total_withdraw'] = withdraw_amount
         return context
     
-class InvestmentCreateView(LoginRequiredMixin,CreateView):
+class InvestmentCreateView(RedirectMixin, CreateView):
     model = Investment
     form_class = InvestmentForm
     template_name = 'Owner/investment_form.html'
@@ -252,15 +252,15 @@ class InvestmentCreateView(LoginRequiredMixin,CreateView):
 #     model = Investment
 #     form_class = InvestmentForm
 
-class InvestmentDeleteView(LoginRequiredMixin,DeleteView):
+class InvestmentDeleteView(RedirectMixin, DeleteView):
     model = Investment
     success_url = reverse_lazy('daily-transactions')
 
-class FixedAssetView(LoginRequiredMixin,CreateView, ListView):
+class FixedAssetView(RedirectMixin, CreateView, ListView):
     model = FixedAsset
     form_class = FixedAssetForm
     template_name = 'Owner/fixedassets.html'
 
-class FixedAssetDeleteView(LoginRequiredMixin,DeleteView):
+class FixedAssetDeleteView(RedirectMixin, DeleteView):
     model = FixedAsset
     success_url = reverse_lazy('fixed-assets')

@@ -1,13 +1,10 @@
 from django.db import models
-from django.db.models import Q
-from datetime import datetime
 from django.urls import reverse
 from Customer.models import Customer, GroupofCompany
-from Product.models import Product, Purchase
+from Product.models import Product
 from Customer.choices import customer_type
-from .choices import MONTHS, YEAR, currentMonth, prevMonth, currentYear
-from Core.choices import last_day_of_month
-# from .query import StorageManager
+from .choices import MONTHS, YEAR, prevMonth, currentYear
+from Core.functions import last_day_of_month
 
 class CustomerBalance(models.Model):
     month = models.IntegerField(choices=MONTHS, default=prevMonth, verbose_name="মাস")
@@ -74,8 +71,6 @@ class Storage(models.Model):
     
     def get_absolute_url(self):
         return reverse('product-topsheet')
-
-    # objects = StorageManager()
 
 class Profit(models.Model):
     month = models.IntegerField(choices=MONTHS, default=prevMonth, verbose_name="মাস")

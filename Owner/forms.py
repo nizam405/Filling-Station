@@ -1,7 +1,7 @@
 from django import forms
 from .models import Withdraw, Investment, OwnersEquity, FixedAsset
 from Owner.models import Owner
-from Core.choices import year_choices
+from Core.functions import year_choices
 
 class WithdrawForm(forms.ModelForm):
     class Meta:

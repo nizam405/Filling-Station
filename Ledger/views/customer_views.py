@@ -3,7 +3,6 @@ from django.forms import modelformset_factory
 from django.views.generic import TemplateView
 from django.db.models import Sum, Count
 import datetime
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 
 from Customer.models import Customer, GroupofCompany, DueSell, DueCollection
@@ -13,9 +12,9 @@ from Ledger.forms import (CustomerLedgerFilterForm, GroupofCompanyLedgerFilterFo
     CustomerBalanceForm, GroupofCompanyBalanceForm)
 from Ledger.views.mixins import LedgerTopSheetMixin
 from Transaction.models import CashBalance
-from Transaction.mixins import BalanceRequiredMixin
+from Core.mixins import RedirectMixin
 
-class CustomerTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
+class CustomerTopSheet(LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/customer_topsheet.html'
 
     def get_context_data(self, **kwargs):
@@ -141,7 +140,7 @@ class CustomerTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
         }
         return context
 
-class CustomerLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
+class CustomerLedger(RedirectMixin, TemplateView):
     template_name = 'Ledger/customer.html'
 
     def get(self, request, *args, **kwargs):
@@ -266,7 +265,7 @@ class CustomerLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
         context['balance_cf'] = context['balance_bf'] + total_sell - total_collection
         return context
 
-class GroupofCompanyLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
+class GroupofCompanyLedger(RedirectMixin, TemplateView):
     template_name = 'Ledger/groupofcompany.html'
 
     def get(self, request, *args, **kwargs):
@@ -413,7 +412,7 @@ class GroupofCompanyLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateVie
         return context
 
 # Customer Balance (Group of company included)
-class CustomerBalanceView(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
+class CustomerBalanceView(RedirectMixin, TemplateView):
     template_name = 'Ledger/customer_balance.html'
 
     def get(self,request,*args, **kwargs):

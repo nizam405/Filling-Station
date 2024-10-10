@@ -5,7 +5,6 @@ from django.views.generic.base import TemplateView
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
 from django.db.models import Sum
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Product.models import Sell, Purchase, StorageReading
 from Customer.models import DueSell, DueCollection, Customer
@@ -14,11 +13,14 @@ from Revenue.models import Revenue
 from Owner.models import Withdraw, Owner, Investment
 from Product.models import Product
 from Loan.models import BorrowLoan, LendLoan, RefundLendedLoan, RefundBorrowedLoan
-from .forms import DateForm, CashBalanceForm, CashBalanceForm2, CashBalanceControlForm
-from .models import CashBalance
+from .forms import DateForm, DailyBalanceForm, CashBalanceForm, CashBalanceForm2, CashBalanceControlForm
+from .models import CashBalance, DailyBalance
 from .functions import save_cashbalance, last_balance_date
+from Core.mixins import RedirectMixin
+from Core.models import Settings
+from Core.functions import prev_day
 
-class DailyTransactionView(LoginRequiredMixin,TemplateView):
+class DailyTransactionView(RedirectMixin, TemplateView):
     template_name = "Transaction/daily_transactions.html"
 
     def post(self, request, *args, **kwargs):
@@ -33,34 +35,34 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
         return super(TemplateView, self).render_to_response(context)
     
     def get(self,request, *args, **kwargs):
-        if not CashBalance.objects.exists():
-            context = self.get_context_data()
-            return super(TemplateView, self).render_to_response(context)
-        
-        last_balance_date = CashBalance.objects.latest().date
-        first_balance_date = CashBalance.objects.earliest().date
-        # self.kwargs['last_balance'] = last_balance
-        
-        current_day = last_balance_date + datetime.timedelta(days=1)
-        first_day = first_balance_date + datetime.timedelta(days=1)
-        # if request with no date, just redirect to next day
-        if 'date' not in self.kwargs:
-            return redirect('daily-transactions', date=current_day)
-        # else
-        if 'date_day' in self.request.GET:
-            date = datetime.date(int(self.request.GET.get('date_year')),
-                int(self.request.GET.get('date_month')),
-                int(self.request.GET.get('date_day')))
-        elif 'date' in self.kwargs:
-            date = self.kwargs['date']
-
-        # Don't let go future
-        if date > current_day:
-            return redirect('daily-transactions', date=current_day)
-        # Don't let go before first date of account starts
-        if date < first_day:
-            return redirect('daily-transactions', date=first_day)
+        if CashBalance.objects.exists():
+            last_balance_date = CashBalance.objects.latest().date
+            first_balance_date = CashBalance.objects.earliest().date
             
+            current_day = last_balance_date + datetime.timedelta(days=1)
+            first_day = first_balance_date + datetime.timedelta(days=1)
+            # if request with no date, just redirect to next day
+            # if 'date' not in self.kwargs:
+            #     print('not in kwargs')
+            #     return redirect('daily-transactions', date=current_day)
+            # else
+            if 'date_day' in self.request.GET:
+                date = datetime.date(int(self.request.GET.get('date_year')),
+                    int(self.request.GET.get('date_month')),
+                    int(self.request.GET.get('date_day')))
+            elif 'date' in self.kwargs:
+                date = self.kwargs['date']
+            else: 
+                date = current_day
+                self.kwargs['date'] = current_day
+
+            # Don't let go future
+            if date > current_day:
+                return redirect('daily-transactions', date=current_day)
+            # Don't let go before first date of account starts
+            if date < first_day:
+                return redirect('daily-transactions', date=first_day)
+                
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -223,12 +225,36 @@ class DailyTransactionView(LoginRequiredMixin,TemplateView):
 
         return context
 
-class CashBalanceListView(LoginRequiredMixin,ListView):
+class DailyBalanceListView(RedirectMixin, ListView):
+    model = DailyBalance
+    ordering = ['-date']
+    paginate_by = 30
+
+class CashBalanceListView(ListView):
     model = CashBalance
     ordering = ['-date']
     paginate_by = 30
 
-class CashBalanceCreateView(LoginRequiredMixin,CreateView):
+# First time balance create when business starts
+class DailyBalanceCreateView(RedirectMixin, CreateView):
+    model = DailyBalance
+    form_class = DailyBalanceForm
+
+    def get(self, request, *args, **kwargs):
+        if 'date' not in self.kwargs:
+            self.kwargs['date'] = prev_day(Settings.objects.earliest().start_date)
+        return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.date = self.kwargs.get('date')
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['date'] = self.kwargs.get('date')
+        return context
+
+class CashBalanceCreateView(CreateView):
     model = CashBalance
     form_class = CashBalanceForm
 
@@ -239,7 +265,16 @@ class CashBalanceCreateView(LoginRequiredMixin,CreateView):
             context['form'].initial = {'date':context['date'] - datetime.timedelta(days=1)}
         return context
 
-class CashBalanceUpdateView(LoginRequiredMixin,UpdateView):
+class DailyBalanceUpdateView(UpdateView):
+    model = DailyBalance
+    form_class = DailyBalanceForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['date'] = self.object.date
+        return context
+
+class CashBalanceUpdateView(UpdateView):
     model = CashBalance
     form_class = CashBalanceForm
 
@@ -248,11 +283,15 @@ class CashBalanceUpdateView(LoginRequiredMixin,UpdateView):
         context['date'] = context['form']['date'].initial + datetime.timedelta(days=1)
         return context
 
-class CashBalanceDeleteView(LoginRequiredMixin,DeleteView):
+class DailyBalanceDeleteView(DeleteView):
+    model = DailyBalance
+    success_url = reverse_lazy('dailybalance-list') # dailybalance
+
+class CashBalanceDeleteView(DeleteView):
     model = CashBalance
-    success_url = reverse_lazy('cashbalance-list')
+    success_url = reverse_lazy('dailybalance-list')
     
-class CashBalanceControlView(LoginRequiredMixin, FormView):
+class CashBalanceControlView(FormView):
     form_class = CashBalanceControlForm
     template_name = 'Transaction/cashbalance_control_form.html'
     success_url = reverse_lazy('daily-transactions')

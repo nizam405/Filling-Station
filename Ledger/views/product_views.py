@@ -3,19 +3,18 @@ from django.forms import modelformset_factory
 from django.views.generic import TemplateView, ListView
 from django.db.models import Sum
 import datetime
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Product.models import Product, StorageReading, Purchase, Sell
 from Ledger.models import Storage
 from Transaction.models import CashBalance
 from Ledger.forms import StorageFilterForm, StorageUpdateForm
 from Ledger.views.mixins import LedgerTopSheetMixin
-from Core.choices import all_dates_in_month
+from Core.functions import all_dates_in_month, get_next_month
 from Ledger.functions import get_products_info
-from Transaction.functions import first_balance_date
-from Transaction.mixins import BalanceRequiredMixin
+from Transaction.functions import first_balance_date, last_balance_date
+from Core.mixins import RedirectMixin
 
-class ProductTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
+class ProductTopSheet(LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/product_topsheet.html'
 
     def get_context_data(self, **kwargs):
@@ -37,7 +36,7 @@ class ProductTopSheet(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
         }
         return context
 
-class ProductLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
+class ProductLedger(RedirectMixin, TemplateView):
     template_name = 'Ledger/product.html'
 
     def get(self, request, *args, **kwargs):
@@ -211,7 +210,7 @@ class ProductLedger(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
         return context
 
 # To store balances/Storage
-class StorageView(LoginRequiredMixin, BalanceRequiredMixin, ListView):
+class StorageView(RedirectMixin, ListView):
     model = Storage
     template_name = 'Ledger/storage.html'
 
@@ -255,30 +254,25 @@ class StorageView(LoginRequiredMixin, BalanceRequiredMixin, ListView):
             context['total'] = qs.aggregate(Sum('price'))['price__sum']
         return context
 
-def storage_formset_view(request,month,year):
+def storage_formset_view(request):
     if not CashBalance.objects.exists():
         return redirect('daily-transactions')
     first_date = first_balance_date()
+    year, month = get_next_month(first_date.year,first_date.month)
+    last_date = last_balance_date()
     # Can change only first time
+    if year != last_date.year or month != last_date.month:
+        return redirect('product-storage')
     storages = Storage.objects.filter(month=first_date.month, year=first_date.year)
-    
     storage_formset_factory = modelformset_factory(Storage, StorageUpdateForm, extra=0)
     storage_formset = storage_formset_factory(request.POST or None, queryset=storages, prefix='storage')
-    # storage_formset.initial = [{
-    #     'product': obj.product,
-    #     'quantity': obj.quantity,
-    #     'price': obj.price
-    # } for obj in storages]
 
     template = "Ledger/storage_formset.html"
-    context = {
-        'formset': storage_formset,
-        'month': month, 'year':year
-        }
+    context = {'formset': storage_formset}
     
     if request.method == 'POST' and storage_formset.is_valid():
         # Save the formset without altering 'product' values to strings
         storage_formset.save()
-        return redirect('product-storage', year=year, month=month)
+        return redirect('product-storage')
 
     return render(request,template,context)

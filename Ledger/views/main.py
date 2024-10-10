@@ -1,13 +1,12 @@
 from django.views.generic import TemplateView
 from django.db.models import Sum
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Expenditure.models import ExpenditureGroup, Expenditure
 from Revenue.models import RevenueGroup, Revenue
 from Owner.models import Withdraw, Owner
 from Ledger.views.mixins import LedgerTopSheetMixin
 
-class RevenueLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
+class RevenueLedger(LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/revenue_column.html'
 
     def get_context_data(self,*args, **kwargs):
@@ -49,7 +48,7 @@ class RevenueLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
             
         return context
         
-class ExpenditureLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
+class ExpenditureLedger(LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/expenditure.html'
 
     def get_context_data(self,*args, **kwargs):
@@ -91,7 +90,7 @@ class ExpenditureLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
             
         return context
   
-class WithdrawLedger(LoginRequiredMixin,LedgerTopSheetMixin,TemplateView):
+class WithdrawLedger(LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/withdraw.html'
 
     def get_context_data(self,*args, **kwargs):

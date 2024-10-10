@@ -1,11 +1,12 @@
 from django.db import models
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 import datetime
 from Transaction.functions import last_balance_date, next_to_last_balance_date
 
 class Product(models.Model):
-    name = models.CharField(max_length=100, blank=True, null=True, verbose_name="মালের নাম")
-    short_name =  models.CharField(max_length=10, verbose_name="মালের সংক্ষিপ্ত নাম")
+    name = models.CharField(max_length=100, verbose_name="মালের নাম")
+    short_name =  models.CharField(max_length=10, unique=True, verbose_name="মালের সংক্ষিপ্ত নাম")
     TYPE_CHOICES = [
         ('Loose', 'লুস'),
         ('Pack', 'প্যাক')
@@ -17,7 +18,7 @@ class Product(models.Model):
     date_created = models.DateField(default=last_balance_date)
 
     class Meta:
-        ordering = ['type','name','capacity']
+        ordering = ['-active','type','name','capacity']
     
     @property
     def last_rate(self):
@@ -95,6 +96,20 @@ class Product(models.Model):
     
     def get_absolute_url(self):
         return reverse("products")
+
+class SellingRate(models.Model):
+    name = models.CharField(max_length=100, verbose_name="নাম")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="মালের নাম")
+    date = models.DateField(default=next_to_last_balance_date, verbose_name="কার্যকরের তারিখ (হইতে)", help_text="YYYY-MM-DD")
+    amount = models.FloatField(default=0, verbose_name="একক প্রতি বিক্রয়মুল্য")
+    default = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-date']
+        get_latest_by = "date"
+    
+    def __str__(self):
+        return f"{self.product.name} - {self.date} - Amount: {self.amount}"
 
 class Rate(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="মালের নাম")

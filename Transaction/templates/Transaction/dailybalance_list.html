@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}দৈনিক ব্যালেন্স সমূহ{% endblock title %}
+{% load extra_tags %}
+{% block main %}
+
+<h3 class='print-center'>দৈনিক ব্যালেন্স সমূহ</h3>
+<a href="{% url 'cashbalance-control' %}" class="btn btn-info mb-3">
+    <i class="bi bi-gear pr-2"></i>ব্যালেন্স নিয়ন্ত্রন করুন
+</a>
+
+<table class="table table-sm table-striped table-bordered text-center">
+    <tr>
+        <th>তারিখ</th>
+        <th>হাতে নগদ</th>
+        <th>ব্যাংক জমা</th>
+        <th>পে-অর্ডার</th>
+        <th>পে-অর্ডার এর ডিউ স্লিপ</th>
+        <th>মোট</th>
+        <th class='d-print-none'></th>
+        <th>হিসাবভুক্ত</th>
+        <th class='d-print-none'></th>
+    </tr>
+    {% for object in object_list %}
+    <tr>
+        <td class='text-right'>
+            <a href="{% url "daily-transactions" object.date %}">{{object.date|e2b_date}}</a>
+        </td>
+        <td class='text-right'>{{object.cash|e2b_digit|ezynumber}}</td>
+        <td class='text-right'>{{object.bank|e2b_digit|ezynumber}}</td>
+        <td class='text-right'>{{object.pay_order|e2b_digit|ezynumber}}</td>
+        <td class='text-right'>{{object.due_slip|e2b_digit|ezynumber}}</td>
+        <td class='text-right'><b>{{object.total|e2b_digit|ezynumber}}</b></td>
+        <td class='d-print-none'>
+            <!-- queryset are sorted descending in view. So first means latest-->
+            {% if object.is_last %}
+            <form method='POST' action="{% url 'delete-dailybalance' pk=object.pk %}">
+                <a href="{% url "update-dailybalance" object.pk %}">
+                    <i class='bi bi-pencil-square text-info'></i>
+                </a>
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm py-0"><i class="bi bi-trash text-danger"></i></button>
+            </form>
+            {% endif %}
+        </td>
+        <td class='text-right'>
+            {% if object.cashbalance %}
+            <b>{{object.cashbalance.amount|e2b_digit|ezynumber}}</b>
+            {% endif %}
+        </td>
+        <td class='d-print-none'>
+            <!-- queryset are sorted descending in view. So first means latest-->
+            {% if object.cashbalance.is_last %}
+            <form method='POST' action="{% url 'delete-cashbalance' pk=object.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm py-0"><i class="bi bi-trash text-danger"></i></button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<nav>
+    <ul class="pagination eng">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Previous</span>
+        </li>
+        {% endif %}
+        {% for page in page_obj.paginator.page_range %}
+        <li class="page-item {% if page == page_obj.number %}active{% endif %}">
+            <a class="page-link" href="?page={{page}}">{{page}}</a>
+        </li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+            <span class="page-link">Next</span>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% endblock main %}

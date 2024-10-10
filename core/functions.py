@@ -6,8 +6,14 @@ def all_dates_in_month(year, month):
     all_dates = [datetime.date(year, month, day) for week in cal for day in week if day != 0]
     return all_dates
 
+def next_day(current_date):
+    return current_date + datetime.timedelta(days=1)
+
+def prev_day(current_date):
+    return current_date - datetime.timedelta(days=1)
+
 def year_choices():
-    return [r for r in range(2020,datetime.date.today().year+1)]
+    return [r for r in range(2000,datetime.date.today().year+1)]
 
 def current_year():
     return datetime.date.today().year
@@ -31,7 +37,3 @@ def get_prev_month(year,month):
     prev_date = first_date - datetime.timedelta(days=1)
     return (prev_date.year,prev_date.month)
 
-status_choices = [
-    ("active", "সক্রিয়"),
-    ("inactive", "নিষ্ক্রিয়"),
-]

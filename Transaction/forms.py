@@ -1,7 +1,7 @@
 from django import forms
 from datetime import date
-from .models import CashBalance
-from Core.choices import year_choices
+from .models import CashBalance, DailyBalance
+from Core.functions import year_choices
 from .functions import first_balance_date, last_balance_date
 
 class DateForm(forms.Form):
@@ -11,6 +11,16 @@ class DateForm(forms.Form):
         years=range(from_date.year, date.today().year+1)))
 
 # CreateView
+class DailyBalanceForm(forms.ModelForm):
+
+    class Meta:
+        model = DailyBalance
+        fields = '__all__'
+        exclude = ['date']
+        widgets = {
+            'date': forms.SelectDateWidget(years=year_choices())
+        }
+
 class CashBalanceForm(forms.ModelForm):
 
     class Meta:

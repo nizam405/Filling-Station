@@ -1,21 +1,20 @@
 from django.views.generic import TemplateView
 from django.db.models import Sum
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 from Expenditure.models import Expenditure
 from Revenue.models import Revenue
 from Ledger.models import CustomerBalance, GroupofCompanyBalance, Profit
 from Transaction.models import CashBalance
-from Transaction.mixins import BalanceRequiredMixin
+from Core.mixins import RedirectMixin
 from Customer.models import DueSell, DueCollection
 from Owner.models import Withdraw, OwnersEquity, Owner, Investment, FixedAsset
 from Loan.models import BorrowLoan, LendLoan, RefundBorrowedLoan, RefundLendedLoan
 
 from Ledger.functions import get_products_info
 from Ledger.views.mixins import LedgerTopSheetMixin
-from Core.choices import last_day_of_month
+from Core.functions import last_day_of_month
 
-class IncomeStatementView(LoginRequiredMixin, LedgerTopSheetMixin,TemplateView):
+class IncomeStatementView(LedgerTopSheetMixin,TemplateView):
     template_name = 'Ledger/incomestatement.html'
 
     def get_context_data(self, **kwargs):
@@ -185,7 +184,7 @@ class IncomeStatementView(LoginRequiredMixin, LedgerTopSheetMixin,TemplateView):
                 context['profit_distribution'] = profit_dist
         return context
 
-class ProfitAdjustment(LoginRequiredMixin, BalanceRequiredMixin, TemplateView):
+class ProfitAdjustment(RedirectMixin, TemplateView):
     template_name = 'Ledger/profit_adjustment.html'
 
     def get_context_data(self, **kwargs):

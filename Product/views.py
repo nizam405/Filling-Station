@@ -4,16 +4,15 @@ from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 
 from .models import Product, Purchase, Sell, StorageReading, Rate
 from .forms import SellForm, PurchaseForm, StorageReadingForm, RateForm
 from Transaction.functions import last_balance_date
-from Transaction.mixins import BalanceRequiredMixin
+from Core.mixins import RedirectMixin
 
 # Product
-class ProductView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
+class ProductView(RedirectMixin, CreateView, ListView):
     model = Product
     fields = ['name','short_name','type','need_rescale','capacity']
     template_name = 'Product/products.html'
@@ -30,17 +29,17 @@ def change_product_status(request, pk):
     product.save()
     return redirect('products')
 
-class ProductUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
+class ProductUpdateView(RedirectMixin, UpdateView, ListView):
     model = Product
     fields = ['name','short_name','type','need_rescale','capacity']
     template_name = 'Product/products.html'
     success_url = reverse_lazy('products')
 
-class ProductDeleteView(LoginRequiredMixin,DeleteView):
+class ProductDeleteView(DeleteView):
     model = Product
     success_url = reverse_lazy('products')
 
-class RateCreateView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
+class RateCreateView(RedirectMixin, CreateView, ListView):
     model = Rate
     template_name = 'Product/rate.html'
     form_class = RateForm
@@ -63,7 +62,7 @@ class RateCreateView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListV
         form.instance.product = self.get_product()
         return super().form_valid(form)
 
-class RateUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
+class RateUpdateView(RedirectMixin, UpdateView, ListView):
     model = Rate
     template_name = 'Product/rate.html'
     form_class = RateForm
@@ -82,7 +81,7 @@ class RateUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListV
         rates = Rate.objects.filter(product=self.get_product())
         return rates
 
-class RateDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
+class RateDeleteView(RedirectMixin, DeleteView):
     model = Rate
 
     def get(self, request, *args, **kwargs):
@@ -95,7 +94,7 @@ class RateDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
         return reverse_lazy('rates',kwargs={'product':product})
 
 # Storage Reading
-class StorageReadingView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
+class StorageReadingView(RedirectMixin, CreateView, ListView):
     model = StorageReading
     template_name = 'Product/storage.html'
     # fields = '__all__'
@@ -122,7 +121,7 @@ class StorageReadingView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, L
         context['last_bal_date'] = last_balance_date()
         return context
 
-class StorageReadingtUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
+class StorageReadingtUpdateView(RedirectMixin, UpdateView, ListView):
     model = StorageReading
     template_name = 'Product/storage.html'
     success_url = reverse_lazy('daily-product-storage')
@@ -142,7 +141,7 @@ class StorageReadingtUpdateView(LoginRequiredMixin, BalanceRequiredMixin, Update
             context["date"] = self.kwargs['date']
         return context
 
-class StorageReadingDeleteView(LoginRequiredMixin, BalanceRequiredMixin,  DeleteView):
+class StorageReadingDeleteView(RedirectMixin,  DeleteView):
     model = StorageReading
     success_url = reverse_lazy('daily-product-storage')
 

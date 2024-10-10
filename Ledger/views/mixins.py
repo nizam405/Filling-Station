@@ -2,33 +2,26 @@ from django.shortcuts import redirect
 from Transaction.models import CashBalance
 from Ledger.forms import DateFilterForm
 from Transaction.functions import (first_balance_date, last_balance_date, first_ledger_month_date)
-from Core.choices import first_date_of_month
+from Core.functions import first_date_of_month
+from Core.mixins import RedirectMixin
 from Ledger.functions import get_navigation_context
 
-class LedgerTopSheetMixin:
+class LedgerTopSheetMixin(RedirectMixin):
     """
     This is used to perfectly navigate to months based on Cashbalance.
     """
     # Default redirect URL name if none is dynamically determined
-    default_url_name = 'daily-transactions'
+    # default_url_name = 'daily-transactions'
 
     def get_url_name(self, request):
-        """
-        Returns the URL name to redirect to when the CashBalance check fails.
-        This method tries to dynamically determine the current view's URL name
-        or falls back to a default URL name if none is found.
-        """
-        if CashBalance.objects.exists():
-            # Attempt to get the current URL pattern name
-            current_url_name = request.resolver_match.url_name if request.resolver_match else None
-            return current_url_name
-        else: return self.default_url_name
+        current_url_name = request.resolver_match.url_name if request.resolver_match else None
+        return current_url_name
 
     def get(self, request, *args, **kwargs):
         # Redirect if no CashBalance records exist
-        if not CashBalance.objects.exists():
-            print('cashbalance not exists')
-            return redirect(self.get_url_name(request))
+        # if not CashBalance.objects.exists():
+        #     print('cashbalance not exists')
+        #     return redirect(self.get_url_name(request))
 
         # Get first and last CashBalance dates
         first_bal_date = first_balance_date()

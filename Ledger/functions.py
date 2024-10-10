@@ -10,7 +10,7 @@ from Ledger.models import CustomerBalance, GroupofCompanyBalance, Profit, Storag
 
 from datetime import date, datetime
 from django.db.models import Sum
-from Core.choices import get_prev_month, get_next_month, first_date_of_month, last_day_of_month
+from Core.functions import get_prev_month, get_next_month, first_date_of_month, last_day_of_month
 from Transaction.functions import last_balance_date_of_month
 
 def save_profit_oe(year,month):

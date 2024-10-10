@@ -24,6 +24,7 @@ from .views import HomeView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('Account.urls')),
+    path('settings/', include("Core.urls")),
     path('', HomeView.as_view(), name="home"), # Currently redirects to 'daily-transactions'
     path('transactions/', include("Transaction.urls")),
     path('ledgers/', include("Ledger.urls")),

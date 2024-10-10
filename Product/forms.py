@@ -1,7 +1,7 @@
 from django import forms
 from .models import Sell, Purchase, StorageReading, Rate
 from Core.widgets import SelectProduct
-from Core.choices import year_choices
+from Core.functions import year_choices
 
 class PurchaseForm(forms.ModelForm):
     update_rate = forms.BooleanField(label="দর পরিবর্তন", required=False)

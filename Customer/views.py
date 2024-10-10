@@ -3,15 +3,14 @@ from django.forms import modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 
 from .models import Customer, DueSell, DueCollection, GroupofCompany
 from .forms import DueCollectionForm, DueSellForm, CustomerForm
-from Transaction.mixins import BalanceRequiredMixin
+from Core.mixins import RedirectMixin
 
 # Group of companies
-class GroupofCompaniesView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
+class GroupofCompaniesView(RedirectMixin, CreateView, ListView):
     model = GroupofCompany
     fields = ['name','active']
     template_name = 'Customer/groupofcompanies.html'
@@ -22,13 +21,13 @@ class GroupofCompaniesView(LoginRequiredMixin, BalanceRequiredMixin, CreateView,
         context['container_class'] = 'hidden'
         return context
 
-class GroupofCompanyUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
+class GroupofCompanyUpdateView(RedirectMixin, UpdateView, ListView):
     model = GroupofCompany
     fields = ['name','active']
     template_name = 'Customer/groupofcompanies.html'
     success_url = reverse_lazy('groupofcompanies')
 
-class GroupofCompanyDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
+class GroupofCompanyDeleteView(RedirectMixin, DeleteView):
     model = GroupofCompany
     success_url = reverse_lazy('groupofcompanies')
 
@@ -40,7 +39,7 @@ def change_goc_status(requst, pk):
     return redirect('groupofcompanies')
 
 # Customer
-class CustomerView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListView):
+class CustomerView(RedirectMixin, CreateView, ListView):
     model = Customer
     form_class = CustomerForm
     template_name = 'Customer/customers.html'
@@ -51,13 +50,13 @@ class CustomerView(LoginRequiredMixin, BalanceRequiredMixin, CreateView, ListVie
         context['container_class'] = 'hidden'
         return context
 
-class CustomerUpdateView(LoginRequiredMixin, BalanceRequiredMixin, UpdateView, ListView):
+class CustomerUpdateView(RedirectMixin, UpdateView, ListView):
     model = Customer
     fields = ['name','short_name','cust_type','group','mobile','serial']
     template_name = 'Customer/customers.html'
     success_url = reverse_lazy('customers')
 
-class CustomerDeleteView(LoginRequiredMixin, BalanceRequiredMixin, DeleteView):
+class CustomerDeleteView(RedirectMixin, DeleteView):
     model = Customer
     success_url = reverse_lazy('customers')
 

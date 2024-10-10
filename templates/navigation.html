@@ -25,7 +25,8 @@
         <li><a href="{% url 'borrower' %}">হাওলাদ গ্রহীতা</a></li>
         
         <li class='nav-header'>অন্যান্য</li>
-        <li><a href="{% url 'cashbalance-list' %}">দৈনিক হাতে নগদ</a></li>
+        {% comment %} <li><a href="{% url 'cashbalance-list' %}">দৈনিক হাতে নগদ</a></li> {% endcomment %}
+        <li><a href="{% url 'dailybalance-list' %}">দৈনিক ব্যালেন্স</a></li>
         {% comment %} <li><a href="{% url 'fixed-assets' %}">স্থায়ী সম্পত্তি</a></li> {% endcomment %}
     </ul>
 </nav>

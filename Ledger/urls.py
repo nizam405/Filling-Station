@@ -53,7 +53,7 @@ urlpatterns = [
         path('storage/', include([
             path('', StorageView.as_view(), name='product-storage'),
             path('<int:month>-<int:year>/', StorageView.as_view(), name='product-storage'),
-            path('update/<int:month>-<int:year>/', storage_formset_view, name='update-product-storage'),
+            path('update/', storage_formset_view, name='update-product-storage'),
         ])),
     ])),
     path('revenue/', include([

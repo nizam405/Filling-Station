@@ -2,55 +2,67 @@
 {% block title %}হাওলাদ দাতা{% endblock title %}
 {% block style %}
 <style>
-    .hidden {
-        display: none;
-    }
-    #add-form {
-        font-size: 2rem;
-    }
 </style>
 {% endblock style %}
 {% block main %}
 
 {% load extra_tags %}
-{% load bootstrap4 %}
+{% load bootstrap5 %}
 
-<h3 class='print-center'>হাওলাদ দাতা
-    <i class="bi bi-plus-circle btn p-0 d-print-none" id="add-form"></i>
-</h3>
-<div id="form-container" class="{{container_class}} d-print-none">
-    <form method="post" class="row mb-3">
-        {% csrf_token %}
-        <div class="col-md-6">{% bootstrap_field form.name layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6 nowrap text-center eng">
-            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
-            <a href="{% url 'lender' %}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
-</div>
+<a href="{% url 'loan-dashboard' %}" class="btn btn-light d-print-none">
+    <i class="bi bi-arrow-left-circle"></i> হাওলাদ
+</a>
 
 <table class="table table-sm table-striped table-bordered text-center">
-    <tr>
-        <th>#</th>
-        <th>নাম</th>
-        <th class='d-print-none'></th>
-    </tr>
-    {% if object_list %}
-    {% for object,sln in object_list|zip %}
-    <tr>
-        <td>{{ sln|e2b_digit }}</td>
-        <td class='text-left'>{{object.name}}</td>
-        <td class='d-print-none'>
-            <a href="{% url 'borrowed-loan-detail' pk=object.pk %}" class="btn btn-sm btn-success">সকল লেনদেন দেখুন</a>
-            <a href="{% url 'update-lender' pk=object.pk %}" class="btn btn-sm btn-info">
-                <i class="bi bi-pencil-square"></i>
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-    {% else %}
-    <tr><td colspan="7" class="text-seocndary text-center">কোনো হাওলাদ দাতা তালিকাভুক্ত করা হয়নি!</td><tr>
-    {% endif %}
+    <caption>
+        {% include 'org_name.html' %}
+        <h4 class='print-center'>হাওলাদ দাতা</h4>
+    </caption>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>নাম</th>
+            <th class='d-print-none'></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if object_list %}
+        {% for object,sln in object_list|zip %}
+        <tr>
+            <td>{{ sln|e2b_digit }}</td>
+            <td class='text-start'>{{object.name}}</td>
+            <td class='d-print-none'>
+                <a href="{% url 'borrowed-loan-detail' pk=object.pk %}" class="btn btn-sm btn-success">সকল লেনদেন দেখুন</a>
+                <a href="{% url 'update-lender' pk=object.pk %}" class="btn btn-sm btn-blue">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td colspan="3" class="text-seocndary text-center">কোনো হাওলাদ দাতা তালিকাভুক্ত করা হয়নি!</td><tr>
+        {% endif %}
+    </tbody>
+    <tfoot class="border d-print-none">
+        <tr class='text-start'>
+            <th colspan='3'>হাওলাদ দাতা যুক্ত/পরিবর্তন করুন</th>
+        </tr>
+        <tr>
+            <td></td>
+            <form method="post" class="row mb-3">
+                {% csrf_token %}
+                <td>{% bootstrap_field form.name show_label=False %}</td>
+                <td class='nowrap'>
+                    <button type="submit" class="btn btn-sm btn-success py-0 rounded-0">
+                        <i class="bi bi-check-lg" style="font-size:1.5rem"></i>
+                    </button>
+                    <a href="{% url 'lender' %}" class="btn btn-sm btn-light py-0 rounded-0">
+                        <i class="bi bi-x text-danger" style="font-size:1.5rem"></i>
+                    </a>
+                </td>
+            </form>
+        </tr>
+    </tfoot>
 </table>
 
 {% load static %}

@@ -1,0 +1,41 @@
+
+{% load extra_tags %}
+
+{% if duesells %}
+<table class="table table-sm table-bordered table-striped text-end">
+    <caption>
+        <h5>বাকি বিক্রয়</h5>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>দেনাদার</th>
+            <th>বিবরণ</th>
+            <th>মোট</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for obj in duesells %}
+        <tr>
+            <td class="text-start">{{obj.customer}}</td>
+            <td> 
+                {% for duesell in obj.due_sells %}
+                <div class="text-start">
+                    {{duesell.product.to_html}} : 
+                    {{duesell.quantity|format_num:-3}} {{duesell.product.unit}} &times;
+                    {{duesell.selling_rate.amount|format_currency:-2}} =
+                    {{duesell.price|format_currency:-2}}
+                </div>
+                {% endfor %}
+            </td>
+            <td class="text-end align-middle nowrap">{{obj.cust_total|format_currency}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="2">মোট বাকি বিক্রয়</th>
+            <th class="nowrap">{{total_duesell|format_currency}}</th>
+        </tr>
+    </tfoot>
+</table>
+{% endif %}

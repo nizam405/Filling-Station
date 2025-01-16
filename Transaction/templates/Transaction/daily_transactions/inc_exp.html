@@ -1,0 +1,30 @@
+
+{% load extra_tags %}
+
+{% if object_list %}
+<table class="table table-sm table-bordered table-striped">
+    <caption>
+        <h5>{{name}}</h5>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>বিবরণ</th>
+            <th>টাকা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for obj in object_list %}
+        <tr>
+            <td>{{obj.group.name}} : {{obj.detail|skip_none}}</td>
+            <td class="text-end">{{obj.amount|format_currency}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="text-end">
+            <th>মোট {{name}}</th>
+            <th>{{total|format_currency}}</th>
+        </tr>
+    </tfoot>
+</table>
+{% endif %}

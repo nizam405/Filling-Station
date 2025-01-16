@@ -4,11 +4,20 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% load bootstrap4 %}
+    {% load bootstrap5 %}
+    {# Load CSS and JavaScript #}
+    {% comment %} {% bootstrap_css %}
+    {% bootstrap_javascript %} {% endcomment %}
+
+    {# Display django.contrib.messages as Bootstrap alerts #}
+    {% bootstrap_messages %}
+    
     {% load static %}
-    <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
-    <link rel="stylesheet" href="{% static 'bootstrap-4.4.1-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-icons-1.11.3.min.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-5.0.2-dist/css/bootstrap.min.css' %}">
+    <script src="{% static 'bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'jQuery.print.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'style.css' %}">
 
     <title>{% block title %}{% endblock title %}</title>
@@ -18,29 +27,21 @@
     <nav class="sticky-top navbar navbar-light bg-light d-print-none p-0">
         {% include "header.html" %}
         {% if user.is_authenticated %}
-        <div id='menu' class="pl-3">
+        <div id='menu' class="container-fluid d-block">
             {% if has_cashbalance %}
-            <button type="button" id="sidebarCollapse" class="btn btn-info menu-item">
+            <button type="button" id="sidebarCollapse" class="btn btn-blue">
                 <i class="bi bi-justify"></i>
             </button>
-            <!-- Daily Transaction -->
-            <a href="{% url 'daily-transactions' %}" class="btn btn-primary menu-item">দৈনিক লেনদেন</a>
-            <!-- Ledgers -->
-            {% if month and year %}
-            <a href="{% url 'product-topsheet' month year %}" class="btn btn-info menu-item">মালের খতিয়ান</a>
-            <a href="{% url 'customer-topsheet' month year %}" class="btn btn-info menu-item">পার্টি খতিয়ান</a>
-            <a href="{% url 'revenue-ledger' month year %}" class="btn btn-info menu-item">আয়ের খতিয়ান</a>
-            <a href="{% url 'expenditure-ledger' month year %}" class="btn btn-info menu-item">ব্যয়ের খতিয়ান</a>
-            <a href="{% url 'incomestatement' month year %}" class="btn btn-success menu-item">আয়-ব্যয় বিবরণী</a>
-            {% else %}
-            <a href="{% url 'product-topsheet' %}" class="btn btn-info menu-item">মালের হিসাব</a>
-            <a href="{% url 'customer-topsheet' %}" class="btn btn-info menu-item">পার্টি হিসাব</a>
-            <a href="{% url 'revenue-ledger' %}" class="btn btn-info menu-item">আয়ের খতিয়ান</a>
-            <a href="{% url 'expenditure-ledger' %}" class="btn btn-info menu-item">ব্যয়ের খতিয়ান</a>
-            <a href="{% url 'incomestatement' %}" class="btn btn-success menu-item">আয়-ব্যয় বিবরণী</a>
+            {% if current_date %}
+            <a href="{% url 'daily-transactions' current_date %}" class="btn btn-primary">দৈনিক লেনদেন</a>
+            <a href="{% url 'product-topsheet' current_date %}" class="btn btn-blue">মালের খতিয়ান</a>
+            <a href="{% url 'customer-topsheet' current_date %}" class="btn btn-blue">দেনাদার হিসাব</a>
+            <a href="{% url 'income-ledger-column' current_date %}" class="btn btn-blue">আয়ের খতিয়ান</a>
+            <a href="{% url 'expenditure-ledger-column' current_date %}" class="btn btn-blue">ব্যয়ের খতিয়ান</a>
+            <a href="{% url 'withdraw-ledger' current_date %}" class="btn btn-blue">উত্তোলন</a>
+            <a href="{% url 'loan-dashboard' %}" class="btn btn-primary">হাওলাদ</a>
+            <a href="{% url 'incomestatement' current_date %}" class="btn btn-success">আয়-ব্যয় বিবরণী</a>
             {% endif %}
-            <a href="{% url 'ownersequity' %}" class="btn btn-success menu-item">মালিকানা স্বত্ব</a>
-            <a href="{% url 'loan-dashboard' %}" class="btn btn-primary menu-item">হাওলাদ</a>
             {% endif %}
         </div>
         {% endif %}
@@ -62,7 +63,6 @@
         01303036193
     </div>
 
-    <script src="{% static 'bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
     <script>
         $(document).ready(function(){
             $("#sidebarCollapse").click(function(){
@@ -71,7 +71,64 @@
             $('.hide-nav').click(function(){
                 $('#sidebar').hide("fast")
             });
+
+            // Initialize visibility
+            $('input[type="checkbox"][data-target]').each(function() {
+                const target = $(this).data('target');
+                $(target).toggleClass('d-none', !this.checked);
+            });
+
+            // Event handler
+            $('input[type="checkbox"][data-target]').change(function(){
+                const target = $(this).data('target');
+                $(target).toggleClass('d-none', !this.checked)
+                    .attr('aria-hidden', !this.checked);
+            });
+
         });
+
+        function updateDays() {
+            const year = parseInt($('#id_date_year').val());
+            const month = parseInt($('#id_date_month').val());
+            console.log(year, month);
+            const daySelect = $('#id_date_day');
+            
+            // Store the currently selected day
+            const selectedDay = parseInt(daySelect.val());
+            
+            // Calculate the number of days in the selected month
+            const daysInMonth = new Date(year, month, 0).getDate();
+            
+            // Clear existing day options
+            daySelect.empty();
+            
+            // Populate days dynamically
+            for (let day = 1; day <= daysInMonth; day++) {
+                const option = $('<option></option>')
+                    .val(day)
+                    .text(day);
+                
+                // Retain the previously selected day if it exists
+                if (day === selectedDay) {
+                    option.prop('selected', true);
+                }
+                
+                daySelect.append(option);
+            }
+            
+            // If the previously selected day is greater than the days in the month, reset it to the last day
+            if (selectedDay > daysInMonth) {
+                daySelect.val(daysInMonth);
+            }
+        }
+        
+        
+    
+        // Attach event listeners to update days when month or year changes
+        $("#id_date_year,#id_date_month").on('change', updateDays);
+    
+        // Initialize days on page load
+        updateDays();
     </script>
 </body>
 </html>

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}উত্তোলন{% endblock title %}
+{% block style %}
+<style>
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load bootstrap5 %}
+{% load extra_tags %}
+
+{% include "Transaction/daily_transactions/links.html" %}
+
+<table class='table table-striped table-bordered table-sm'>
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>উত্তোলন - তারিখঃ {{date|e2b_date}}</h4>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>মালিক</th>
+            <th>বিবরণ</th>
+            <th>টাকা</th>
+            <th>নিয়ন্ত্রণ</th>
+        </tr>
+    </thead>
+    {% if object_list %}
+    <tbody>
+        {% for object in object_list %}
+        <tr>
+            <td>{{object.owner}}</td>
+            <td>{{object.detail}}</td>
+            <td class="text-end">{{object.amount|format_currency}}</td>
+            <td class='nowrap'>
+                <a href="{% url 'update-withdraw' date=date pk=object.pk %}" class="btn btn-sm btn-light py-0">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{% url 'delete-withdraw' date=date pk=object.pk %}">
+                    <i class="bi bi-trash text-danger"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <th colspan='2' class='text-end'>মোট</th>
+            <td class="text-end">{{total|format_currency}}</td>
+            <th></th>
+        </tr>
+    </tbody>
+    {% endif %}
+    <tfoot class="border d-print-none">
+        <form method="post" id="form">
+            {% csrf_token %}
+            <tr class='text-start'>
+                <th colspan='4'>উত্তোলন যুক্ত/পরিবর্তন করুন</th>
+            </tr>
+            <tr>
+                <td>{% bootstrap_field form.owner show_label=False %}</td>
+                <td>{% bootstrap_field form.detail show_label=False %}</td>
+                <td>{% bootstrap_field form.amount show_label=False %}</td>
+                <td class='nowrap pb-4'>
+                    <button type="submit" class="btn btn-sm btn-success py-0 rounded-0">
+                        <i class="bi bi-check-lg" style="font-size:1.5rem"></i>
+                    </button>
+                    <a href="{% url "create-withdraw" date=date %}" class="btn btn-sm btn-light py-0 rounded-0">
+                        <i class="bi bi-x text-danger" style="font-size:1.5rem"></i>
+                    </a>
+                </td>
+            </tr>
+        </form>
+    </tfoot>
+</table>
+
+{% endblock main %}

@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% block title %}Add/Edit Balance{% endblock title %}
-{% load bootstrap4 %}
+{% load bootstrap5 %}
 {% load extra_tags %}
 
 {% block main %}
 
 {% if date %}
-<a href="{% url 'daily-transactions' date %}" class="btn btn-info mb-3 eng">
+<a href="{% url 'daily-transactions' date %}" class="btn btn-blue mb-3 eng">
     <i class="bi bi-chevron-left pr-2"></i>List
 </a>
 {% else %}
-<a href="{% url 'dailybalance-list' %}" class="btn btn-info mb-3 eng">
+<a href="{% url 'cashbalance-list' %}" class="btn btn-blue mb-3 eng">
     <i class="bi bi-chevron-left pr-2"></i>List
 </a>
 {% endif %}
@@ -18,7 +18,7 @@
     <h3>{{date|e2b_date}} তারিখের ব্যালেন্স যুক্ত করুন</h3>
     {% csrf_token %}
     {% bootstrap_form form layout='horizontal' field_class='eng col-md-9'%}
-    {% bootstrap_button "Save" button_type="submit" button_class="btn-primary eng float-right" %}
+    {% bootstrap_button "Save" button_type="submit" button_class="btn-primary eng float-end" %}
 </form>
 
 <script>

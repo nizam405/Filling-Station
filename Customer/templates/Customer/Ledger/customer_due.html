@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}দেনাদার হিসাব{% endblock title %}
+{% block style %}
+<style>
+    .data-container .col:nth-child(odd){
+        padding-right: 0.25rem;
+    }
+    .data-container .col:nth-child(even){
+        padding-left: 0.25rem;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load extra_tags %}
+{% load bootstrap5 %}
+
+{% if filter_form %}
+<div class="row container-fluid px-0 d-print-none">
+    <div class="col-auto eng">
+        {% include "filter_form.html" %}
+    </div>
+    <div class="col-auto">
+        <input type="checkbox" class="form-check-input" id="zero-balance-check" data-target=".zero-balance" checked>
+        <label for="zero-balance-check" class="form-check-label">শুন্য ব্যালেন্স</label>
+    </div>
+</div>
+{% endif %}
+
+<div class='text-center'>
+    {% include 'org_name.html' %}
+    <h4>
+        দেনাদার হিসাব - {{date|e2b_date}}
+        {% if not org_settings.start_from_beginning and org_settings.start_date == date %}
+        <a href="{% url 'customer-due-update' date=date %}" class="d-print-none"><i class="bi bi-pencil-square text-info"></i></a>
+        {% endif %}
+    </h3>
+</div>
+
+
+<div class="row data-container">
+    {% if goc_balances or cust_balances %}
+    <div class="col">
+        <table class="table table-sm table-striped table-bordered text-center table-allow-break">
+            <caption>
+                {% include 'org_name.html' %}
+                <h4>চলতি বকেয়া</h4>
+            </caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>দেনাদার</th>
+                    <th>টাকার পরিমাণ</th>
+                    <th class='d-print-none'></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if goc_balances %}
+                {% for object,sln in goc_balances|zip %}
+                <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
+                    <td>{{ sln|e2b_digit }}</td>
+                    <td class="text-start">* {{object.customer}}</td>
+                    <td class='text-end'>{{object.amount|format_currency}}</td>
+                    <td class='d-print-none'>
+                        <a href="{% url 'mark-baddebt' date=date goc=1 pk=object.customer.pk %}" class="p-1 nowrap">
+                            <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+    
+                {% if cust_balances %}
+                {% for object,sln in cust_balances|zip:goc_balances.count %}
+                <tr {% if object.amount == 0 %}class="zero-balance"{% endif %}>
+                    <td>{{ sln|e2b_digit }}</td>
+                    <td class="text-start">{{object.customer}}</td>
+                    <td class='text-end'>{{object.amount|format_currency}}</td>
+                    <td class='d-print-none'>
+                        <a href="{% url 'mark-baddebt' date=date pk=object.customer.pk %}" class="p-1 nowrap">
+                            <i class="bi bi-arrow-right-square text-info"></i> অনিশ্চিত
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                <tr class='text-end'>
+                    <th colspan='2'>মোট চলতি বকেয়ার পরিমাণঃ</th>
+                    <th>{{total_current_bal|format_currency}}</th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if goc_baddebts or cust_bad_debts %}
+    <div class="col" id="bad-debts">
+        <table class="table table-sm table-striped table-bordered text-center table-allow-break">
+            <caption>
+                {% include 'org_name.html' %}
+                <h4>অনিশ্চিত হিসাব</h4>
+            </caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>দেনাদার</th>
+                    <th>টাকার পরিমাণ</th>
+                    <th class='d-print-none'></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if goc_baddebts %}
+                {% for object,sln in goc_baddebts|zip %}
+                <tr>
+                    <td>{{ sln|e2b_digit }}</td>
+                    <td class="text-start">* {{object.customer}}</td>
+                    <td class='text-end'>{{object.amount|format_currency}}</td>
+                    <td class='d-print-none'>
+                        <a href="{% url 'mark-baddebt' pk=object.customer.pk date=date goc=1 unmark=1 %}" class="p-1 nowrap">
+                            <i class="bi bi-arrow-left-square text-info"></i> চলতি
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+    
+                {% if cust_bad_debts %}
+                {% for object,sln in cust_bad_debts|zip:goc_baddebts.count %}
+                <tr>
+                    <td>{{ sln|e2b_digit }}</td>
+                    <td class="text-start">{{object.customer}}</td>
+                    <td class='text-end'>{{object.amount|format_currency}}{% if object.amount %}{% endif %}</td>
+                    <td class='d-print-none'>
+                        <a href="{% url 'mark-baddebt' pk=object.customer.pk date=date unmark=1 %}" class="p-1 nowrap">
+                            <i class="bi bi-arrow-left-square text-info"></i> চলতি
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                <tr class='text-end'>
+                    <th colspan='2'>মোট অনিশ্চিত বকেয়ার পরিমাণঃ</th>
+                    <th>{{total_baddebt|format_currency}}</th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    <div class="col-12">
+        <h4>সর্বমোটঃ {{grand_total|format_currency}}</h4>
+    </div>
+</div>
+
+{% endblock main %}

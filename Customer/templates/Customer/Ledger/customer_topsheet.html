@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}দেনাদার হিসাব - টপশিট{% endblock title %}
+{% block style %}
+<style>
+    .baddebt {display: none;}
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap5 %}
+{% block main %}
+
+{% if filter_form %}
+<div class="row container-fluid px-0 d-print-none eng">
+    <div class="col-auto">
+        {% include "filter_form.html" %}
+    </div>
+    <div class="col-auto bangla">
+        <div class="form-check ml-2">
+            <input type="checkbox" id="show_baddebt">
+            <label for="show_baddebt">অনিশ্চিত</label>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<table class="table table-sm table-bordered table-striped">
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>দেনাদার হিসাব (টপশিট) - {{date.month|e2b_month}},{{date.year|e2b_digit}}</h4>
+        {% if not status %}
+        <div class='text-danger'>({{date|e2b_date}} তারিখ পর্যন্ত)</div>
+        {% endif %}
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>#</th>
+            <th>দেনাদার</th>
+            <th>পূর্ববর্তী পাওনা</th>
+            <th>চলতি মাস বকেয়া</th>
+            <th>আদায়</th>
+            <th>বর্তমান পাওনা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer,sln in customers|zip %}
+        <tr {% if customer.baddebt %}class="baddebt"{% endif %}>
+            <td class='text-center'>{{sln|e2b_digit}}</td>
+            <td>
+                <a href="{{customer.ledger_url}}" class="{{customer.link_css}}">{{customer.name}}</a>
+            </td>
+            <td class="text-end">
+                {{customer.initial_due|format_currency:-2}}
+            </td>
+            <td class="text-end">{{customer.duesell|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td class="text-end">{{customer.duecollection|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td class="text-end">
+                {% if customer.current_due == 0 %}<i class="bi bi-check-lg text-success float-left"></i>
+                {% elif customer.current_due < 0 %}<i class="bi bi-exclamation-triangle text-danger float-left"></i>
+                {% endif %}
+                {{customer.current_due|floatformat:-2|e2b_digit|ezynumber}}
+            </td>
+        </tr>
+        {% endfor %}
+        <tr class="text-end fw-bold">
+            <td colspan='2'>(অনিশ্চিত সহ) মোটঃ</td>
+            <td>{{customers_total.total_initial_due|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td>{{customers_total.total_duesell|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td>{{customers_total.total_collection|floatformat:-2|e2b_digit|ezynumber}}</td>
+            <td>{{customers_total.total_current_due|floatformat:-2|e2b_digit|ezynumber}}</td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    $("#show_baddebt").on('click', function(){
+        if ($(this).is(":checked")){
+            $('.baddebt').show('fast');
+        } else {
+            $('.baddebt').hide('fast');
+        }
+    })
+</script>
+
+{% endblock main %}

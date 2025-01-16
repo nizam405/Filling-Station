@@ -6,19 +6,22 @@ def first_balance_date():
     try:
         obj = CashBalance.objects.earliest()
         return obj.date
-    except: return datetime.date.today()
+    except: return datetime.date.today() - datetime.timedelta(days=365*20)
 
 def last_balance_date():
-    obj = CashBalance.objects.latest()
-    return obj.date
+    try:
+        obj = CashBalance.objects.latest()
+        return obj.date
+    except: return datetime.date.today()
 
-def last_balance_date_of_month(year,month):
-    obj = CashBalance.objects.filter(date__year=year,date__month=month).latest()
-    return obj.date
+def last_balance_date_of_month(date:datetime.date):
+    obj = CashBalance.objects.filter(date__year=date.year,date__month=date.month)
+    return obj.latest().date if obj else last_balance_date()
 
 def next_to_last_balance_date():
     last = last_balance_date()
-    return last + datetime.timedelta(days=1)
+    next_date = last + datetime.timedelta(days=1)
+    return next_date
 
 def get_current_month():
     date = last_balance_date()
@@ -43,44 +46,42 @@ def first_ledger_month_date():
     first_m_date = demo.replace(day=1)
     return first_m_date
 
-def save_cashbalance(date:datetime.date):
+def get_cashbalance(date:datetime.date):
     from Product.models import Sell, Purchase
-    from Revenue.models import Revenue
-    from Expenditure.models import Expenditure
+    from IncomeExpenditure.models import Income, Expenditure
     from Customer.models import DueCollection, DueSell
     from Owner.models import Investment, Withdraw
     from Loan.models import BorrowLoan, LendLoan, RefundBorrowedLoan, RefundLendedLoan
     
-    prev_date = date - datetime.timedelta(days=1)
-    prev_balance = None
     try:
-        prev_balance = CashBalance.objects.get(date=prev_date)
-    except: pass
-    if prev_balance:
-        print("Saving Cashbalance of",date)
-        start_time = datetime.datetime.now()
+        opening_balance = CashBalance.objects.get(date=date)
+    except: opening_balance = None
+    if opening_balance:
         # Debit
-        sell = Sell.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
-        revenue = Revenue.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        sell = Sell.objects.filter(date=date).aggregate(Sum('price'))['price__sum'] or 0
+        income = Income.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         due_collection = DueCollection.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         investment = Investment.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         borrowed_loan = BorrowLoan.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         refund_lended_loan = RefundLendedLoan.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         # Credit
-        purchase = Purchase.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        purchase = Purchase.objects.filter(date=date).aggregate(Sum('price'))['price__sum'] or 0
         expenditure = Expenditure.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         withdraw = Withdraw.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
-        due_sell = DueSell.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
+        due_sell = DueSell.objects.filter(date=date).aggregate(Sum('price'))['price__sum'] or 0
         lended_loan = LendLoan.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         refund_borrowed_loan = RefundBorrowedLoan.objects.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0
         # Balance
-        balance = prev_balance.amount
-        balance += sell + revenue + due_collection + investment + borrowed_loan + refund_lended_loan
-        balance -= purchase + expenditure + withdraw + due_sell + lended_loan + refund_borrowed_loan
-        obj, created = CashBalance.objects.update_or_create(
-            date=date, defaults={'amount':balance}
-            )
-        end_time = datetime.datetime.now()
-        delta = end_time-start_time
-        print("\tAmount:",balance,"(Time:",delta.total_seconds(),"sec)")
+        closing_balance = opening_balance.amount
+        closing_balance += sell + income + due_collection + investment + borrowed_loan + refund_lended_loan
+        closing_balance -= purchase + expenditure + withdraw + due_sell + lended_loan + refund_borrowed_loan
+        return closing_balance
+
+def save_cashbalance(date:datetime.date):
+    closing_balance = get_cashbalance(date)
+    # print(closing_balance)
+    CashBalance.objects.update_or_create(
+        date=next_to_last_balance_date(), 
+        defaults={'amount':closing_balance}
+    )
 

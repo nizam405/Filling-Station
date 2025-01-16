@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}ঘাটতি মাল{% endblock title %}
+
+{% block style %}
+<style>
+    .bootstrap4-multi-input div.col-4:not(:first-child) {
+        padding-left: 0;
+    }
+
+    .bootstrap4-multi-input div.col-4 {
+        padding-right: 0;
+    }
+
+    .bootstrap4-multi-input select, #buttons button, #buttons a {
+        border-radius:0rem;
+    }
+</style>
+{% endblock style %}
+
+{% block main %}
+{% load extra_tags %}
+{% load bootstrap5 %}
+<a href="{% url 'products' %}" class="btn btn-light">
+    <i class="bi bi-arrow-left-circle"></i> মালের তালিকা
+</a>
+<h3 class='print-center'>উদ্ধৃত মাল</h3>
+<div id="form-container" class='container'>
+    <form method="post" class="mb-3 eng">
+        {% csrf_token %}
+        {% bootstrap_form form layout='horizontal' %}
+        {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
+        <a href="{% url 'stock-details' stock.pk %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% endblock main %}

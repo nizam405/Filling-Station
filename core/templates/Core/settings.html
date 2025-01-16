@@ -7,7 +7,7 @@
 </style>
 {% endblock style %}
 {% load extra_tags %}
-{% load bootstrap4 %}
+{% load bootstrap5 %}
 
 {% block main %}
 
@@ -20,7 +20,7 @@
         <form method="post">
             {% csrf_token %}
             {% bootstrap_form form layout='horizontal' %}
-            {% bootstrap_button "জমা করুন" button_type="submit" button_class='btn-success float-right' %}
+            {% bootstrap_button "জমা করুন" button_type="submit" button_class='btn-success float-end' %}
         </form>
     </div>
 </div>

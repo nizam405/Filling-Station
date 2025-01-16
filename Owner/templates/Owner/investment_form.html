@@ -3,44 +3,73 @@
 
 {% block style %}
 <style>
-    form .bootstrap4-multi-input div.col-4:not(:first-child) {
-        padding-left: 0;
-    }
-    
-    form .bootstrap4-multi-input div.col-4:not(:last-child) {
-        padding-right: 0;
-    }
-
-    select.form-control, input.form-control, form .btn {
-        border-radius:0rem;
-    }
 </style>
 {% endblock style %}
 
+{% load bootstrap5 %}
+{% load extra_tags %}
 {% block main %}
 
-{% load bootstrap4 %}
-<a href="{% url 'ownersequity' %}" class="btn btn-info rounded-0 mb-3">
-    <i class="bi bi-chevron-left pr-2"></i>বর্তমান মূলধন
-</a>
-<h3>মূলধন যুক্ত করুন</h3>
-<form action="" method="post" class="row">
-    {% csrf_token %}
-    <div class="col-md-6">
-        {% bootstrap_field form.date layout='horizontal' field_class='eng col-md-9' %}
-    </div>
-    <div class="col-md-6">
-        {% bootstrap_field form.owner layout='horizontal' field_class='col-md-9' %}
-    </div>
-    <div class="col-md-6">
-        {% bootstrap_field form.detail layout='horizontal' field_class='col-md-9' %}
-    </div>
-    <div class="col-md-6">
-        {% bootstrap_field form.amount layout='horizontal' field_class='eng col-md-9' %}
-    </div>
-    <div class="col-md-12 text-center eng">
-        {% bootstrap_button "Save" button_type="submit" button_class="btn-success" %}
-    </div>
-</form>
+{% include "Transaction/daily_transactions/links.html" %}
+
+<table class='table table-striped table-bordered table-sm text-center'>
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>অতিরিক্ত মূলধন - তারিখঃ {{date|e2b_date}}</h4>
+    </caption>
+    <thead>
+        <tr>
+            <th>মালিকের নাম</th> 
+            <th>বিবরণ</th> 
+            <th>টাকার পরিমান</th>
+            <th>নিয়ন্ত্রণ</th>
+        </tr>
+    </thead>
+    {% if object_list %}
+    <tbody>
+        {% for object in object_list %}
+        <tr>
+            <td>{{object.owner.name}}</td>
+            <td>{{object.detail}}</td>
+            <td>{{object.amount}}</td>
+            <td class='nowrap'>
+                <a href="{% url 'update-investment' date=date pk=object.pk %}" class="btn btn-sm btn-light py-0">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{% url 'delete-investment' date=date pk=object.pk %}">
+                    <i class="bi bi-trash text-danger"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <th colspan='4' class='text-end'>সর্বমোট</th>
+            <td>=</td>
+            <th colspan='2' class='nowrap'>{{total|format_currency}}</th>
+        </tr>
+    </tbody>
+    {% endif %}
+    <tfoot class='border d-print-none'>
+        <form method="post" id="form">
+            {% csrf_token %}
+            <tr class='text-start'>
+                <th colspan="4">মূলধন যুক্ত/পরিবর্তন করুন</th>
+            </tr>
+            <tr>
+                <td>{% bootstrap_field form.owner show_label=False %}</td>
+                <td>{% bootstrap_field form.detail show_label=False %}</td>
+                <td>{% bootstrap_field form.amount show_label=False %}</td>
+                <td class='nowrap pb-4'>
+                    <button type="submit" class="btn btn-sm btn-success py-0 rounded-0">
+                        <i class="bi bi-check-lg" style="font-size:1.5rem"></i>
+                    </button>
+                    <a href="{% url "create-investment" date=date %}" class="btn btn-sm btn-light py-0 rounded-0">
+                        <i class="bi bi-x text-danger" style="font-size:1.5rem"></i>
+                    </a>
+                </td>
+            </tr>
+        </form>
+    </tfoot>
+</table>
 
 {% endblock main %}

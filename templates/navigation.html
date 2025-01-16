@@ -4,16 +4,16 @@
         <li class='nav-header'>পণ্য/মাল</li>
         <li><a href="{% url 'products' %}">মালের তালিকা</a></li>
         <li><a href="{% url 'daily-product-storage' %}">দৈনিক মজুদের পরিমাণ</a></li>
-        <li><a href="{% url 'product-storage' %}">মজুদ মাল</a></li>
+        <li><a href="{% url 'initial-stock' current_date %}">প্রারম্ভিক মজুদ</a></li>
 
         <li class='nav-header'>আয়-ব্যয়</li>
-        <li><a href="{% url 'expenditure-group' %}">খরচের খাত</a></li>
-        <li><a href="{% url 'revenue-group' %}">আয়ের খাত</a></li>
+        <li><a href="{% url 'create-expenditure-group' %}">খরচের খাত</a></li>
+        <li><a href="{% url 'create-income-group' %}">আয়ের খাত</a></li>
         
         <li class='nav-header'>পার্টিসমূহ</li>
         <li><a href="{% url 'groupofcompanies' %}">গ্রুপ অফ কোম্পানি তালিকা</a></li>
         <li><a href="{% url 'customers' %}">পার্টি তালিকা</a></li>
-        <li><a href="{% url 'customer-balance' %}">পার্টি ব্যালেন্স</a></li>
+        <li><a href="{% url 'customer-due' current_date %}">পার্টি ব্যালেন্স</a></li>
 
         {% comment %} <li class='nav-header'>মালিক/অংশীদার</li>
         <li><a href="{% url 'ownersequity' %}">মালিকানা স্বত্ব তালিকা</a></li>
@@ -25,8 +25,8 @@
         <li><a href="{% url 'borrower' %}">হাওলাদ গ্রহীতা</a></li>
         
         <li class='nav-header'>অন্যান্য</li>
-        {% comment %} <li><a href="{% url 'cashbalance-list' %}">দৈনিক হাতে নগদ</a></li> {% endcomment %}
-        <li><a href="{% url 'dailybalance-list' %}">দৈনিক ব্যালেন্স</a></li>
+        <li><a href="{% url 'cashbalance-list' %}">দৈনিক হাতে নগদ</a></li>
+        {% comment %} <li><a href="{% url 'dailybalance-list' %}">দৈনিক ব্যালেন্স</a></li> {% endcomment %}
         {% comment %} <li><a href="{% url 'fixed-assets' %}">স্থায়ী সম্পত্তি</a></li> {% endcomment %}
     </ul>
 </nav>

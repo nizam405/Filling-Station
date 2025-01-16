@@ -1,0 +1,38 @@
+
+<nav>
+    <ul class="pagination eng">
+        {% if page_obj.has_previous %}
+        <li class="page-item d-print-none">
+            <a class="page-link" href="?page1">&laquo; First</a>
+        </li>
+        <li class="page-item d-print-none">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Prev</a>
+        </li>
+        {% else %}
+        <li class="page-item d-print-none disabled">
+            <a class="page-link" href="?page1">&laquo; First</a>
+        </li>
+        <li class="page-item d-print-none disabled">
+            <span class="page-link">Prev</span>
+        </li>
+        {% endif %}
+
+        <li class="page-item p-2">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </li>
+  
+        {% if page_obj.has_next %}
+        <li class="page-item d-print-none">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item d-print-none">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+        </li>
+        {% else %}
+        <li class="page-item d-print-none disabled"><span class="page-link">Next</span></li>
+        <li class="page-item d-print-none disabled">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>

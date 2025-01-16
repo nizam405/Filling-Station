@@ -1,0 +1,41 @@
+{% load extra_tags %}
+
+<table class="table table-bordered table-sm table-striped text-end product-details">
+    <caption>
+        <h5>চলতি মাসে {{customer.name}} এর নিকট বিক্রিত পণ্যের বিবরণ</h5>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>ক্রম</th>
+            <th>মালের নাম</th>
+            <th>বিবরণ</th>
+            <th>মোট পরিমাণ</th>
+            <th>মোট টাকা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for data,sl in product_data|zip %}
+        <tr>
+            <td class="text-center">{{sl|e2b_digit}}</td>
+            <td class="text-start">{{data.product.to_html}}</td>
+            <td>
+                {% for row in data.rate_info %}
+                <div>
+                    {{row.quantity|format_num}} <i class='bi bi-x'></i>
+                    {{row.rate.amount|format_currency}} =
+                    {{row.price|format_currency}}
+                </div>
+                {% endfor %}
+            </td>
+            <td class="align-middle">{{data.total.quantity|format_num}}</td>
+            <td class="align-middle">{{data.total.price|format_currency}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="4">মোট</th>
+            <th>{{total.duesell|format_currency}}</th>
+        </tr>
+    </tfoot>
+</table>

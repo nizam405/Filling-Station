@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% block title %}আয়-ব্যয় বিবরণী{% endblock title %}
+{% block style %}
+<style>
+    table td:first-child {
+        text-align: left
+    }
+
+    #incomestatement .col-6, 
+    #owners-equity,
+    #profit-dist div.col-6:nth-child(even) {
+        padding-right: 0.25rem;
+    }
+    #incomestatement .col-6,
+    #financial-statement, 
+    #profit-dist div.col-6:nth-child(odd) {
+        padding-left: 0.25rem;
+    }
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap5 %}
+{% block main %}
+
+{% if filter_form %}
+<div class="row container-fluid px-0 d-print-none eng">
+    <div class="col-auto">
+        {% include "filter_form.html" %}
+    </div>
+    <div class="col-auto bangla">
+        <div class="ml-2">
+            <input type="checkbox" id="profit-dist-check" data-target=".profit-dist">
+            <label for="profit-dist-check">মুনাফা বন্টন</label>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="text-center">
+    {% include 'org_name.html' %}
+    <h4>মাসিক আয়-ব্যয় বিবরণী
+        {% if not status %}
+        <span class='text-danger'>({{date|e2b_date}} তারিখ পর্যন্ত)</span>
+        {% else %}{{date.month|e2b_month}},{{date.year|e2b_digit}}
+        {% endif %}
+    </h4>
+</div>
+
+<table class="table table-bordered table-striped table-sm text-end">
+    <caption><h4>পণ্য সম্পর্কিত আয়</h4></caption>
+    <thead>
+        <tr class="text-center">
+            <th>মালের নাম</th>
+            <th>পরিমাণ <i class="bi bi-x"></i> মুনাফার হার = মুনাফা </th>
+            <th>টাকা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category,details in products_all_cat.items %}
+        {% if category == 'fuel' or category == 'loose_lubricant' %}
+        {% for product_details in details.dataset %}
+        <tr>
+            <td class="align-middle">
+                <a href='{% url "product-ledger" product_details.product.pk date %}' target='_blank'>
+                    {{ product_details.product }}
+                </a>
+            </td>
+            <td>
+                {% for rate_detail in product_details.sell_profit.rate_details %}
+                <div class="row text-end">
+                    <div class="col-3 text-end">{{ rate_detail.quantity|format_num }}</div>
+                    <div class="col-1 px-1"><i class="bi bi-x"></i></div>
+                    <div class="col-3">{{ rate_detail.rate|format_currency }}</div>
+                    <div class="col-1 px-1">=</div>
+                    <div class="col-4 nowrap text-end">{{ rate_detail.profit|format_currency }}</div>
+                </div>
+                {% endfor %}
+            </td>
+            <td class="align-middle">{{ product_details.sell_profit.profit|format_currency }}</td>
+        </tr>
+        {% endfor %}
+
+        {% else %}
+        <tr>
+            <td>{{ details.category_display }}</td>
+            <td></td>
+            <td>{{ details.total.sell_profit|format_currency }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        <tr>
+            <th colspan='2'>বিক্রিত পণ্যের মোট মুনাফা</th>
+            <th>{{products_total.sell_profit|format_currency}}</th>
+        </tr>
+        {% for category,details in products_all_cat.items %}
+        {% for product_details in details.dataset %}
+        {% if product_details.ending_stock_diff.quantity %}
+        <tr>
+            <td>{% if product_details.ending_stock_diff.quantity > 0 %}
+                উদ্বৃত {% else %} ঘাটতি
+                {% endif %} {{product_details.product}}
+            </td>
+            <td>
+                {{ product_details.ending_stock_diff.quantity|format_num }} 
+                <i class="bi bi-x"></i>
+                {{ product_details.ending_stock_diff.rate|format_currency }}
+            </td>
+            <td>{{product_details.ending_stock_diff.price|format_currency}}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan='2'>পণ্য সম্পর্কিত মোট আয়</th>
+            <th>{{products_total.sell_profit|add:products_total.difference|format_currency}}</th>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="row" id="incomestatement">
+    <div class="col-6">
+        <table class="table table-bordered table-striped table-sm text-end">
+            <caption><h4>আয়সমূহ</h4></caption>
+            <thead>
+                <tr>
+                    <th>বিবরণ</th>
+                    <th>টাকা</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th class="text-start">পণ্য সম্পর্কিত মোট আয়</th>
+                    <th>{{products_total.sell_profit|add:products_total.difference|format_currency}}</th>
+                </tr>
+                {% for income_group in income_groups %}
+                <tr>
+                    <td class="text-start">{{income_group.group__name}}</td>
+                    <td>{{income_group.amount|format_currency}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>মোট আয়ঃ</th>
+                    <th>{{total_income|format_currency}}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="col-6">
+        <table class="table table-bordered table-striped table-sm text-end">
+            <caption><h4>ব্যয়সমূহ</h4></caption>
+            <thead>
+                <tr class="text-center">
+                    <th>বিবরণ</th>
+                    <th>টাকা</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expenditure in expenditures %}
+                <tr>
+                    <td>{{expenditure.group__name}}</td>
+                    <td>{{expenditure.exp_amount|format_currency}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>মোট খরচঃ</th>
+                    <th>{{expenditure_amount|format_currency}}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="col-12 mb-3">
+        <h4>নিট লাভঃ {{net_profit|format_currency}}/=</h4>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col" id="owners-equity">
+        <table class="table table-bordered table-striped table-sm text-end">
+            <caption>
+                <h4><a href="{% url 'ownersequity' %}">মালিকানা স্বত্ব বিবরণী</a></h4>
+            </caption>
+            <thead>
+                <tr class="text-center">
+                    <th>মালিকানা স্বত্ব</th>
+                    <th>টাকা</th>
+                    <th>টাকা</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>প্রারম্ভিক মূলধন</td>
+                    <td></td>
+                    <td>{{capital|format_currency}}</td>
+                </tr>
+                {% if investment_amount %}
+                <tr>
+                    <td>অতিরিক্ত মূলধন</td>
+                    <td></td>
+                    <td>{{investment_amount|format_currency}}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td>নীট মূনাফা</td>
+                    <td>{{net_profit|format_currency}}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="pl-3">বাদঃ উত্তোলন</td>
+                    <td>{{withdraws|format_currency}}</td>
+                    <td>{{rem_profit|format_currency}}</td>
+                </tr>
+                {% if remaining_borrowed_loan %}
+                <tr>
+                    <td>গৃহীত হাওলাদ</td>
+                    <td>{{remaining_borrowed_loan|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if diff %}
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                {% endif %}
+                {% if fixed_assets %}
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <th colspan="2">{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
+                    <th>{{total_oe|format_currency}}</th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col" id="financial-statement">
+        <table class="table table-bordered table-striped table-sm text-end">
+            <caption>
+                <h4>আর্থিক অবস্থার বিবরণী</h4>
+            </caption>
+            <thead>
+                <tr class="text-center">
+                    <th>সম্পদ সমূহ</th>
+                    <th>টাকা</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>হাতে নগদ/ব্যাংক উদ্বৃত্ত</td>
+                    <td>{{cash|format_currency}}</td>
+                </tr>
+                <tr>
+                    <td>দেনাদার হিসাব</td>
+                    <td>{{dues|format_currency}}</td>
+                </tr>
+                {% if remaining_lended_loan %}
+                <tr>
+                    <td>প্রদত্ত হাওলাদ</td>
+                    <td>{{remaining_lended_loan|format_currency}}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td>সমাপনী মজুদ পণ্য</td>
+                    <td>{{ending_stock|format_currency}}</td>
+                </tr>
+                {% if fixed_assets %}
+                <tr>
+                    <td>স্থায়ী সম্পত্তি</td>
+                    <td>{{fixed_assets|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if diff %}
+                <tr>
+                    <td>ব্যবধান</td>
+                    <td>{{diff|format_currency}}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <th>{% if total_asset == total_oe %}<i class="bi bi-check-all text-success"></i>{% endif %} মোটঃ</th>
+                    <th>{{total_asset|format_currency}}</th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if profit_distribution %}
+<div class="row profit-dist" id="profit-dist">
+    <div class="col-12">
+        <h3 class="text-center">মুনাফা বন্টন</h3>
+    </div>
+
+    {% for op in profit_distribution %}
+    <div class="col-6 ml-auto mr-auto">
+        <table class="table table-bordered table-striped table-sm text-end">
+            <caption>
+                <h5><a href="{% url 'ownersequity-details' owner=op.owner.pk date=current_date %}">{{op.owner.name}}</a></h5>
+            </caption>
+            <thead>
+                <tr class="text-center">
+                    <th>বিবরণ</th>
+                    <th>টাকা</th>
+                    <th>টাকা</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>প্রারম্ভিক মূলধন</td>
+                    <td></td>
+                    <td>{{op.prev_oe|format_currency}}</td>
+                </tr>
+                {% if investment in op %}
+                <tr>
+                    <td>অতিরিক্ত মূলধন</td>
+                    <td></td>
+                    <td>{{op.investment|format_currency}}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td>মূনাফা</td>
+                    <td>{{op.profit|format_currency}}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="pl-3">বাদঃ উত্তোলন</td>
+                    <td>{{op.withdraw|neg|format_currency}}</td>
+                    <td>{{op.rem_profit|format_currency}}</td>
+                </tr>
+                <tr>
+                    <th colspan="2">মোটঃ</th>
+                    <th>{{op.ending_oe_amount|format_currency}}</th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock main %}

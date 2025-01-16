@@ -1,7 +1,8 @@
 from django import template
+from django.template.defaultfilters import floatformat
 import datetime
 import pybengali
-from Ledger.choices import MONTHS
+from Core.choices import MONTHS
 
 register = template.Library()
 
@@ -48,6 +49,18 @@ def formset_number(formset):
 def number_in_bangla(number):
     return pybengali.convert_e2b_digit(number)
 
+@register.filter
+def format_num(value,decimal_places=3):
+    if value != None:
+        return price_separate(number_in_bangla(floatformat(value,decimal_places)))
+    else: return ""
+
+@register.filter
+def format_currency(value,decimal_places=2):
+    if value != None:
+        return "৳ "+price_separate(number_in_bangla(floatformat(value,decimal_places)))
+    else: return ""
+
 @register.filter(name='e2b_month')
 def month_in_bangla(number):
     month = MONTHS[int(number)-1]
@@ -62,7 +75,7 @@ def convert_date_ban(date,short=False):
         ms = pybengali.convert_e2b_digit(MONTHS[date.month-1][0])
         y = pybengali.convert_e2b_digit(date.year)
         if short:
-            return f"{d}/{ms}/{y[2:]}"
+            return f"{d}-{ms}-{y[2:]}"
         return f"{m}-{d}, {y}"
     else: return ""
 
@@ -94,3 +107,16 @@ def pages(current,max):
         last = max
     # print(current,max,first,last)
     return range(first,last+1)
+
+@register.filter(name='neg')
+def neg(val): return -val
+
+@register.filter
+def skip_none(value):
+    if value: return value
+    else: return ''
+
+@register.filter
+def skip_zero(value):
+    if value and value != 0: return value
+    else: return None

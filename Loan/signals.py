@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from .models import RefundBorrowedLoan, RefundLendedLoan
 
 @receiver(post_save, sender=RefundBorrowedLoan)
-def update_borrowed_loan(sender, instance, **kwargs):
+def update_borrowed_loan(sender, instance, created, **kwargs):
     loan = instance.loan
     remaining = loan.remaining
     if remaining == 0:
@@ -15,7 +15,7 @@ def update_borrowed_loan(sender, instance, **kwargs):
  
 
 @receiver(post_save, sender=RefundLendedLoan)
-def finish_lended_loan(sender, instance, **kwargs):
+def finish_lended_loan(sender, instance, created, **kwargs):
     loan = instance.loan
     remaining = loan.remaining
     if remaining == 0:

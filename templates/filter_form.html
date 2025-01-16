@@ -1,0 +1,29 @@
+
+{% load bootstrap5 %}
+<div class="container-fluid mb-2">
+    <form method="get" class="row" id="date-filter">
+        <div class="col-auto px-0">
+            {% bootstrap_form filter_form exclude='date' show_label=False  %}
+        </div>
+        <div class="col-auto">
+            {% bootstrap_field filter_form.date show_label=False %}
+        </div>
+        <div class="col-auto px-0">
+            <button type="submit" class='btn btn-success'>
+                <i class='bi bi-arrow-right'></i>
+            </button>
+            <a href="{{ prev_month_url }}" class="btn btn-blue">
+                <i class="bi bi-chevron-double-left"></i>
+            </a>
+            <a href="{{ prev_day_url }}" class="btn btn-blue">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            <a href="{{ next_day_url }}" class="btn btn-blue">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            <a href="{{ next_month_url }}" class="btn btn-blue">
+                <i class="bi bi-chevron-double-right"></i>
+            </a>
+        </div>
+    </form>
+</div>

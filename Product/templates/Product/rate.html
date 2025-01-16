@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}পণ্যের মূল্য নির্ধারন{% endblock title %}
+{% block title %}পণ্যের {{rate_model}} নির্ধারন{% endblock title %}
 
 {% block style %}
 <style>
-    .bootstrap4-multi-input div.col-4:not(:first-child) {
+    .bootstrap5-multi-input div.col-4:not(:first-child) {
         padding-left: 0;
     }
 
-    .bootstrap4-multi-input div.col-4 {
+    .bootstrap5-multi-input div.col-4 {
         padding-right: 0;
     }
 
-    .bootstrap4-multi-input select, #buttons button, #buttons a {
+    .bootstrap5-multi-input select, #buttons button, #buttons a {
         border-radius:0rem;
     }
 </style>
@@ -19,75 +19,79 @@
 
 {% block main %}
 {% load extra_tags %}
-{% load bootstrap4 %}
-<a href="{% url 'products' %}" class="btn btn-light">
-    <i class="bi bi-arrow-left-circle"></i> মালের তালিকা
-</a>
-<h3 class='print-center'>পণ্যের মূল্য নির্ধারন - {{product}}</h3>
-<div id="form-container">
-    <form method="post" class="row mb-3">
-        {% csrf_token %}
-        <div class="col-md-6">{% bootstrap_field form.purchase_rate layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>টাকা</span>" %}</div>
-        <div class="col-md-6">{% bootstrap_field form.selling_rate layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>টাকা</span>" %}</div>
-        <div class="col-md-6">{% bootstrap_field form.date layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' %}</div>
-        <div class="col-md-6 nowrap text-left eng" id="buttons">
-            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
-            <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+{% load bootstrap5 %}
+<div class='d-print-none'>
+    <a href="{% url 'products' %}" class="btn btn-light">
+        <i class="bi bi-arrow-left-circle"></i> মালের তালিকা
+    </a>
+    <div id="form-container">
+        <h3 class='print-center'>পণ্যের {{rate_model}} নির্ধারন - {{product}}</h3>
+        <form method="post" class="row mb-3">
+            {% csrf_token %}
+            <div class="col-6">
+                {% bootstrap_field form.date field_class='eng' %}
+            </div>
+            <div class="col">
+                {% bootstrap_field form.variant %}
+            </div>
+            <div class="col">
+                {% bootstrap_field form.amount field_class='eng' addon_after="<span class='bangla'>টাকা</span>" %}
+            </div>
+            <div class="col-12 nowrap text-start eng" id="buttons">
+                {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
+                <a href="{% url base_url product=product.pk %}" class="btn btn-secondary">Cancel</a>
+                <a href="{% url variant_url %}" class='bangla ml-3'>ধরন পরিচালনা করুন</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 {% if object_list %}
-<div>
-    <h4>হিস্টোরি</h4>
-    <table class="table table-sm table-striped text-center">
+<table class="table table-sm table-striped table-bordered text-center">
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>
+            <b>{{product}}</b> এর {{rate_model}} পরিবর্তনসমূহ
+            <span class="d-print-none">-
+                <a href="{% url "create-purchase-rate" product=product.pk %}">সকল</a>
+                {% for variant in rate_variants %}
+                | <a href="{% url "create-purchase-rate" variant=variant.pk product=product.pk %}">{{variant.name}}</a>
+                {% endfor %}
+            </span>
+        </h4>
+    </caption>
+    <thead>
         <tr>
             <th>#</th>
-            <th>মালের নাম</th>
             <th>পরিবর্তনের তারিখ</th>
-            <th>ক্রয় দর</th>
-            <th>বিক্রয় দর</th>
-            <th>মুনাফা</th>
+            <th>ধরন</th>
+            <th>{{rate_model}}</th>
             <th></th>
         </tr>
+    </thead>
+    <tbody>
         {% for object,sln in object_list|zip %}
         <tr>
             <td>{{sln|e2b_digit}}</td>
-            <td class='text-left'>
-                <a href="{% url 'product-ledger' pk=object.product.pk month=object.date.month year=object.date.year %}">
-                    {{object.product}}
-                </a>
+            <td class='text-end'>
+                <a href="{% url "daily-transactions" date=object.date %}">{{object.date|e2b_date}}</a>
             </td>
+            <td>{{object.variant.name}}</td>
+            <td class='text-end'>{{object.amount|format_num}}</td>
             <td>
-                <a href="{% url 'daily-transactions' object.date %}">
-                    {{object.date|e2b_date}}
-                </a>
-            </td>
-            <td>{{object.purchase_rate|floatformat:-4|e2b_digit|ezynumber}}</td>
-            <td>{{object.selling_rate|floatformat:-4|e2b_digit|ezynumber}}</td>
-            <td>
-                {{object.profit_rate|floatformat:-4|e2b_digit|ezynumber}}
-                ({{object.profit_rate_update|floatformat:-2|e2b_digit}})
-                <div class='float-right'>
-                    <i class="bi 
-                        {% if object.profit_rate_update < 0 %} bi-caret-down-fill text-danger
-                        {% elif object.profit_rate_update > 0 %} bi-caret-up-fill text-success
-                        {% endif %}">
-                    </i>
-                </div>
-            </td>
-            <td>
-                <a href="{% url 'update-rate' product=product.pk pk=object.pk %}">
+                <a href="{% url update_url product=product.pk pk=object.pk %}">
                     <i class="bi bi-pencil-square text-info"></i>
                 </a>
-                <a href="{% url 'delete-rate' product=product.pk pk=object.pk %}">
+                <a href="{% url delete_url product=product.pk pk=object.pk %}">
                     <i class="bi bi-trash text-danger"></i>
                 </a>
             </td>
         </tr>
         {% endfor %}
-    </table>
-</div>
+    </tbody>
+</table>
 {% endif %}
+
+{% include "pagination.html" %}
 
 {% endblock main %}

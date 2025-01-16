@@ -1,0 +1,176 @@
+{% load extra_tags %}
+{% load bootstrap5 %}
+
+<div class="row">
+    <div class="col-12">
+        <h4 class="text-center">নগদান হিসাব</h4>
+    </div>
+    <div class="col-6">
+        <table class="table table-sm table-bordered table-striped text-end">
+            <thead>
+                <tr class="text-center">
+                    <th>ডেবিট পক্ষ</th>
+                    <th>টাকা</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th class="text-start">প্রারম্ভিক হাতে নগদ</th>
+                    <th>{{balance_bf|format_currency}}</th>
+                </tr>
+                {% if sells %}
+                <tr>
+                    <td>
+                        <div class="row">
+                            <div class="col-6 text-start">বিক্রয়</div>
+                            <div class="col-6">{{total_sell|format_currency}}</div>
+                            {% if duesells %}
+                            <div class="col-6 text-start">বাদঃ বকেয়া বিক্রয়</div>
+                            <div class="col-6">{{total_duesell|neg|format_currency}}</div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="align-bottom">{{cash_sell|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if incomes %}
+                <tr>
+                    <td class="text-start">মোট আয়</td>
+                    <td class="nowrap">{{total_income|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if duecollections %}
+                <tr>
+                    <td class="text-start">বকেয়া আদায়</td>
+                    <td class="nowrap">{{total_duecollection|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if investments %}
+                <tr>
+                    <td class="text-start">অতিরিক্ত মূলধন</td>
+                    <td class="nowrap">{{total_investments|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if borrowed_loans %}
+                <tr>
+                    <td class="text-start">হাওলাদ গ্রহণ</td>
+                    <td class="nowrap">{{total_borrowed_loan|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if refund_lended_loans %}
+                <tr>
+                    <td class="text-start">প্রদত্ত হাওলাদ ফেরত</td>
+                    <td class="nowrap">{{total_refund_lended_loan|format_currency}}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>মোট</th>
+                    <th class="nowrap">{{total_debit|format_currency}}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <div class="col-6">
+        <table class="table table-sm table-bordered table-striped text-end">
+            <thead>
+                <tr class="text-center">
+                    <th>ক্রেডিট পক্ষ</th>
+                    <th>টাকা</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if purchases %}
+                <tr>
+                    <td class="text-start">ক্রয়</td>
+                    <td class="nowrap">{{total_purchase|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if expenditures %}
+                <tr>
+                    <td class="text-start">মোট ব্যয়</td>
+                    <td class="nowrap">{{total_expenditure|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if withdraws %}
+                <tr>
+                    <td class="text-start">উত্তোলন</td>
+                    <td class="nowrap">{{total_withdraw|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if lended_loans %}
+                <tr>
+                    <td class="text-start">হাওলাদ প্রদান</td>
+                    <td class="nowrap">{{total_lended_loan|format_currency}}</td>
+                </tr>
+                {% endif %}
+                {% if refund_borrowed_loans %}
+                <tr>
+                    <td class="text-start">গৃহীত হাওলাদ পরিশোধ</td>
+                    <td class="nowrap">{{total_refund_borrowed_loan|format_currency}}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <th class="text-start">সমাপনী হাতে নগদ</th>
+                    <th>
+                        {% if saved_balance_cf %}
+                            {{saved_balance_cf|format_currency}}
+                        {% else %}
+                            {{balance_cf|format_currency}}
+                        {% endif %}
+                    </th>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>মোট</th>
+                    <th class="nowrap">{{total_credit|format_currency}}</th>
+                </tr>
+            </tfoot>
+        </table>
+        {% if can_change %}
+        <!-- ব্যালেন্স সমন্বয়-->
+        <table class="table table-sm table-bordered table-striped d-print-none">
+            <caption>
+                <h5>ব্যালেন্স সমন্বয়</h5>
+            </caption>
+            <tbody>
+                <tr>
+                    <th>সমাপনী হাতে নগদ</th>
+                    <th>
+                        {{saved_balance_cf}}
+                        <form method="post" class="eng">
+                            {% csrf_token %}
+                            {% bootstrap_form balance_form show_label=False %}
+                            <div id='adjust_amount' class='bangla'></div>
+                            <button type="submit" class='btn btn-primary'>Save</button>
+                        </form>
+                    </th>
+                </tr>
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function getAdjusted(){
+        let cash = $("#id_amount").val()
+        let balance_cf = {{balance_cf}}
+        let text = ""
+        if (balance_cf < cash){
+            text ="আয় - বিবিধ : ক্যাশ বাক্সে উদ্ধ্বৃত "
+        } else if (balance_cf > cash) {
+            text = "ব্যয় - বিবিধ : ক্যাশ বাক্সে ঘাটতি "
+        }
+        let balance = Math.abs((cash-balance_cf).toFixed(2))
+        $('#adjust_amount').html(text + balance)
+    }
+    $('#id_amount').on({
+       // change: getAdjusted, 
+        keyup: getAdjusted
+    })
+    getAdjusted()
+</script>

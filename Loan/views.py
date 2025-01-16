@@ -5,7 +5,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.db.models import Q, Sum
 
 from .models import (Lender, Borrower, BorrowLoan, RefundBorrowedLoan, LendLoan, RefundLendedLoan)
-from Transaction.functions import next_to_last_balance_date, get_next_month, get_current_month 
+from Transaction.functions import last_balance_date, get_next_month, get_current_month 
 from Transaction.models import CashBalance
 from Core.mixins import RedirectMixin
     
@@ -197,7 +197,7 @@ class BorrowLoanCreateView(RedirectMixin, CreateView):
     
     def get_initial(self):
         initial = super().get_initial()
-        initial['date'] = next_to_last_balance_date()
+        initial['date'] = last_balance_date()
         return initial
     
     def get_form(self, form_class=None):
@@ -247,7 +247,7 @@ class RefundBorrowedLoanCreateView(RedirectMixin, CreateView):
         initial = super().get_initial()
         loan = BorrowLoan.objects.get(pk=self.kwargs['loan_pk'])
         initial['loan'] = loan
-        initial['date'] = next_to_last_balance_date()
+        initial['date'] = last_balance_date()
         return initial
     
     def get_form(self, form_class=None):
@@ -299,7 +299,7 @@ class LendLoanCreateView(RedirectMixin, CreateView):
     
     def get_initial(self):
         initial = super().get_initial()
-        initial['date'] = next_to_last_balance_date()
+        initial['date'] = last_balance_date()
         return initial
     
     def get_form(self, form_class=None):
@@ -349,7 +349,7 @@ class RefundLendedLoanCreateView(RedirectMixin, CreateView):
         initial = super().get_initial()
         loan = LendLoan.objects.get(pk=self.kwargs['loan_pk'])
         initial['loan'] = loan
-        initial['date'] = next_to_last_balance_date()
+        initial['date'] = last_balance_date()
         return initial
     
     def get_form(self, form_class=None):

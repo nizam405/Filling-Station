@@ -1,22 +1,13 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
+from django.db.models import Sum
 from django.dispatch import receiver
-from .models import Customer, GroupofCompany
-from Ledger.models import CustomerBalance, GroupofCompanyBalance
-from Transaction.models import CashBalance
-from Core.functions import get_prev_month
 
-@receiver(post_save, sender=Customer)
-def create_customer_balance(sender, instance, created, **kwargs):
-    if created:
-        cashbalance = CashBalance.objects.order_by('date').last()
-        year, month = get_prev_month(cashbalance.date.year,cashbalance.date.month)
-        CustomerBalance.objects.create(month=month, year=year, customer=instance, amount=0)
+from Customer.choices import INDIVIDUAL, GROUP
+from Customer.models import CustomerDue, GroupofCompanyDue, DueSell, DueCollection
 
-
-@receiver(post_save, sender=GroupofCompany)
-def create_customer_balance(sender, instance, created, **kwargs):
-    if created:
-        cashbalance = CashBalance.objects.order_by('date').last()
-        year, month = get_prev_month(cashbalance.date.year,cashbalance.date.month)
-        GroupofCompanyBalance.objects.create(month=month, year=year, customer=instance, amount=0)
-        
+# @receiver(post_save, sender=DueSell)
+# def handle_duesell(sender, instance:DueSell, created, **kwargs):
+#     if not instance.customer.cust_type == INDIVIDUAL:
+#         prev_dues = CustomerDue.objects.filter(date__lte=instance.date, customer=instance.customer)
+#         prev_due = prev_dues.latest().amount if prev_dues else 0
+#         CustomerDue.objects.create()

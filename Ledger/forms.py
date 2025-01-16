@@ -1,8 +1,6 @@
 from django import forms
-from .choices import MONTHS, YEAR
 from .models import CustomerBalance, GroupofCompanyBalance, Storage
 from Customer.models import Customer, GroupofCompany
-from Core.widgets import SelectCustomer
 
 # Used in Customer Ledger
 class CustomerLedgerFilterForm(forms.ModelForm):
@@ -48,24 +46,9 @@ class GroupofCompanyBalanceForm(forms.ModelForm):
         # Disable the customer field
         self.fields['customer'].disabled = True
 
-# Used on several pages to filter
-class DateFilterForm(forms.Form):
-    month = forms.ChoiceField(choices=MONTHS, label="মাস")
-    year = forms.ChoiceField(choices=YEAR, label="বছর")
-
 # Used in Product Ledger
 class StorageFilterForm(forms.ModelForm):
     class Meta:
         model = Storage
         fields = ['product','month','year']
 
-# Used in Storage Update Formset
-class StorageUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Storage
-        fields = ['product','quantity','price']
-    
-    def __init__(self, *args, **kwargs):
-        super(StorageUpdateForm, self).__init__(*args, **kwargs)
-        # Disable the product field
-        self.fields['product'].disabled = True

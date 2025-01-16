@@ -1,0 +1,45 @@
+
+{% load extra_tags %}
+
+{% if col.quantity and col.quantity != 0 %}
+{% for row in col.rate_details %}
+<div class="nowrap rate-details">
+    <span class="nowrap">
+        {{row.rate.amount|format_currency}}<i class="bi bi-x"></i>
+        {% if product.packaged %}
+        {{ row.quantity|format_num:-3 }}
+        {% else %} {{ col.quantity|format_num }} 
+        {% endif %} {{product.unit}}
+    </span>
+    {% comment %} <span>= {{ row.price|format_currency }}</span> {% endcomment %}
+</div>
+{% endfor %}
+<div>
+    <span class="nowrap">
+        <span class="rate-details">মোটঃ</span>
+        {% if product.packaged %}
+        {{ col.quantity|format_num:-3 }}
+        {% else %} {{ col.quantity|format_num }} 
+        {% endif %} {{product.unit}}
+    </span>
+    <span class="price nowrap">({{ col.price|format_currency }})</span>
+</div>
+{% elif col.profit and col.profit != 0 %}
+{% for row in col.rate_details %}
+<div class="nowrap rate-details">
+    <span class="nowrap">
+        {{row.rate|format_currency}}<i class="bi bi-x"></i>
+        {% if product.packaged %}
+        {{ row.quantity|format_num:-3 }}
+        {% else %} {{ col.quantity|format_num }} 
+        {% endif %} {{product.unit}}
+    </span>
+    {% comment %} <span>= {{ row.profit|format_currency }}</span> {% endcomment %}
+</div>
+{% endfor %}
+<div class="nowrap">
+    <span class="rate-details">মোটঃ</span>
+    {{col.profit|format_currency}}
+</div>
+{% endif %}
+

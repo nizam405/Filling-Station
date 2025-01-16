@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% block title %}স্টক হিসাব{% endblock title %}
+{% block style %}
+<style>
+
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap5 %}
+{% block main %}
+
+<table class="table table-bordered table-striped table-sm text-end">
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>স্টক হিসাব - {{stock.date|e2b_date}} : {{stock.product.name}} {{stock.quantity|format_num}} {{stock.product.unit}}</h4>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>তারিখ</th>
+            <th>বিবরণ</th>
+            <th>ক্রয়মূল্য</th>
+            <th>বিক্রয়মূল্য</th>
+            <th>মুনাফা</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a href="{% url "daily-transactions" stock.date %}">{{stock.date|e2b_date}}</a></td>
+            <th class="text-start">
+                {% if stock.stock_in_type == 'initial_stock' %}প্রারম্ভিক মজুদ
+                {% elif stock.stock_in_type == 'purchase' %}ক্রয়{% endif %} :
+                {{stock.quantity|format_num}} {{stock.product.unit}}
+                <i class="bi bi-x"></i>
+                {{stock.purchase_rate.amount|format_currency}}
+            </th>
+            <th>{{stock.price|format_currency}}</th>
+            <td></td>
+            <td></td>
+        </tr>
+
+        {% if stock.excess.quantity %}
+        <tr>
+            <td></td>
+            <td>+ উদ্ধৃত্ত : {{stock.excess.quantity|format_num}}</td>
+            <td></td>
+            <td></td>
+            <td>{{stock.excess.price|format_currency}}</td>
+        </tr>
+        {% endif %}
+        
+        {% if stock.shortage.quantity %}
+        <tr>
+            <td></td>
+            <td>- ঘাটতি : {{stock.shortage.quantity|format_num}}</td>
+            <td></td>
+            <td></td>
+            <td>({{stock.shortage.price|format_currency}})</td>
+        </tr>
+        {% endif %}
+
+        {% if stock.excess.quantity or stock.shortage.quantity %}
+        <tr>
+            <td></td>
+            <th class="text-start">
+                বিক্রয়যোগ্য মোট মজুদ : {{stock.total_quantity|format_num}} {{stock.product.unit}}
+            </th>
+            <th></th>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endif %}
+
+        <!--বিক্রয় -->
+        {% for item in stock.sell.objects %}
+        <tr>
+            <td><a href="{% url "daily-transactions" item.date %}">{{item.date|e2b_date}}</a></td>
+            <td class="pl-5 text-start">বিক্রয় : ({{item.sell.quantity|format_num}})
+                {{item.quantity|format_num}} {{stock.product.unit}}
+                <i class="bi bi-x"></i>
+                {{item.rate|format_currency}}
+            </td>
+            <td></td>
+            <td>{{item.price|format_currency}}</td>
+            <td>{{item.profit|format_currency}}</td>
+        </tr>
+        {% endfor %}
+
+        {% if stock.sell.objects %}
+        <tr>
+            <th>মোট বিক্রয়:</th>
+            <th>{{stock.sell.quantity|format_num}} {{stock.product.unit}}</th>
+            <th></th>
+            <th>{{stock.sell.price|format_currency}}</th>
+            <th>{{stock.sell_profit|format_currency}}</th>
+        </tr>
+        {% endif %}
+
+        <tr>
+            <td></td>
+            <th class="text-start">
+                সমাপনী : {{stock.ending|format_num}} {{stock.product.unit}}
+                <i class="bi bi-x"></i>
+                {{stock.purchase_rate.amount|format_currency}}
+            </th>
+            <th>{{stock.remaining_price|format_currency}}</th>
+            <th>মোট মুনাফা :</th>
+            <th>{{stock.gross_profit|format_currency}}</th>
+        </tr>
+    </tbody>
+</table>
+
+{% if stock.product.category == 'loose_lubricant' %}
+{% if stock.remaining > 0 %}
+<div class='my-2'>
+    <a href="{% url "create-shortage" stock.pk %}" class="btn btn-primary">ঘাটতি যুক্ত করুন</a>
+</div>
+{% endif %}
+{% endif %}
+
+<div class="row">
+    {% if stock.excess.quantity != 0 %}
+    <div class="col">
+        <table class="table table-sm table-bordered table-striped">
+            <caption>
+                <h4 class='text-center'>উদ্ধৃত্তসমূহ</h4>
+            </caption>
+            <thead>
+                <tr>
+                    <td>তারিখ</td>
+                    <td>পরিমাণ</td>
+                    <td>
+                        {% if stock.product.category == 'loose_lubricant' %}নিয়ন্ত্রণ
+                        {% else %}সংশ্লিষ্ট তারিখে মোট
+                        {% endif %}
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in stock.excess.objects %}
+                <tr>
+                    <td>
+                        <a href='{% url "daily-product-storage" object.date %}'>
+                        {{object.date|e2b_date}}
+                        </a>
+                    </td>
+                    <td>{{object.quantity|format_num}} {{stock.product.unit}}</td>
+                    <td>
+                        {% if stock.product.category == 'loose_lubricant' %}
+                        <a href='{% url "update-excess" stock.pk object.pk %}'>
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a href='{% url "delete-excess" stock.pk object.pk %}'>
+                            <i class="bi bi-trash text-danger"></i>
+                        </a>
+                        {% else %}
+                        {{object.storage_reading.difference|format_num}}
+                        {{stock.product.unit}}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if stock.shortage.quantity != 0 %}
+    <div class="col">
+        <table class="table table-sm table-bordered table-striped">
+            <caption>
+                <h4 class='text-center'>ঘাটতিসমূহ</h4>
+            </caption>
+            <thead>
+                <tr>
+                    <td>তারিখ</td>
+                    <td>পরিমাণ</td>
+                    <td>
+                        {% if stock.product.category == 'loose_lubricant' %}নিয়ন্ত্রণ
+                        {% else %}সংশ্লিষ্ট তারিখে মোট
+                        {% endif %}
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in stock.shortage.objects %}
+                <tr>
+                    <td>
+                        <a href='{% url "daily-product-storage" object.date %}'>{{object.date|e2b_date}}
+                        </a>
+                    </td>
+                    <td>{{object.quantity|format_num}} {{stock.product.unit}}</td>
+                    <td>
+                        {% if stock.product.category == 'loose_lubricant' %}
+                        <a href='{% url "update-shortage" stock.pk object.pk %}'>
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a href='{% url "delete-shortage" stock.pk object.pk %}'>
+                            <i class="bi bi-trash text-danger"></i>
+                        </a>
+                        {% else %}
+                        {{object.storage_reading.difference|absolute|format_num}}
+                        {{stock.product.unit}}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+
+{% endblock main %}

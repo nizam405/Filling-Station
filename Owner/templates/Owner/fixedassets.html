@@ -24,10 +24,9 @@
 {% block main %}
 
 {% load extra_tags %}
-{% load bootstrap4 %}
+{% load bootstrap5 %}
 
 <div class="text-center">
-    <h3 class="d-none d-print-block">{{settings.organization_name}}</h3>
     <h3>স্থায়ী সম্পত্তি</h3>
 </div>
 
@@ -63,7 +62,7 @@
     <tr>
         <td>{{ sln|e2b_digit }}</td>
         <td>{{ object.date|e2b_date }}</td>
-        <td class='text-left'>{{ object.name }}</td>
+        <td class='text-start'>{{ object.name }}</td>
         <td>{% if object.detail %}{{object.detail}}{% endif %}</td>
         <td>{{ object.price|e2b_digit|ezynumber }}/=</td>
         {% comment %} <td class='d-print-none'>

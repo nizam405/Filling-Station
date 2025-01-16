@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% block title %}মালের খতিয়ান - টপশিট{% endblock title %}
+{% block style %}
+<style>
+    {% comment %} @media print {
+        @page {
+            size: landscape;
+        }
+    } {% endcomment %}
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap5 %}
+{% block main %}
+
+
+{% if filter_form %}
+<div class="row container-fluid px-0 d-print-none eng">
+    <div class="col-auto">
+        {% include "filter_form.html" %}
+    </div>
+    <div class="col-auto bangla">
+        <div class="form-check ml-2">
+            <input type="checkbox" class="form-check-input" id="show-rate-details" data-target=".rate-details">
+            <label for="show-rate-details" class="form-check-label">বিস্তারিত দর</label>
+        </div>
+        <div class="form-check ml-2">
+            <input type="checkbox" class="form-check-input" id="show-price" data-target=".price">
+            <label for="show-price" class="form-check-label">মূল্য</label>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% for category,details in product_category_details.category_details.items %}
+{% if details.dataset %}
+<div id="{{category}}-topsheet">
+    <div>
+        <div class="form-check ml-2 d-print-none">
+            <input type="checkbox" class="form-check-input" id="show-{{category}}" data-target=".{{category}}-table" checked="checked">
+            <label for="show-{{category}}" class="form-check-label">{{ details.dataset.0.product.get_category_display }}</label>
+        </div>
+    </div>
+    <div class="{{category}}-table">
+        <table class="table table-sm table-bordered table-striped">
+            <caption>
+                <div class="text-center" id="heading">
+                    {% include 'org_name.html' %}
+                    <h4>মালের খতিয়ান (টপশিট) - {{date.month|e2b_month}},{{date.year|e2b_digit}}</h4>
+                    {% if not status %}
+                    <div class='text-danger'>({{date|e2b_date}} তারিখ পর্যন্ত)</div>
+                    {% endif %}
+                    <h5>{{ details.dataset.0.product.get_category_display }}</h5>
+                </div>
+            </caption>
+            <thead>
+                <tr class="text-center">
+                    <th class='align-top'>#</th>
+                    <th class='align-top'>নাম</th>
+                    <th class='align-top'>প্রারম্ভিক মজুদ
+                        <div class="rate-details text-start">
+                            <span class="rate-details">দর <i class="bi bi-x"></i> পরিমাণ = মূল্য</span>
+                        </div>
+                    </th>
+                    <th class='align-top'>ক্রয়</th>
+                    <th class='align-top'>বিক্রয়</th>
+                    <th class='align-top'>মুনাফা</th>
+                    {% if category == 'fuel' or category == 'loose_lubricant' %}
+                    <th class='align-top'>অবশিষ্ট মজুদ</th>
+                    <th class='align-top'>উদ্বৃত্ত</th>
+                    <th class='align-top'>ঘাটতি</th>
+                    <th class='align-top'>উদ্বৃত্ত/ঘাটতি</th>
+                    {% endif %}
+                    <th class='align-top'>সমাপনী মজুদ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row,sln in details.dataset|zip %}
+                <tr class="text-end">
+                    <td class='text-center'>{{sln|e2b_digit}}</td>
+                    <!-- নাম -->
+                    <td class="text-start">
+                        <a href="{% url 'product-ledger' product=row.product.pk date=date %}" class="text-dark">
+                            {% if row.product.packaged %}
+                            <span class="eng">{{row.product.name}}</span> {{row.product.capacity|e2b_digit}} লিঃ
+                            {% else %}{{row.product}}{% endif %}
+                        </a>
+                        <a href="{% url "stock-list" row.product.pk %}" class="d-print-none">স্টক</a>
+                    </td>
+                    <!-- প্রারম্ভিক মজুদ -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.initial_stocks product=row.product %}</td>
+                    <!-- ক্রয় -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.purchases product=row.product %}</td>
+                    <!-- বিক্রয় -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.sells product=row.product %}</td>
+                    <!-- মুনাফা -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.sell_profit product=row.product %}</td>
+    
+                    {% if not row.product.packaged %}
+                    <!-- অবশিষ্ট মজুদ -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.remaining_stocks product=row.product %}</td>
+                    <!-- উদ্বৃত্ত -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.excesses product=row.product %}</td>
+                    <!-- ঘাটতি -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.shortages product=row.product %}</td>
+                    <!-- উদ্বৃত্ত/ঘাটতি -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.ending_stock_diff product=row.product %}</td>
+                    {% endif %}
+    
+                    <!-- সমাপনী মজুদ -->
+                    <td>{% include 'Product/Ledger/_rate_details.html' with col=row.ending_stocks product=row.product %}</td>
+                </tr>
+                {% endfor %}
+                <tr class="text-end">
+                    <th colspan="2">মোট :</th>
+                    <th><span class="price">{{details.total.initial_stock|format_currency}}<span></th>
+                    <th><span class="price">{{details.total.purchase|format_currency}}<span></th>
+                    <th><span class="price">{{details.total.sell|format_currency}}<span></th>
+                    <th>{{details.total.sell_profit|format_currency}}</th>
+                    {% if not details.dataset.0.product.packaged %}
+                    <th><span class="price">{{details.total.remaining_stock|format_currency}}<span></th>
+                    <th><span class="price">{{details.total.excess|format_currency}}<span></th>
+                    <th><span class="price">{{details.total.shortage|format_currency}}<span></th>
+                    <th><span class="price">{{details.total.difference|format_currency}}<span></th>
+                    {% endif %}
+                    <th><span class="price">{{details.total.ending_stock|format_currency}}<span></th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<div class="total-table">
+    <table class="table table-sm table-bordered table-striped">
+        <caption><h4>সর্বমোট (টাকায়)</h4></caption>
+        <thead>
+            <tr class="text-center">
+                <th class='align-top'>প্রারম্ভিক মজুদ</th>
+                <th class='align-top'>ক্রয়</th>
+                <th class='align-top'>বিক্রয়</th>
+                <th class='align-top'>মুনাফা</th>
+                <th class='align-top'>অবশিষ্ট মজুদ</th>
+                <th class='align-top'>উদ্বৃত্ত</th>
+                <th class='align-top'>ঘাটতি</th>
+                <th class='align-top'>উদ্বৃত্ত/ঘাটতি</th>
+                <th class='align-top'>সমাপনী মজুদ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for value in product_category_details.total.values %}
+                <td class="nowrap">{{value|format_currency}}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function display_total() {
+        let status = true;
+        {% for cat in product_category_details.category_details.keys %}
+        if ($("#show-{{ cat }}").prop("checked") == false) {
+            status = false;
+        }
+        {% endfor %}
+        if (status) {
+            $(".total-table").show();
+        } else {
+            $(".total-table").hide();
+        }
+    }
+    
+    // Attach event listeners to all checkboxes
+    let checkboxes = "{% for cat in product_category_details.category_details.keys %}#show-{{ cat }}{% if not forloop.last %}, {% endif %}{% endfor %}";
+    $(checkboxes).on("click", display_total);
+    
+
+    function printTopsheet(category) {
+        // Get the heading content
+        const headingContent = $('#heading').prop('outerHTML');
+
+        // Get the topsheet content for the specific category
+        const topsheetContent = $(`#${category}-topsheet`).prop('outerHTML');
+
+        // Combine the two contents
+        const combinedContent = $(`<div>${headingContent} ${topsheetContent}</div>`)
+
+        combinedContent.print()
+    }
+</script>
+{% endblock main %}

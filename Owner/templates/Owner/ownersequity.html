@@ -10,14 +10,9 @@
 </style>
 {% endblock style %}
 {% load extra_tags %}
-{% load bootstrap4 %}
+{% load bootstrap5 %}
 {% block main %}
 
-
-<div class="text-center">
-    <h3 class="d-none d-print-block">{{settings.organization_name}}</h3>
-    <h3>বাৎসরিক মালিকানা স্বত্ব - {{year|e2b_digit}}</h3>
-</div>
 <div class="d-print-none">
     {% if filter_form %}
     <form method="get" class="row" id="filter_form">
@@ -29,103 +24,84 @@
         </div>
     </form>
     {% endif %}
-</div>
-<div class='flex-evenly'>
-    {% comment %} <div class="text-info d-print-none">চলতি মাসের তথ্য আপডেট করার জন্য 
-        <a href="{% url 'incomestatement' %}">আয়-ব্যয় বিবরণীতে যান।</a>
-    </div> {% endcomment %}
-    <div class="right d-print-none">
-        <a href="{% url 'create-investment' %}" class="mb-2 text-success">
-            <i class="bi bi-plus-circle btn p-0 d-print-none"></i> মূলধন যুক্ত করুন
-        </a>
+    
+    <div class="text-info">চলতি মাসের তথ্য আপডেট করার জন্য 
+        <a href="{% url 'incomestatement' current_date %}">আয়-ব্যয় বিবরণীতে যান।</a>
     </div>
 </div>
 <table class="table table-sm table-striped table-bordered text-center">
-    <tr>
-        <th>#</th>
-        <th>মাস</th>
-        <th>অংশীদারের নাম</th>
-        <th>পূর্ববর্তি মালিকানা স্বত্ব</th>
-        <th>মুনাফা</th>
-        <th>উত্তোলন</th>
-        <th>অতিঃ মূলধন</th>
-        <th>সমাপনি মালিকানা স্বত্ব</th>
-        <th>সমাপনি শেয়ার</th>
-    </tr>
-    {% if object_list %}
-    {% for obj,sln in object_list|zip %}
-    <tr>
-        <td>{{ sln|e2b_digit }}</td>
-        <td class='text-right'>{{obj.month|e2b_month}}, {{obj.year|e2b_digit}}</td>
-        <td class="text-left">
-            <a href="{% url 'ownersequity-details' pk=obj.owner.pk month=obj.month year=obj.year %}">{{obj.owner.name}}</a>
-        </td>
-        <td>{{obj.prev_oe|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td>{{obj.profit|floatformat:-2|e2b_digit|ezynumber}}</td>
-        <td>{{obj.withdraw|e2b_digit|ezynumber}}</td>
-        <td>{{obj.investment|e2b_digit|ezynumber}}</td>
-        <td>
-            <div class='float-left'>
-                <i class="bi 
-                    {% if obj.current_oe < obj.prev_oe %} bi-caret-down-fill text-danger
-                    {% elif obj.current_oe > obj.prev_oe %} bi-caret-up-fill text-success
-                    {% endif %}">
-                </i>
-            </div>
-            {{obj.current_oe|floatformat:-2|e2b_digit|ezynumber}}
-        </td>
-        <td>
-            {% if obj.prev_share %}
-            <div class='float-left'>
-                <i class="bi 
-                    {% if obj.share < obj.prev_share %} bi-caret-down-fill text-danger
-                    {% elif obj.share > obj.prev_share %} bi-caret-up-fill text-success
-                    {% endif %}">
-                </i>
-            </div>
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>বাৎসরিক মালিকানা স্বত্ব - {{year|e2b_digit}}</h4>
+    </caption>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>তারিখ</th>
+            <th>অংশীদারের নাম</th>
+            <th>প্রারম্ভিক মালিকানা স্বত্ব</th>
+            <th>মুনাফা</th>
+            <th>উত্তোলন</th>
+            <th>অতিঃ মূলধন</th>
+            <th>সমাপনি মালিকানা স্বত্ব</th>
+            <th>সমাপনি শেয়ার</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if object_list %}
+        {% for obj,sln in object_list|zip %}
+        <tr>
+            <td>{{ sln|e2b_digit }}</td>
+            <td class='text-end'>{{obj.date|e2b_date}}</td>
+            <td class="text-start">
+                <a href="{% url 'ownersequity-details' owner=obj.owner.pk date=obj.date %}">{{obj.owner.name}}</a>
+            </td>
+            <td>{{obj.amount|format_currency}}</td>
+            <td>{{obj.profit|format_currency}}</td>
+            <td>{{obj.withdraw.amount|format_currency}}</td>
+            <td>{{obj.investment.amount|format_currency}}</td>
+            {% if obj.ending %}
+            <td>
+                <div class='float-left'>
+                    <i class="bi 
+                        {% if obj.ending.amount < obj.amount %} bi-caret-down-fill text-danger
+                        {% elif obj.ending.amount > obj.amount %} bi-caret-up-fill text-success
+                        {% endif %}">
+                    </i>
+                </div>
+                {{obj.ending.amount|format_currency}}
+            </td>
+            <td>
+                <div class='float-left'>
+                    <i class="bi 
+                        {% if obj.ending.share < obj.share %} bi-caret-down-fill text-danger
+                        {% elif obj.ending.share > obj.share %} bi-caret-up-fill text-success
+                        {% endif %}">
+                    </i>
+                </div>
+                {{obj.ending.share|format_currency}}%
+            </td>
+            {% else %}<td></td><td></td>
             {% endif %}
-            {{obj.share|floatformat:-2|e2b_digit}}%
-        </td>
-    </tr>
-    {% endfor %}
-    <tr>
-        <th colspan='4' class='text-right'>মোটঃ</th>
-        <th>{{total.profit|floatformat:-2|e2b_digit|ezynumber}}</th>
-        <th>{{total.withdraw|floatformat:-2|e2b_digit|ezynumber}}</th>
-        <th>{{total.investment|floatformat:-2|e2b_digit|ezynumber}}</th>
-        <th colspan='2'>উক্ত বছরে অবশিষ্টঃ {{total.remaining|floatformat:-2|e2b_digit|ezynumber}}</th>
-    </tr>
-    {% else %}
-    <tr><td colspan="5" class="text-seocndary text-center">কোনো মূলধন তালিকাভুক্ত করা হয়নি!</td><tr>
-    {% endif %}
+        </tr>
+        {% endfor %}
+        <tr>
+            <th colspan='2' class='text-end'>মোটঃ</th>
+            <th>{{settings.org_name}}</th>
+            <th>{{yearly.initial|format_currency}}</th>
+            <th>{{yearly.profit|format_currency}}</th>
+            <th>{{yearly.withdraw|format_currency}}</th>
+            <th>{{yearly.investment|format_currency}}</th>
+            <th colspan='2'></th>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="9" class="text-seocndary text-center">কোনো মূলধন তালিকাভুক্ত করা হয়নি!</td>
+        </tr>
+        {% endif %}
+    </tbody>
 </table>
 
-{% comment %} <nav>
-    <ul class="pagination eng">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-        </li>
-        {% else %}
-        <li class="page-item disabled">
-          <span class="page-link">Previous</span>
-        </li>
-        {% endif %}
-        {% for page in page_obj.paginator.page_range %}
-        <li class="page-item {% if page == page_obj.number %}active{% endif %}">
-            <a class="page-link" href="?page={{page}}">{{page}}</a>
-        </li>
-        {% endfor %}
-        {% if page_obj.has_next %}
-            <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-            </li>
-        {% else %}
-            <li class="page-item disabled">
-            <span class="page-link">Next</span>
-            </li>
-        {% endif %}
-    </ul>
-</nav> {% endcomment %}
+{% include "pagination.html" %}
 
 {% endblock main %}

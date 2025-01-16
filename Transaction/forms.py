@@ -1,25 +1,8 @@
 from django import forms
 from datetime import date
-from .models import CashBalance, DailyBalance
+from .models import CashBalance
 from Core.functions import year_choices
-from .functions import first_balance_date, last_balance_date
-
-class DateForm(forms.Form):
-    from_date = first_balance_date()
-    if not from_date: from_date = date.today()
-    date = forms.DateField(widget=forms.SelectDateWidget(
-        years=range(from_date.year, date.today().year+1)))
-
-# CreateView
-class DailyBalanceForm(forms.ModelForm):
-
-    class Meta:
-        model = DailyBalance
-        fields = '__all__'
-        exclude = ['date']
-        widgets = {
-            'date': forms.SelectDateWidget(years=year_choices())
-        }
+from .functions import first_balance_date
 
 class CashBalanceForm(forms.ModelForm):
 
@@ -32,15 +15,16 @@ class CashBalanceForm(forms.ModelForm):
 
 # DailyTransactionView
 class CashBalanceForm2(forms.ModelForm):
-    balance_form = forms.BooleanField(widget=forms.HiddenInput,initial=True)
+    # balance_form = forms.BooleanField(widget=forms.HiddenInput,initial=True)
+    balance_cf = forms.FloatField(widget=forms.HiddenInput)
 
     class Meta:
         model = CashBalance
-        fields = '__all__'
-        widgets = {
-            'date': forms.HiddenInput(),
-            'amount': forms.HiddenInput()
-        }
+        fields = ['amount','balance_cf']
+        # widgets = {
+        #     'date': forms.HiddenInput(attrs={'name':'next_date'}),
+        #     'amount': forms.HiddenInput()
+        # }
 
 # Multiple Action
 class CashBalanceControlForm(forms.Form):

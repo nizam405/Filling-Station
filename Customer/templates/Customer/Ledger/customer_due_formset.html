@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}দেনাদার হিসাব{% endblock title %}
+{% block style %}
+<style>
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load bootstrap5 %}
+{% load extra_tags %}
+
+<h3>দেনাদার হিসাব - {{date.month|e2b_month}}, {{date.year|e2b_digit}}</h3>
+<form action="" method="post">
+    {% csrf_token %}
+    <div id="form-container">
+        <div class="row text-center">
+            <div class="col-sm-3">নাম</div>
+            <div class="col-sm-3">টাকা</div>
+        </div>
+
+        {{goc_formset.management_form}}
+        {% for form in goc_formset %}
+        <div class="row forms">
+            {{form.id}}
+            <div class="col-sm-3 pr-0">{% bootstrap_field form.customer show_label=False %}</div>
+            <div class="col-sm-3 px-0 eng">{% bootstrap_field form.amount show_label=False %}</div>
+            <div class="col-sm-2">{% bootstrap_field form.bad_debt show_label=False %}</div>
+        </div>
+        {% endfor %}
+
+        {{cust_formset.management_form}}
+        {% for form in cust_formset %}
+        <div class="row forms">
+            {{form.id}}
+            <div class="col-sm-3 pr-0">{% bootstrap_field form.customer show_label=False %}</div>
+            <div class="col-sm-3 px-0 eng">{% bootstrap_field form.amount show_label=False %}</div>
+            <div class="col-sm-2">{% bootstrap_field form.bad_debt show_label=False %}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="py-2">
+        {% bootstrap_button 'Save' button_type='submit' button_class='btn-success eng' %}
+        <a href="{% url 'customers' %}" class="p-2">দেনাদার যুক্ত করুন</a>
+    </div>
+
+</form>
+{% load static %}
+<script src="{% static 'formset.js' %}"></script> 
+
+{% endblock main %}

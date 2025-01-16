@@ -13,19 +13,19 @@
 {% block main %}
 
 {% load extra_tags %}
-{% load bootstrap4 %}
+{% load bootstrap5 %}
 
-<h3 class='print-center'>মালের তালিকা
-    <i class="bi bi-plus-circle btn p-0 d-print-none" id="add-form"></i>
+<h3 class='d-print-none'>মালের তালিকা
+    <i class="bi bi-plus-circle btn p-0" id="add-form"></i>
 </h3>
-<div id="form-container" class="{{container_class}} d-print-none">
-    <form method="post" class="row mb-3">
+<div id="form-container" class="{{container_class}}">
+    <form method="post" class="row">
         {% csrf_token %}
         <div class="col-md-6">{% bootstrap_field form.name layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
         <div class="col-md-6">{% bootstrap_field form.short_name layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.type layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.need_rescale layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
-        <div class="col-md-6">{% bootstrap_field form.capacity layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>লিটার</span>" %}</div>
+        <div class="col-md-6">{% bootstrap_field form.category layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.packaged layout='horizontal' label_class='col-md-4' field_class='col-md-8' %}</div>
+        <div class="col-md-6">{% bootstrap_field form.capacity layout='horizontal' label_class='col-md-4' field_class='col-md-8 eng' addon_after="<span class='bangla'>লিটার/একক</span>" %}</div>
         <div class="col-12 nowrap text-center eng">
             {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
             <a href="{% url 'products' %}" class="btn btn-secondary">Cancel</a>
@@ -33,98 +33,115 @@
     </form>
 </div>
 
+<div class='pb-2 d-print-none'>
+    <a href="{% url "initial-stock" current_date %}" class='btn btn-sm btn-primary'>প্রারম্ভিক মজুদ</a>
+    <a href="{% url "purchase-rate-variant" %}" class='btn btn-sm btn-blue'>ক্রয়মূল্যের ধরন</a>
+    <a href="{% url "selling-rate-variant" %}" class='btn btn-sm btn-blue'>বিক্রয়মূল্যের ধরন</a>
+</div>
+
 <table class="table table-sm table-striped table-bordered text-center">
-    <tr>
-        <th>#</th>
-        <th>নাম</th>
-        <th>ধরন</th>
-        <th>সংক্ষিপ্ত নাম</th>
-        <th>ক্রয়মুল্য</th>
-        <th>বিক্রয়মুল্য</th>
-        <th>মুনাফা</th>
-        <th>সর্বশেষ পরিবর্তন</th>
-        <th>অবস্থা</th>
-        <th class='d-print-none'></th>
-    </tr>
-    {% if object_list %}
-    {% for object,sln in object_list|zip %}
-    <tr>
-        <td>{{ sln|e2b_digit }}</td>
-        <td class='text-left'>
-            {% if object.type == 'Pack' %}
-            <span class="eng">{{object.name}} {{object.capacity}}</span> লিঃ
-            {% else %}{{object.name}}
-            {% endif %}
-        </td>
-        <td>{{object.get_type_display}}</td>
-        <td {% if object.type == 'Pack' %}class="eng"{% endif %}>{{object.short_name}}</td>
-        <td {% if object.purchase_rate == 0 %}class="text-danger"{% endif %}>
-            {{object.purchase_rate|floatformat:-2|e2b_digit}}
-        </td>
-        <td {% if object.purchase_rate >= object.selling_rate %}class="text-danger"{% endif %}>
-            {{object.selling_rate|floatformat:-2|e2b_digit}}
-        </td>
-        <td>
-            {% if object.selling_rate >= object.purchase_rate %}
-            {{object.profit_rate|floatformat:-2|e2b_digit}}
-            ({{object.profit_rate_update|floatformat:-2|e2b_digit}})
-            <div class='float-right'>
-                <i class="bi 
-                    {% if object.profit_rate_update < 0 %} bi-caret-down-fill text-danger
-                    {% elif object.profit_rate_update > 0 %} bi-caret-up-fill text-success
-                    {% endif %}">
-                </i>
-            </div>
-            {% endif %}
-        </td>
-        <td class='text-right'>{{object.last_rate.date|e2b_date}}</td>
-        <td class='icon-lg'>
-            <a href="{% url 'change-product-status' pk=object.pk %}" class="p-1">
-                {% if object.active %}
-                <i class="bi bi-toggle-on text-primary"></i>
-                {% else %}
-                <i class="bi bi-toggle-off text-secondary"></i>
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>মালের তালিকা</h4>
+    </caption>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>নাম</th>
+            <th>ধরন</th>
+            <th>সংক্ষিপ্ত নাম</th>
+            <th>ক্রয়মুল্য</th>
+            <th>বিক্রয়মুল্য</th>
+            <th>লভ্যাংশ</th>
+            <th>অবস্থা</th>
+            <th class='d-print-none'>নিয়ন্ত্রণ</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if object_list %}
+        {% for object,sln in object_list|zip %}
+        <tr>
+            <td>{{ sln|e2b_digit }}</td>
+            <td class='text-start'>
+                {% if object.packaged %}
+                <span class="eng">{{object.name}} {{object.capacity}}</span> লিঃ
+                {% else %}{{object.name}}
                 {% endif %}
-            </a>
-        </td>
-        <td class='d-print-none'>
-            <a href="{% url 'update-product' pk=object.pk %}" class="btn btn-sm btn-light py-0">
-                <i class="bi bi-pencil-square"></i>
-            </a>
-            <a href="{% url 'rates' product=object.pk %}" class="btn btn-sm btn-outline-info py-0">দর</a>
-        </td>
-    </tr>
-    {% endfor %}
-    {% else %}
-    <tr><td colspan="7" class="text-seocndary text-center">কোনো মাল তালিকাভুক্ত করা হয়নি!</td><tr>
-    {% endif %}
+            </td>
+            <td>{{object.get_category_display}}</td>
+            <td {% if object.packaged %}class="eng"{% endif %}>{{object.short_name}}</td>
+            <td class='text-end'>
+                {% for rate in object.last_purchase_rates %}
+                <div class='nowrap'>
+                    {{rate.variant.name}}:
+                    {{rate.amount|floatformat:-2|e2b_digit}} টাকা -
+                    ({{rate.date|e2b_date}})
+                </div>
+                {% endfor %}
+                <a href="{% url 'create-purchase-rate' product=object.pk %}" class="btn btn-sm btn-outline-info py-0 ml-1 float-end d-print-none">সকল ক্রয়মুল্য</a>
+            </td>
+            <td class='text-end'>
+                {% for rate in object.last_selling_rates %}
+                <div class='nowrap'>
+                    {{rate.variant.name}}:
+                    {{rate.amount|floatformat:-2|e2b_digit}} টাকা -
+                    ({{rate.date|e2b_date}})
+                </div>
+                {% endfor %}
+                <a href="{% url 'create-selling-rate' product=object.pk %}" class="btn btn-sm btn-outline-info py-0 ml-1 float-end d-print-none">সকল বিক্রয়মুল্য</a>
+            </td>
+            <td class='text-end'>
+                {% for rate in object.last_selling_rates %}
+                <div class='nowrap'>
+                    {{rate.variant.name}}:
+                    {{rate.profit|floatformat:-2|e2b_digit}} টাকা
+                </div>
+                {% endfor %}
+            </td>
+            <td class='icon-lg'>
+                <a href="{% url 'change-product-status' pk=object.pk %}" class="p-1">
+                    {% if object.active %}
+                    <i class="bi bi-toggle-on text-primary"></i>
+                    {% else %}
+                    <i class="bi bi-toggle-off text-secondary"></i>
+                    {% endif %}
+                </a>
+            </td>
+            <td class='d-print-none'>
+                <a href="{% url 'update-product' pk=object.pk %}" class="btn btn-sm btn-light py-0">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{% url 'delete-product' pk=object.pk %}">
+                    <i class="bi bi-trash text-danger"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td colspan="7" class="text-seocndary text-center">কোনো মাল তালিকাভুক্ত করা হয়নি!</td><tr>
+        {% endif %}
+    </tbody>
 </table>
 
 {% load static %}
 <script src="{% static 'form_list.js' %}"></script>
 
 <script>
-    let type = $("#id_type")
-    let need_rescale = $("#id_need_rescale").closest('.form-group').parent()
-    let capacity = $("#id_capacity").closest('.form-group').parent()
+    const packaged = $("#id_packaged")
+    const capacity = $("#id_capacity").closest('.form-group').parent()
     
     function toggleFields(){
-        const option = $(type).find(":selected").val()
-        if(option == 'Pack'){
-            need_rescale.hide('fast');
+        if($(packaged).prop('checked')){
             capacity.show('fast')
             capacity.find('input').prop('required',true)
         } else {
-            need_rescale.show('fast')
-
             capacity.hide('fast');
             capacity.find('input').prop('required',false)
         }
     }
-    // Default: Hide capacity and show need_rescale
     toggleFields()
 
-    $("#id_type").on('change', toggleFields)
+    $("#id_packaged").on('change', toggleFields)
 </script>
 
 {% endblock main %}

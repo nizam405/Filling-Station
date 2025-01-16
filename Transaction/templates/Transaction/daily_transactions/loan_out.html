@@ -1,0 +1,57 @@
+{% load extra_tags %}
+
+{% if refund_borrowed_loans %}
+<table class="table table-sm table-bordered table-striped text-end">
+    <caption>
+        <h5>গৃহীত হাওলাদ পরিশোধ</h5>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>হাওলাদ দাতা</th>
+            <th>টাকা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for refund in refund_borrowed_loans %}
+        <tr>
+            <td>{{refund.loan.lender.name}}</td>
+            <td class="text-end nowrap">{{refund.amount|format_currency}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>মোট পরিশোধ</th>
+            <th class="nowrap">{{total_refund_borrowed_loan|format_currency}}</th>
+        </tr>
+    </tfoot>
+</table>
+{% endif %}
+
+{% if lended_loans %}
+<table class="table table-sm table-bordered table-striped text-end">
+    <caption>
+        <h5>হাওলাদ প্রদান</h5>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>হাওলাদ গ্রহীতা</th>
+            <th>টাকা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for loan in lended_loans %}
+        <tr>
+            <td>{{loan.borrower.name}}</td>
+            <td class="text-end nowrap">{{loan.amount|format_currency}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>মোট ফেরত</th>
+            <th class="nowrap">{{total_lended_loan|format_currency}}</th>
+        </tr>
+    </tfoot>
+</table>
+{% endif %}

@@ -14,86 +14,69 @@
 </style>
 {% endblock style %}
 {% load extra_tags %}
-{% load bootstrap4 %}
+{% load bootstrap5 %}
 {% block main %}
 
-<div class="d-print-none d-flex">
-    {% if filter_form %}
-    <form method="get" class="row" id="filter">
-        <div class="col-md-5 pr-0">{% bootstrap_field filter_form.owner layout='horizontal' %}</div>
-        <div class="col-md-2 p-0">{% bootstrap_field filter_form.month layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
-        <div class="col-md-2 p-0">{% bootstrap_field filter_form.year layout='horizontal' show_label=False field_class='col-12' label_class='col-0' %}</div>
-        <div class="col-md-3 p-0" id="buttons">
-            <button type="submit" class='btn' id='go-btn'>
-                <i class='bi bi-arrow-right-square-fill text-success'></i>
-            </button>
-            <a href="{% url 'ownersequity-details' pk=owner.pk month=prev.month year=prev.year %}" class="btn btn-info"><i class="bi bi-chevron-left"></i></a>
-            <a href="{% url 'ownersequity-details' pk=owner.pk month=next.month year=next.year %}" class="btn btn-info"><i class="bi bi-chevron-right"></i></a>
-        </div>
-    </form>
-    {% endif %}
+{% if filter_form %}
+<div class="row container-fluid px-0 d-print-none eng">
+    <div class="col-auto">
+        {% include "filter_form.html" %}
+    </div>
 </div>
+{% endif %}
 
-<div class="text-center">
-    <h3>{{owner.name}} এর মালিকানা স্বত্ব</h3>
-    <h4>{{month|e2b_month}}, {{year|e2b_digit}}</h4>
-</div>
+<table class="table table-sm table-striped table-bordered text-end">
+    <caption>
+        {% include 'org_name.html' %}
+        <h3>{{object.owner.name}} এর মালিকানা স্বত্ব - {{year|e2b_digit}}</h3>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>তারিখ</th>
+            <th>বিবরণ</th>
+            <th>উত্তোলন</th>
+            <th>টাকা</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{object.date|e2b_date}}</td>
+            <td colspan="2">প্রারম্ভিক মূলধন</td>
+            <td>{{object.amount|format_currency}}</td>
+        </tr>
+        {% for investment in object.investment.queryset %}
+        <tr>
+            <td>{{investment.date|e2b_date}}</td>
+            <td>অরিরিক্ত মূলধন - {{investment.detail|skip_none}}</td>
+            <td>{{investment.amount|format_currency}}</td>
+            {% if forloop.first %}
+            <td rowspan="{{investments.count}}">{{total_investment|format_num}}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
 
-<table class="table table-sm table-striped table-bordered text-right">
-    <tr class="text-center">
-        <th>তারিখ</th>
-        <th>বিবরণ</th>
-        <th>উত্তোলন</th>
-        <th>টাকা</th>
-    </tr>
-    <tr>
-        <td>১ {{prev_oe.month|e2b_month}}, {{prev_oe.year|e2b_digit}}</td>
-        <td colspan="2">প্রারম্ভিক মূলধন</td>
-        <td>{{prev_oe.amount|floatformat:-2|e2b_digit|ezynumber}}</td>
-    </tr>
-    {% if investments %}
-    {% for investment in investments %}
-    <tr>
-        <td>{{investment.date|e2b_date}}</td>
-        <td>অরিরিক্ত মূলধন{% if investment.detail %} - {{investment.detail}}{% endif %}</td>
-        <td>{{investment.amount|e2b_digit|ezynumber}}</td>
-        {% if forloop.first %}
-        <td rowspan="{{investments.count}}">{{total_investment|e2b_digit|ezynumber}}</td>
-        {% endif %}
-    </tr>
-    {% endfor %}
-    {% endif %}
-
-    <tr>
-        <td></td>
-        <td colspan="2">মুনাফা</td>
-        <td>{{current_oe.profit|floatformat:-2|e2b_digit|ezynumber}}</td>
-    </tr>
-    <tr>
-        <th colspan="4" class="text-left">বাদঃ উত্তোলনসমূহ</th>
-    </tr>
-    {% for row in withdraws %}
-    <tr>
-        <td>{{row.date|e2b_date}}</td>
-        <td>
-            {% for item in row.wds %}
-                <div class="float-left">{% if item.detail %}{{item.detail}}{% endif %}</div>
-                <div class="float-right">{% if item.amount %}{{item.amount|e2b_digit|ezynumber}}{% endif %}</div>
-                <div class="clearfix"></div>
-            {% endfor %}
-        </td>
-        <td class="align-bottom">{% if row.total %}{{row.total|e2b_digit|ezynumber}}{% endif %}</td>
-        {% if forloop.first %}
-        <td class="align-bottom" rowspan="{{wd_rowspan}}">
-            ({% if total_withdraw %}{{total_withdraw|e2b_digit|ezynumber}}{% endif %})
-        </td>
-        {% endif %}
-    </tr>
-    {% endfor %}
-    <tr>
-        <th colspan="3">বর্তমান মালিকানা স্বত্বঃ</th>
-        <th>{{current_oe.amount|floatformat:-2|e2b_digit|ezynumber}}</th>
-    </tr>
+        <tr>
+            <td></td>
+            <td colspan="2">মুনাফা</td>
+            <td>{{object.profit|format_currency}}</td>
+        </tr>
+        <tr>
+            <th colspan="4" class="text-start">বাদঃ উত্তোলনসমূহ</th>
+        </tr>
+        {% for row in object.withdraw.queryset %}
+        <tr>
+            <td>{{row.date|e2b_date}}</td>
+            <td>{{row.detail|skip_none}}</td>
+            <td>{{row.amount|format_currency}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="3">বর্তমান মালিকানা স্বত্বঃ</th>
+            <th>{{object.ending.amount|format_currency}}</th>
+        </tr>
+    </tfoot>
 </table>
 
 {% endblock main %}

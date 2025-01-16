@@ -1,35 +1,36 @@
 from django import forms
 from .models import Withdraw, Investment, OwnersEquity, FixedAsset
-from Owner.models import Owner
 from Core.functions import year_choices
+from Core.choices import balance_years
 
-class WithdrawForm(forms.ModelForm):
+class WithdrawFilterForm(forms.ModelForm):
     class Meta:
         model = Withdraw
-        fields = '__all__'
-        widgets = {'date': forms.HiddenInput}
+        fields = ['date','owner']
+        widgets = {'date': forms.SelectDateWidget}
 
-class InvestmentForm(forms.ModelForm):
-    class Meta:
-        model = Investment
-        fields = '__all__'
-        widgets = {
-            'date': forms.SelectDateWidget(
-                attrs={'disabled': 'disabled'}  # Disable the date field
-            ),
-        }
+# class InvestmentForm(forms.ModelForm):
+#     class Meta:
+#         model = Investment
+#         fields = '__all__'
+#         widgets = {
+#             'date': forms.SelectDateWidget(
+#                 attrs={'disabled': 'disabled'}  # Disable the date field
+#             ),
+#         }
     
-    def __init__(self, *args, **kwargs):
-        super(InvestmentForm, self).__init__(*args, **kwargs)
-        self.fields['date'].required = False
+#     def __init__(self, *args, **kwargs):
+#         super(InvestmentForm, self).__init__(*args, **kwargs)
+#         self.fields['date'].required = False
 
 # Detail view
-class OwnersEquityForm(forms.ModelForm):
+class OwnersEquityDetailFilter(forms.ModelForm):
     class Meta:
         model = OwnersEquity
-        fields = ['owner', 'month', 'year']
-    
-    # owner = forms.ModelChoiceField(queryset=Owner.objects.all())
+        fields = ['owner', 'date']
+        widgets = {'date': forms.SelectDateWidget(
+            years=[year[0] for year in balance_years()]
+        )}
 
 # Top Sheet Filter
 class OwnersEquityFilter(forms.ModelForm):
@@ -40,6 +41,7 @@ class OwnersEquityFilter(forms.ModelForm):
     class Meta:
         model = OwnersEquity
         fields = ['owner', 'year']
+        widgets = {'year': forms.Select(choices=balance_years())}
 
 class FixedAssetForm(forms.ModelForm):
     class Meta:

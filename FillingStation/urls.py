@@ -30,10 +30,9 @@ urlpatterns = [
     path('ledgers/', include("Ledger.urls")),
     path('loan/', include("Loan.urls")),
     path('customer/', include("Customer.urls")),
-    path('expenditure/', include("Expenditure.urls")),
+    path('income-expenditure/', include("IncomeExpenditure.urls")),
     path('owner/', include("Owner.urls")),
     path('product/', include("Product.urls")),
-    path('revenue/', include("Revenue.urls")),
     path('documentation/', include("Documentation.urls")),
 ]
 

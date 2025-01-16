@@ -5,7 +5,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG')
 ALLOWED_HOSTS = ['127.0.0.1','localhost']
+
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/transactions/'
+LOGOUT_REDIRECT_URL = 'login'
 
 # Application definition
 INSTALLED_APPS = [
@@ -16,11 +19,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'bootstrap4',
+    'bootstrap5',
     
     'Account',
     'Core',
     'Customer',
+    'IncomeExpenditure',
     'Expenditure',
     'Owner',
     'Product',
@@ -54,8 +58,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Custom
                 'Transaction.context_processors.has_cashbalance',
-                'FillingStation.context_processors.settings',
+                'Core.context_processors.org_settings',
+                'Core.context_processors.current_date',
             ],
             'libraries': {
                 'extra_tags': 'FillingStation.templatetags.extra_tags',
@@ -73,6 +79,7 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': 'D:/db.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
@@ -87,6 +94,8 @@ TIME_ZONE = 'Asia/Dhaka'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
+DATE_FORMAT = '%Y-%m-%d'
 
 
 # Static files (CSS, JavaScript, Images)

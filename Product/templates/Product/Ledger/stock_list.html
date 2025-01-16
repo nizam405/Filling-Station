@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}{{product.name}} - স্টক{% endblock title %}
+{% block style %}
+<style>
+
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap5 %}
+{% block main %}
+
+<div class="text-center">
+    <h3>
+        {% if product.packaged %}
+        <span class="eng">{{product.name}}</span> {{product.capacity|e2b_digit}} লিঃ
+        {% else %}
+        {{product}}  - স্টক
+        {% endif %}
+    </h3>
+</div>
+
+<table class="table table-striped table-bordered table-sm text-end">
+    <thead>
+        <tr class='text-center'>
+            <th>তারিখ</th>
+            <th>ধরণ</th>
+            <th>দর</th>
+            <th>পরিমাণ</th>
+            <th>বিক্রয়</th>
+            <th>অবশিষ্ট</th>
+            <th>উদ্বৃত্ত</th>
+            <th>ঘাটতি</th>
+            <th>সমাপনি</th>
+            <th>মুনাফা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for object in object_list %}
+        <tr>
+            <td class='nowrap'>{{object.date|e2b_date}}</td>
+            <td class="text-start">
+                <a href="{% url "stock-details" pk=object.pk %}">
+                {{object.get_stock_in_type_display}}
+                </a>
+            </td>
+            <td class="nowrap">{{object.purchase_rate.amount|format_currency}}</td>
+            <td class="nowrap">{{object.quantity|format_num}} {{object.product.unit}}</td>
+            <td class="nowrap">{{object.sell.quantity|format_num}} {{object.product.unit}}</td>
+            <td class="nowrap">{{object.remaining|format_num}} {{object.product.unit}}</td>
+            <td class="nowrap">{{object.excess.quantity|format_num}} {{object.product.unit}}</td>
+            <td class="nowrap">{{object.shortage.quantity|format_num}} {{object.product.unit}}</td>
+            <td class="nowrap">{{object.ending|format_num}} {{object.product.unit}}</td>
+            <td class="nowrap">{{object.sell_profit|format_currency}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% include "pagination.html" %}
+
+{% endblock main %}

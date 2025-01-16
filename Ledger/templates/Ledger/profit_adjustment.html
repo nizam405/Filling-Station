@@ -8,10 +8,9 @@
 {% block main %}
 
 {% load extra_tags %}
-{% load bootstrap4 %}
+{% load bootstrap5 %}
 
 <div class="text-center" id="header">
-    <h3 class='d-none d-print-block'>{{settings.organization_name}}</h3>
     <h3>মালের মূল্যবৃদ্ধি/মূল্যহ্রাস এর কারণে সমাপনী মজুদে পরিবর্তন</h3>
     <h4>{{month|e2b_month}},{{year|e2b_digit}}</h4>
     {% if status %}
@@ -19,7 +18,7 @@
     {% endif %}
 </div>
 
-<table class="table table-sm table-bordered text-right">
+<table class="table table-sm table-bordered text-end">
     <tr class='text-center'>
         <th>মালের নাম</th>
         <th>গড় ক্রয়মূল্য</th>
@@ -31,7 +30,7 @@
     {% for item in product_info %}
     {% if item.profit_diff != 0 %}
     <tr>
-        <td class='text-left'>{{item.product.name}}</td>
+        <td class='text-start'>{{item.product.name}}</td>
         <td>{{item.avg_purchase_rate|floatformat:4|e2b_digit}}</td>
         <td>{{item.purchase_rate|floatformat:4|e2b_digit}}</td>
         <td>{{item.profit_rate_diff|floatformat:4|e2b_digit}}</td>

@@ -1,0 +1,29 @@
+{% load extra_tags %}
+
+{% if duecollections %}
+<table class="table table-sm table-bordered table-striped text-end">
+    <caption>
+        <h5>বকেয়া আদায়</h5>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>দেনাদার</th>
+            <th>টাকা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for obj in duecollections %}
+        <tr>
+            <td class="text-start">{{obj.customer}}</td>
+            <td class="nowrap">{{obj.amount|format_currency}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>মোট আদায়</th>
+            <th class="nowrap">{{total_duecollection|format_currency}}</th>
+        </tr>
+    </tfoot>
+</table>
+{% endif %}

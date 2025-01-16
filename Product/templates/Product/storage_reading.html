@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}দৈনিক মজুদ মাল{% endblock title %}
+{% block style %}
+<style>
+    form .bootstrap4-multi-input div.col-4 {
+        padding-left: 0;
+    }
+
+    form select, #buttons button, #buttons a {
+        border-radius:0rem;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load extra_tags %}
+{% load bootstrap5 %}
+
+<div id="form-container" class='d-print-none'>
+    <h3>দৈনিক মজুদ মালের হিসাব</h3>
+    <form method="post" class="row mb-3">
+        {% csrf_token %}
+        <div class="col-sm-6">
+            {% bootstrap_field form.date layout='horizontal' field_class='col-sm-9 eng' %}
+        </div>
+        <div class="col-sm-6">
+            {% bootstrap_field form.product layout='horizontal'  field_class='col-sm-9 pl-0' %}
+        </div>
+        <div class="col-sm-6">
+            {% bootstrap_field form.tank_deep layout='horizontal' field_class='col-sm-9 pl-0 eng' %}
+        </div>
+        <div class="col-sm-6">
+            {% bootstrap_field form.lorry_load layout='horizontal' addon_after="<span class='bangla'>লিটার</span>" field_class='col-sm-9 pl-0 eng' %}
+        </div>
+        <div class="col-12 nowrap text-center eng">
+            {% bootstrap_button 'Save' button_type='submit' button_class='btn-success' %}
+            <a href="{{request.META.HTTP_REFERER}}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<table class="table table-sm table-striped table-bordered text-end">
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>দৈনিক মজুদ মালের হিসাব</h4>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>তারিখ</th>
+            <th>মাল</th>
+            <th>ট্যাংক ডিপ</th>
+            <th>লোড</th>
+            <th>মোট মজুদ</th>
+            <th>অবশিষ্ট মজুদ</th>
+            <th>উদ্বৃত্ত/ঘাটতি</th>
+            <th class='d-print-none'></th>
+        </tr>
+    </thead>
+    {% if object_list %}
+    <tbody>
+        {% for object in object_list %}
+        <tr>
+            <td>{{object.date|e2b_date:True}}</td>
+            <td class="text-start">{{object.product}}</td>
+            <td class="nowrap">{{object.tank_deep|format_num:-3}} {{object.product.unit}}</td>
+            <td class="nowrap">
+                {% if object.lorry_load %}
+                {{object.lorry_load|format_num:-3}} {{object.product.unit}}
+                {% endif %}
+            </td>
+            <td class="nowrap">{{object.quantity|format_num:-3}} {{object.product.unit}}</td>
+            <td class="nowrap">{{object.remaining|format_num}} {{object.product.unit}}</td>
+            <td class="nowrap">{{object.difference|format_num}} {{object.product.unit}}</td>
+            <td class='p-0 d-print-none'>
+                <form method="POST" action="{% url 'delete-daily-product-storage' pk=object.pk %}">
+                    {% if date %}
+                    <a href="{% url 'update-daily-product-storage' pk=object.pk date=object.date %}" class="p-1">
+                        <i class="bi bi-pencil-square text-dark"></i>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'update-daily-product-storage' pk=object.pk %}" class="p-1">
+                        <i class="bi bi-pencil-square text-dark"></i>
+                    </a>
+                    {% endif %}
+                    {% csrf_token %}
+                    {% if object.date == last_bal_date %}
+                    <button type="submit" class="btn"><i class="bi bi-trash text-danger"></i></button>
+                    {% endif %}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% else %}
+    <tfoot>
+        <tr>
+            <td colspan="5" class="text-seocndary text-center">কোনো মজুদ মাল তালিকাভুক্ত করা হয়নি!</td>
+        </tr>
+    </tfoot>
+    {% endif %}
+</table>
+
+{% include "pagination.html" %}
+
+{% endblock main %}

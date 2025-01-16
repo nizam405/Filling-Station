@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}পণ্যের {{subject}} ধরন{% endblock title %}
+
+{% block style %}
+<style>
+#buttons button, 
+#buttons a,
+#form-container input {
+    border-radius: 0;
+}
+
+
+</style>
+{% endblock style %}
+
+{% block main %}
+{% load extra_tags %}
+{% load bootstrap5 %}
+
+<div class='mb-3 d-print-none'>
+    <a href="{% url "products" %}">
+        <i class="bi bi-arrow-left-circle"></i> মালের তালিকা
+    </a>
+</div>
+
+<table class="table table-sm table-striped table-bordered text-center">
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>পণ্যের {{subject}} ধরন</h4>
+    </caption>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>ধরনের নাম</th>
+            <th>স্বাভাবিক দর</th>
+            <th class="d-print-none">নিয়ন্ত্রণ</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for object,sln in object_list|zip %}
+        <tr>
+            <td>{{sln|e2b_digit}}</td>
+            <td class='text-start'>
+                {{object.name}}
+                {% if object.default %}
+                <i class="bi bi-check-circle-fill text-success"></i>
+                {% endif %}
+            </td>
+            <td class="text-center">
+                {% if object.normal %}<i class="bi bi-check-circle-fill text-success"></i>
+                {% else %}<i class="bi bi-x-circle-fill text-secondary"></i>
+                {% endif %}
+            </td>
+            <td class="d-print-none">
+                <a href="{% url update_pattern pk=object.pk %}">
+                    <i class="bi bi-pencil-square text-info"></i>
+                </a>
+                <a href="{% url delete_pattern pk=object.pk %}">
+                    <i class="bi bi-trash text-danger"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot class='border d-print-none'>
+        <tr class='text-start'>
+            <th colspan='4'>পণ্যের {{subject}} ধরন যুক্ত/পরিবর্তন করুন</th>
+        </tr>
+        <tr>
+            <form method="post">
+                {% csrf_token %}
+                <td></td>
+                <td>{% bootstrap_field form.name show_label=False %}</td>
+                <td>{% bootstrap_field form.normal %}</td>
+                <td class='nowrap d-print-none'>
+                    <button type="submit" class="btn btn-sm btn-success py-0 rounded-0">
+                        <i class="bi bi-check-lg" style="font-size:1.5rem"></i>
+                    </button>
+                    <a href="{% url base_pattern %}" class="btn btn-sm btn-light py-0 rounded-0">
+                        <i class="bi bi-x text-danger" style="font-size:1.5rem"></i>
+                    </a>
+                </td>
+            </form>
+        </tr>
+    </tfoot>
+</table>
+
+{% endblock main %}

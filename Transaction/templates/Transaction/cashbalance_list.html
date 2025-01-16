@@ -3,68 +3,41 @@
 {% load extra_tags %}
 {% block main %}
 
-<h3 class='print-center'>দৈনিক হাতে নগদ</h3>
-<a href="{% url 'cashbalance-control' %}" class="btn btn-info mb-3">
-    <i class="bi bi-gear pr-2"></i>ব্যালেন্স নিয়ন্ত্রন করুন
+<a href="{% url 'cashbalance-control' %}" class="btn btn-blue mb-3 d-print-none">
+    <i class="bi bi-gear pr-2"></i> ব্যালেন্স নিয়ন্ত্রন করুন
 </a>
-{% if object_list %}
 <table class="table table-sm table-striped table-bordered text-center">
-    <tr>
-        <th>তারিখ</th>
-        <th>টাকা</th>
-        <th class='d-print-none'></th>
-    </tr>
-    {% for object in object_list %}
-    <tr>
-        <td class='text-right'>
-            <a href="{% url "daily-transactions" object.date %}">{{object.date|e2b_date}}</a>
-        </td>
-        <td class='text-right'>{{object.amount|e2b_digit|ezynumber}}/=</td>
-        <td class='d-print-none'>
-            <!-- queryset are sorted descending in view. So first means latest-->
-            {% if object == object_list.first %}
-            <form method='POST' action="{% url 'delete-cashbalance' pk=object.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm py-0"><i class="bi bi-trash text-danger"></i></button>
-            </form>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+    <caption>
+        <h4>দৈনিক হাতে নগদ</h4>
+    </caption>
+    <thead>
+        <tr>
+            <th>তারিখ</th>
+            <th>প্রারম্ভিক হাতে নগদ</th>
+            <th class='d-print-none'>নিয়ন্ত্রন</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for object in object_list %}
+        <tr>
+            <td class='text-end'>
+                <a href="{% url "daily-transactions" object.date %}">{{object.date|e2b_date}}</a>
+            </td>
+            <td class='text-end'>{{object.amount|format_currency}}</td>
+            <td class='d-print-none'>
+                <!-- queryset are sorted descending in view. So first means latest-->
+                {% if object == object_list.first %}
+                <form method='POST' action="{% url 'delete-cashbalance' pk=object.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm py-0"><i class="bi bi-trash text-danger"></i></button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
-<nav>
-    <ul class="pagination eng">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-        </li>
-        {% else %}
-        <li class="page-item disabled">
-          <span class="page-link">Previous</span>
-        </li>
-        {% endif %}
-        {% for page in page_obj.paginator.page_range %}
-        <li class="page-item {% if page == page_obj.number %}active{% endif %}">
-            <a class="page-link" href="?page={{page}}">{{page}}</a>
-        </li>
-        {% endfor %}
-        {% if page_obj.has_next %}
-            <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-            </li>
-        {% else %}
-            <li class="page-item disabled">
-            <span class="page-link">Next</span>
-            </li>
-        {% endif %}
-    </ul>
-</nav>
-{% else %}
-<div class="text-right">
-    <a href="{% url 'create-cashbalance' %}" class="btn btn-success mb-2"><i class="bi bi-plus-circle"></i></a>
-</div>
-<div class="text-seocndary text-center card p-5 my-5">ব্যালেন্স তালিকাভুক্ত করা হয়নি...!</div>
-{% endif %}
+{% include "pagination.html" %}
 
 {% endblock main %}

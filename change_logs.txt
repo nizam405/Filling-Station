@@ -1,5 +1,19 @@
 
+>> Implemented FIFO methodology of product consuming
+>> Not every balance is initial balance
+>> Improvment in navigation
+>> Separated product by categories
+>> Added Stock Listing
+>> Rate becomes more accurate
+>> Excess/Shortage is accurate now
+>> Net profit fixed
+>> Added functionality for distribution of profit in owner model
+>> Merged Ledger to particular App
+>> Withdraw is back again
+>> pagination problem fixed
+
 2024-08-15
+----------
 >> Zero division issue fixed.
 >> Product post save signal -> Create Storage
 >> Date limit to current date for Loan & Investment

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}প্রারম্ভিক মজুদ{% endblock title %}
+{% block style %}
+<style>
+    .form-control, .input-group-text {
+        border-radius: 0;
+    }
+    .form-group {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load bootstrap5 %}
+{% load extra_tags %}
+
+<a href="{% url 'products' %}" class="btn btn-light d-print-none">
+    <i class="bi bi-arrow-left-circle"></i> মালের তালিকা
+</a>
+
+{% if filter_form %}
+<div class="row container-fluid px-0 d-print-none eng">
+    <div class="col-auto">
+        {% include "filter_form.html" %}
+    </div>
+</div>
+{% endif %}
+
+<table class='table table-striped table-bordered table-sm text-center'>
+    <caption>
+        {% include 'org_name.html' %}
+        <h4>প্রারম্ভিক মজুদ - তারিখঃ {{date|e2b_date}}</h4>
+    </caption>
+    <thead>
+        <tr>
+            <th>মালের নাম</th> 
+            <th colspan='3'>পরিমান <i class='bi bi-x-lg'></i> দর</th> 
+            <th>=</th>
+            <th>মোট</th>
+            <th>নিয়ন্ত্রণ</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for object in object_list %}
+        <tr>
+            <td class='text-start'>
+                {% if object.product.packaged %}
+                {{object.product.name}}
+                {% else %}
+                <span class='eng'>{{object.product.name}}</span> {{object.product.capacity|e2b_digit}} লিটার
+                {% endif %}
+            </td> 
+            <td colspan='3' class='text-end'>
+                {{object.quantity|floatformat:2|e2b_digit|ezynumber}} {{object.product.unit}}
+                <i class='bi bi-x-lg'></i>
+                {{object.purchase_rate.amount|floatformat:2|e2b_digit|ezynumber}} টাকা
+            </td>
+            <td>=</td>
+            <td class='text-end nowrap'>{{object.price|floatformat:2|e2b_digit|ezynumber}} টাকা</td>
+            <td class='nowrap'>
+                {% if object.can_change %}
+                <a href="{% url 'update-initial-stock' date=object.date pk=object.pk %}" class="btn btn-sm btn-light py-0">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{% url 'delete-initial-stock' date=object.date pk=object.pk %}">
+                    <i class="bi bi-trash text-danger"></i>
+                </a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        {% if object_list %}
+        <tr>
+            <th colspan='4' class='text-end'>সর্বমোট</th>
+            <td>=</td>
+            <th colspan='2' class='nowrap'>{{total|floatformat:2|e2b_digit|ezynumber}} টাকা</th>
+        </tr>
+        {% endif %}
+    </tbody>
+    <tfoot>
+        {% if form %}
+        <form method="post" id="form" class='border'>
+            {% csrf_token %}
+            <tr class='text-start'>
+                <th colspan='2'>প্রারম্ভিক মজুদ যুক্ত/পরিবর্তন করুন</th>
+                <td colspan='5'>
+                    <a href="{% url "products" %}">মালের তালিকা পেজ</a> থেকে ক্রয়মূল্য যুক্ত করা যাবে।
+                </td>
+            </tr>
+            <tr class='eng'>
+                <td>{% bootstrap_field form.product show_label=False%}</td>
+                <td>{% bootstrap_field form.quantity show_label=False%}</td>
+                <td class='align-middle pb-4'><i class='bi bi-x-lg'></i></td>
+                <td style="width:25%">
+                    {% bootstrap_field form.purchase_rate show_label=False addon_after="টাকা" %}
+                </td>
+                <td class='align-middle pb-4'>=</td>
+                <td class='align-middle pb-4 nowrap'><span id='amount'>0</span> টাকা</td>
+                <td class='nowrap'>
+                    <button type="submit" class="btn btn-sm btn-success py-0 rounded-0">
+                        <i class="bi bi-check-lg" style="font-size:1.5rem"></i>
+                    </button>
+                    <a href="{% url "initial-stock" date %}" class="btn btn-sm btn-light py-0 rounded-0">
+                        <i class="bi bi-x text-danger" style="font-size:1.5rem"></i>
+                    </a>
+                </td>
+            </tr>
+        </form>
+        {% elif can_change and not org_settings.start_from_beginning %}
+        <tr>
+            <td>
+                <a href="{% url "create-initial-stock" date=date %}">
+                    <i class="bi bi-plus-lg"></i> প্রারম্ভিক মজুদ যুক্ত করুন
+                </a>
+            </td>
+        </tr>
+        {% endif %}
+    </tfoot>
+</table>
+
+{% load static %}
+<script src="{% static 'purchase_sell.js' %}"></script>
+
+{% endblock main %}

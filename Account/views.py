@@ -5,10 +5,6 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView,
 class UserLoginView(LoginView):
     template_name = 'Account/login.html'
 
-    # in settings.py i set LOGIN_REDIRECT_URL 
-    # def get_success_url(self):
-    #     return reverse_lazy('daily-transactions')
-
 class UserLogoutView(LogoutView):
     template_name = 'Account/logout.html'
 

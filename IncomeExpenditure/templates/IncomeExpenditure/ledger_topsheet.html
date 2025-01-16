@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}ব্যয়সমূহ{% endblock title %}
+{% block style %}
+<style>
+</style>
+{% endblock style %}
+{% load extra_tags %}
+{% load bootstrap5 %}
+{% block main %}
+
+{% if filter_form %}
+<div class="row container-fluid px-0 d-print-none eng">
+    <div class="col-auto">
+        {% include "filter_form.html" %}
+    </div>
+</div>
+{% endif %}
+
+<table class="table table-striped table-bordered table-sm">
+    <caption>
+        <h3>ব্যয়সমূহ - {{month|e2b_month}}, {{year|e2b_digit}}</h3>
+        {% if not status %}
+        <div class='text-danger'>({{to_date|e2b_date}} তারিখ পর্যন্ত)</div>
+        {% endif %}
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>ক্রম</th>
+            <th>ব্যায়ের খাত</th>
+            <th>খঃ পৃঃ</th>
+            <th>টাকা</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for obj in objects %}
+        <tr class="text-center">
+            <td>
+                <a class='nowrap' href="">{{obj.serial|e2b_digit}}</a>
+            </td>
+            <td class='text-start'>{{obj.name}}</td>
+            <td></td>
+            <td class="text-end">{{obj.total_amount|e2b_digit|ezynumber}}</td>
+        </tr>
+        {% endfor %}
+        <tr class="text-end">
+            <th colspan='3'>মোটঃ</th>
+            <th>{% if total %}{{total|e2b_digit|ezynumber}}{% endif %}</th>
+        </tr>
+    </tbody>
+</table>
+
+{% endblock main %}

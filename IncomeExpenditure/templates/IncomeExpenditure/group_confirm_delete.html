@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}খাত - বাতিল{% endblock title %}
+{% block main %}
+
+<h4>আপনি কি নিশ্চিত, নিম্নোক্ত লেনদেনটি বাতিল করতে চাচ্ছেন?</h4>
+<div>{{object}}</div>
+<p>উক্ত লেনদেনের সাথে জড়িত সকল লেনদেন বাতিল হয়ে যাবে।</p>
+
+<form method="post">
+    {% csrf_token %}
+    <a href="{{base_url}}" class="btn btn-primary">না, ফেরত যান</a>
+    <input type="submit" value="হ্যা, বাতিল করুন" class="btn btn-danger">
+</form>
+{% endblock main %}

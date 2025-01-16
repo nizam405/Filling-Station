@@ -1,19 +1,17 @@
-from Product.models import Product, Sell, Purchase, StorageReading
-from Ledger.models import Storage, Profit
+import datetime
+from django.db.models import Sum
+
+from Product.models import Product, Purchase, Sell, StorageReading, PurchaseRate, SellingRate
 from Revenue.models import Revenue
 from Expenditure.models import Expenditure
 from Owner.models import OwnersEquity, Investment, Withdraw, Owner
 from Loan.models import BorrowLoan, RefundBorrowedLoan
-from Product.models import Product, Purchase, Sell, StorageReading
 from Customer.models import Customer, GroupofCompany, DueSell, DueCollection
-from Ledger.models import CustomerBalance, GroupofCompanyBalance, Profit, Storage
-
-from datetime import date, datetime
-from django.db.models import Sum
 from Core.functions import get_prev_month, get_next_month, first_date_of_month, last_day_of_month
 from Transaction.functions import last_balance_date_of_month
 
 def save_profit_oe(year,month):
+    from Ledger.models import Profit
     """
     This method is created to quickly calculate profit and owners equity.
     Used when save multiple Cashbalances, Update transactions in prev month.
@@ -29,16 +27,16 @@ def save_profit_oe(year,month):
     prev_y, prev_m = get_prev_month(year,month)
 
     print("Calculating Net Profit")
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
 
     sells = Sell.objects.filter(date__year=year,date__month=month)
     sell_amount = sells.aggregate(Sum('amount'))['amount__sum'] if sells else 0
     purchases = Purchase.objects.filter(date__year=year,date__month=month)
     purchase_amount = purchases.aggregate(Sum('amount'))['amount__sum'] if purchases else 0
-    initial_storages = Storage.objects.filter(month=prev_m, year=prev_y)
-    initial_storage_amount = initial_storages.aggregate(Sum('price'))['price__sum'] if initial_storages else 0
-    ending_storages = Storage.objects.filter(month=month, year=year)
-    ending_storage_amount = ending_storages.aggregate(Sum('price'))['price__sum'] if initial_storages else 0
+    # initial_storages = Storage.objects.filter(month=prev_m, year=prev_y)
+    # initial_storage_amount = initial_storages.aggregate(Sum('price'))['price__sum'] if initial_storages else 0
+    # ending_storages = Storage.objects.filter(month=month, year=year)
+    # ending_storage_amount = ending_storages.aggregate(Sum('price'))['price__sum'] if initial_storages else 0
     profit_on_sell = sell_amount + ending_storage_amount - initial_storage_amount - purchase_amount
 
     revenues = Revenue.objects.filter(date__year=year,date__month=month)
@@ -49,13 +47,13 @@ def save_profit_oe(year,month):
     saved_profit, created = Profit.objects.update_or_create(
             year=year, month=month, defaults={'amount':net_profit}
         )
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
     delta = end_time-start_time
     print(f"{saved_profit.get_month_display()}-{saved_profit.year}")
     print(f"\tProfit:{net_profit} (Time:{delta.total_seconds()}sec)")
 
     print("Calculating Owners' Equity")
-    start_time = datetime.now()
+    start_time = datetime.datetime.now()
     # প্রারম্ভিক মূলধন
     ownersequity = OwnersEquity.objects.filter(year=prev_y,month=prev_m)
     capital_amount = ownersequity.aggregate(Sum('amount'))['amount__sum'] if ownersequity else 0
@@ -98,63 +96,27 @@ def save_profit_oe(year,month):
             month=month,year=year,owner=owner,
             defaults={'profit':owner_profit,'amount':current_oe, 'share':current_share})
         print("\t",owner.name, "profit", owner_profit,"Current OE", current_oe, "share", current_share)
-    end_time = datetime.now()
+    end_time = datetime.datetime.now()
     delta = end_time-start_time
     print("\t(Time:",delta.total_seconds(),"sec)")
 
 def save_profit_oe_from(current_date):
     latest_object = Storage.objects.latest()
-    end_date = date(latest_object.year,latest_object.month,1)
+    end_date = datetime.date(latest_object.year,latest_object.month,1)
     # if Storage ledger is calculated, update Storage
     year = current_date.year
     month = current_date.month
-    current_date = date(year,month,1)
+    current_date = datetime.date(year,month,1)
     while current_date<=end_date:
         # Update Profit & Owners Equity
         save_profit_oe(year,month)
         print(f"Profit and Owners Equity updated for {year}-{month}")
         # Go to next month
         year, month = get_next_month(year,month)
-        current_date = date(year,month,1)
-
-def save_storage(date,product):
-    month = date.month
-    year = date.year
-    prev_month_year, prev_month = get_prev_month(year, month)
-    quantity = 0
-    # Diesel and Octen has storage reading
-    # they can differ from on paper calculation
-    storage_readings = StorageReading.objects.filter(product=product,date=date)
-    if product.need_rescale:
-        quantity = storage_readings.last().qnt
-    else:
-        # Mobil and other pack items need to calculate
-        storages = Storage.objects.filter(product=product,month=prev_month,year=prev_month_year)
-        # Check if there has previous month storage data
-        # Add these to current storage
-        # else do not count last storage
-        if storages:
-            last_storage = storages.last()
-            quantity += last_storage.quantity
-        
-        sells = Sell.objects.filter(product=product,date__month=month,date__year=year)
-        if sells:
-            qnt = sells.aggregate(Sum('quantity'))['quantity__sum']
-            quantity -= qnt
-        purchases = Purchase.objects.filter(product=product,date__month=month,date__year=year)
-        if purchases:
-            qnt = purchases.aggregate(Sum('quantity'))['quantity__sum']
-            quantity += qnt
-    object,created = Storage.objects.update_or_create(
-        month=month,year=year,product=product,defaults={'quantity': quantity})
-    print(f"Storage updated - {object}")
-
-def save_storages(date):
-    products = Product.objects.all()
-    for product in products:
-        save_storage(date,product)
+        current_date = datetime.date(year,month,1)
 
 def save_group_of_company_balance(date):
+    from Ledger.models import GroupofCompanyBalance
     month = date.month
     year = date.year
     prev_month_year, prev_month = get_prev_month(year, month)
@@ -178,6 +140,7 @@ def save_group_of_company_balance(date):
             goc_instance.save()
 
 def save_customer_balance(date):
+    from Ledger.models import CustomerBalance
     month = date.month
     year = date.year
     prev_month_year, prev_month = get_prev_month(year, month)
@@ -205,11 +168,11 @@ def get_products_info(year,month):
     # print("Getting product information")
     # start_time = datetime.now()
     prev_month_year, prev_month = get_prev_month(year, month)
-    from_date = date(year,month,1)
+    from_date = datetime.date(year,month,1)
     to_date = last_balance_date_of_month(year,month)
 
-    sells = Sell.objects.filter(date__gte=from_date,date__lte=to_date)
-    purchases = Purchase.objects.filter(date__gte=from_date,date__lte=to_date).order_by('date')
+    all_sells = Sell.objects.filter(date__gte=from_date,date__lte=to_date)
+    all_purchases = Purchase.objects.filter(date__gte=from_date,date__lte=to_date).order_by('date')
     initial_storages = Storage.objects.filter(month=prev_month, year=prev_month_year)
 
     products = Product.objects.all()
@@ -222,7 +185,7 @@ def get_products_info(year,month):
     # total_ending_storage_amount = 0
     for product in products:
         data = {
-            'unit': "লিঃ" if product.type == "Loose" else "",
+            'unit': product.unit,
             'ending_storage_reading_amount':0,
             'ending_storage_diff': 0,
             'ending_storage_diff_amount': 0,
@@ -238,24 +201,48 @@ def get_products_info(year,month):
         # total_initial_storage_amount += initial_storage_amount
         
         # Purchase - ক্রয়
-        purchase = purchases.filter(product=product)
-        purchase_qnt = purchase.aggregate(Sum('quantity'))['quantity__sum'] if purchase else 0
+        purchases = all_purchases.filter(product=product)
+        purchase_qnt = purchases.aggregate(Sum('quantity'))['quantity__sum'] if purchases else 0
         data['purchase_qnt'] = purchase_qnt
-        purchase_amount = purchase.aggregate(Sum('amount'))['amount__sum'] if purchase else 0
+        purchase_amount = purchases.aggregate(Sum('amount'))['amount__sum'] if purchases else 0
         data['purchase_amount'] = purchase_amount
-        # total_purchase_amount += purchase_amount
+        # Purchase Details
+        purchase_rate_ids = purchases.values('purchase_rate').distinct()
+        unique_purchase_rate_ids =list(set(purchase_rate_ids.values_list('purchase_rate', flat=True)))
+        product_purchase_data = []
+        for rate in unique_purchase_rate_ids:
+            purchase_on_rate = purchases.filter(purchase_rate=rate)
+            purchase_data = {
+                'quantity': purchase_on_rate.aggregate(Sum('quantity'))['quantity__sum'],
+                'rate': PurchaseRate.objects.get(id=rate),
+                'price': purchase_on_rate.aggregate(Sum('price'))['price__sum']
+            }
+            product_purchase_data.append(purchase_data)
+        data['purchase_details'] = product_purchase_data
         
-        # Rates
         purchase_rate = product.get_purchase_rate(date=to_date)
+        purchase_rate = purchase_rate.amount if purchase_rate else 0
         data['purchase_rate'] = purchase_rate
 
         # Sell - বিক্রয়
-        sell = sells.filter(product=product)
-        sell_qnt = sell.aggregate(Sum('quantity'))['quantity__sum'] if sell else 0
+        sells = all_sells.filter(product=product)
+        sell_qnt = sells.aggregate(Sum('quantity'))['quantity__sum'] if sells else 0
         data['sell_qnt'] = sell_qnt
-        sell_amount = sell.aggregate(Sum('amount'))['amount__sum'] if sell else 0
+        sell_amount = sells.aggregate(Sum('amount'))['amount__sum'] if sells else 0
         data['sell_amount'] = sell_amount
-        # total_sell_amount += sell_amount
+        # Sell Details
+        selling_rate_ids = all_sells.values('selling_rate').distinct()
+        unique_selling_rate_ids = list(set(selling_rate_ids.values_list('selling_rate', flat=True)))
+        product_sell_data = []
+        for rate in unique_selling_rate_ids:
+            sells_on_rate = sells.filter(selling_rate=rate)
+            selling_data = {
+                'quantity': sells_on_rate.aggregate(Sum('price'))['quantity__sum'],
+                'rate': SellingRate.objects.get(id=rate),
+                'price': purchase_on_rate.aggregate(Sum('price'))['price__sum']
+            }
+            product_sell_data.append(selling_data)
+        data['sell_details'] = product_sell_data
         
         # Ending Storage - সমাপনী মজুদ
         ending_qnt = initial_qnt + purchase_qnt - sell_qnt
@@ -264,10 +251,10 @@ def get_products_info(year,month):
         data['ending_storage_amount'] = ending_storage_amount
         # total_ending_storage_amount += ending_storage_amount
 
-        if product.need_rescale:
+        if product.category == 'fuel':
             ending_storage_readings = StorageReading.objects.filter(product=product,date=to_date).order_by('date')
             if ending_storage_readings:
-                ending_storage_reading_qnt = ending_storage_readings.last().qnt
+                ending_storage_reading_qnt = ending_storage_readings.last().quantity
                 data['ending_storage_reading_qnt'] = ending_storage_reading_qnt
                 ending_storage_reading_amount = ending_storage_reading_qnt*purchase_rate
                 data['ending_storage_reading_amount'] = ending_storage_reading_amount
@@ -324,3 +311,4 @@ def get_navigation_context(year,month):
         'year': next_date_month_year
     }
     return context
+# ------------

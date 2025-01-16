@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}{% if model == 'Income' %}আয়{% else %}ব্যয়{% endif %}সমূহ{% endblock title %}
+{% block style %}
+<style>
+</style>
+{% endblock style %}
+{% block main %}
+
+{% load bootstrap5 %}
+{% load extra_tags %}
+
+{% include "Transaction/daily_transactions/links.html" %}
+
+<table class='table table-striped table-bordered table-sm'>
+    <caption>
+        <h4>{% if model == 'Income' %}আয়{% else %}ব্যয়{% endif %}সমূহ - তারিখঃ {{date|e2b_date}}</h4>
+    </caption>
+    <thead>
+        <tr class="text-center">
+            <th>খাত</th>
+            <th>বিবরণ</th>
+            <th>টাকা</th>
+            <th>নিয়ন্ত্রণ</th>
+        </tr>
+    </thead>
+    {% if object_list %}
+    <tbody>
+        {% for object in object_list %}
+        <tr>
+            <td>{{object.group}}</td>
+            <td>{{object.detail|skip_none}}</td>
+            <td class="text-end">{{object.amount|format_currency}}</td>
+            <td class='nowrap text-center'>
+                <a href="{% url update_url_name date=date pk=object.pk %}" class="btn btn-sm btn-light py-0">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+                <a href="{% url delete_url_name date=date pk=object.pk %}">
+                    <i class="bi bi-trash text-danger"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <th colspan='2' class='text-end'>মোট</th>
+            <td class="text-end">{{total|format_currency}}</td>
+            <th></th>
+        </tr>
+    </tbody>
+    {% endif %}
+    <tfoot class="border d-print-none">
+        <form method="post" id="form">
+            {% csrf_token %}
+            <tr class='text-start'>
+                <th colspan='4'>{% if model == 'Income' %}আয়{% else %}ব্যয়{% endif %} যুক্ত/পরিবর্তন করুন</th>
+            </tr>
+            <tr>
+                <td>{% bootstrap_field form.group show_label=False %}</td>
+                <td>{% bootstrap_field form.detail show_label=False %}</td>
+                <td>{% bootstrap_field form.amount show_label=False %}</td>
+                <td class='nowrap pb-4'>
+                    <button type="submit" class="btn btn-sm btn-success py-0 rounded-0">
+                        <i class="bi bi-check-lg" style="font-size:1.5rem"></i>
+                    </button>
+                    <a href="{{base_url}}" class="btn btn-sm btn-light py-0 rounded-0">
+                        <i class="bi bi-x text-danger" style="font-size:1.5rem"></i>
+                    </a>
+                </td>
+            </tr>
+            <tr class='text-start'>
+                <td colspan='4'>
+                    <a href="{{create_group_url}}">{% if model == 'Income' %}আয়{% else %}ব্যয়{% endif %} এর খাত যুক্ত করুন</a>
+                </td>
+            </tr>
+        </form>
+    </tfoot>
+</table>
+
+{% endblock main %}

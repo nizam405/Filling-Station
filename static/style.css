@@ -17,12 +17,18 @@
     font-family: "Siyamrupali_static";
 }
 
+#header {
+    background-color: #373538;
+    color: #fff;
+}
+
 #header a, #header a:visited {
     color: white;
     text-decoration: none;
+    transition: 0.2s;
 }
 #header a:hover {
-    color: lime;
+    color: gray;
     text-decoration: none;
 }
 
@@ -82,6 +88,7 @@
 }
 
 #sidebar a, #sidebar a:link #sidebar a:visited {
+    text-decoration: none;
     color: #333;
     padding: 5px 15px;
     display: block;
@@ -95,7 +102,7 @@
     margin-top: 8px;
 }
 
-#menu .menu-item {
+#menu .btn {
     border-radius: 0;
     margin-bottom: 8px;
 }
@@ -112,14 +119,6 @@
     font-size: 1.5rem;
 }
 
-#go-btn {
-    padding: 0;
-}
-#go-btn .bi {
-    font-size: 2.2rem;
-    line-height: 100%;
-}
-
 .icon-lg {
     font-size: 1.25rem;
     line-height: 100%;
@@ -133,6 +132,11 @@
     margin: 0;
 }
 
+.table caption {
+    caption-side: top;
+    text-align: center;
+}
+
 @media print {
     .print-center {text-align: center;}
     a {
@@ -141,9 +145,16 @@
     }
     /* #footer, #footer * {color: #999 !important;} */
     #footer {display: none;}
-    .table-bordered td, .table-bordered th{
-        border-color: black !important;
+    .table {page-break-inside: avoid;}
+    .table-allow-break {
+        page-break-inside: auto;
     }
+    
+    .table-bordered td, .table-bordered th{
+        border: 1px solid black;
+        /* border-color: black !important; */
+    }
+    * {color: black!important;}
 }
 
 @media screen {
@@ -196,7 +207,38 @@
     z-index: 999;
 }
 
+#add-form {
+    font-size: 2rem;
+}
 
 .hidden {
     display: none;
 }
+
+table.table-striped tfoot {padding-top: 20px}
+table.table-striped tfoot th, 
+table.table-striped tfoot td {
+    border: none; /* Remove borders from all cells in the footer */
+}
+
+input.form-control ,
+select.form-control,
+.btn  {
+    border-radius: 0;
+}
+
+#date-filter div.col-4 {
+    padding: 0;
+}
+
+.btn-blue {
+    background-color: #0067a7;
+    color: #fff;
+}
+
+.btn-blue:hover {
+    background-color: #015183;
+    color: #fff;
+}
+
+a {text-decoration: none;}
